@@ -24,8 +24,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    // SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'), // Remove SpaceMono
-    // TODO: User needs to provide SpaceGrotesk font files in assets/fonts/ and uncomment below
+    // SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     SpaceGroteskLight: require('../assets/fonts/SpaceGrotesk-Light.ttf'),
     SpaceGroteskRegular: require('../assets/fonts/SpaceGrotesk-Regular.ttf'),
     SpaceGroteskMedium: require('../assets/fonts/SpaceGrotesk-Medium.ttf'),
