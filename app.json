@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "practice-machine",
-    "slug": "practice-machine",
+    "name": "Song Streak",
+    "slug": "song-streak",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "practicemachine",
+    "scheme": "songstreak",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
