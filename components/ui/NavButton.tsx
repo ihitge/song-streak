@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     elevation: 8, // For Android
   },
   labelText: {
-    fontSize: 9, // text-[9px]
+    fontSize: 11, // text-[9px] - Increased for visibility
     textTransform: 'uppercase', // uppercase
     fontWeight: 'bold', // bold
     letterSpacing: 2, // tracking-wider (approx)
