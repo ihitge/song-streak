@@ -27,7 +27,7 @@ export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive,
           <FontAwesome
             name={iconName}
             size={24}
-            color={isActive ? '#333' : '#555'} // Adjust icon color based on state
+            color={isActive ? '#ea5428' : '#555'} // Change icon color to orange when active
           />
         </View>
       </View>

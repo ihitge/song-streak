@@ -1,10 +1,11 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router'; // Removed Slot
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+// Removed Text import
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { LightThemeColors, DarkThemeColors } from '@/constants/Colors'; // Import custom colors
@@ -25,7 +26,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    // SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     SpaceGroteskLight: require('../assets/fonts/SpaceGrotesk-Light.ttf'),
     SpaceGroteskRegular: require('../assets/fonts/SpaceGrotesk-Regular.ttf'),
     SpaceGroteskMedium: require('../assets/fonts/SpaceGrotesk-Medium.ttf'),
@@ -63,16 +64,15 @@ function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
 
+  // useEffect for redirection remains the same
   useEffect(() => {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
     if (session && inAuthGroup) {
-      // Redirect to the dashboard if authenticated and trying to access auth screens
       router.replace('/(tabs)');
     } else if (!session && !inAuthGroup) {
-      // Redirect to login if not authenticated and trying to access protected screens
       router.replace('/(auth)');
     }
   }, [session, segments, isLoading]);
@@ -85,7 +85,6 @@ function RootLayoutNav() {
       background: LightThemeColors.background,
       text: LightThemeColors.text,
       primary: LightThemeColors.primary,
-      // Add more specific color overrides from LightThemeColors as needed
     },
   };
 
@@ -96,15 +95,14 @@ function RootLayoutNav() {
       background: DarkThemeColors.background,
       text: DarkThemeColors.text,
       primary: DarkThemeColors.primary,
-      // Add more specific color overrides from DarkThemeColors as needed
     },
   };
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customLightTheme}>
       <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} /> {/* New auth stack */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> {/* Restored */}
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>

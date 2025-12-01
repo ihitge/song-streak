@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, FlatList, Pressable, Image } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, FlatList, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Star } from 'lucide-react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { LibraryHeader } from '@/components/ui/LibraryHeader'; // Import the new LibraryHeader
+import { Plus, Music, Clock, Star } from 'lucide-react-native'; // Re-added Star for SongCard
+import { LibraryHeader } from '@/components/ui/LibraryHeader'; // Minimal LibraryHeader is here
 
 // --- Types & Mock Data ---
 type Song = {
@@ -77,8 +76,7 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
 export default function SetListScreen() {
   return (
     <View style={styles.container}>
-      <LibraryHeader /> {/* Your new header component */}
-
+      <LibraryHeader />{/* The minimal LibraryHeader */}
       {/* Song List */}
       <FlatList
         data={MOCK_SONGS}

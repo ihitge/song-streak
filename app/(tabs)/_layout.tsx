@@ -1,7 +1,7 @@
 import React from 'react';
-import { Slot } from 'expo-router';
+import { Slot } from 'expo-router'; // Only Slot needed
 import { View, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context'; // Import SafeAreaView
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { TactileNavbar } from '@/components/ui/TactileNavbar';
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors } from '@/constants/Colors';
