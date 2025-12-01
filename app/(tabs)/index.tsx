@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, FlatList, Pressable, Image } from 'react-native
 import { Colors } from '@/constants/Colors';
 import { Plus, Music, Clock, Star } from 'lucide-react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { LibraryHeader } from '@/components/ui/LibraryHeader'; // Import the new LibraryHeader
 
 // --- Types & Mock Data ---
 type Song = {
@@ -22,29 +23,7 @@ const MOCK_SONGS: Song[] = [
   { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', lastPracticed: 'Just now' },
 ];
 
-const FILTERS = ['All', 'Recent', 'Favorites', 'To Learn'];
-
 // --- Components ---
-
-// 1. Selector Key (Filter Button)
-const SelectorKey = ({ label, isActive, onPress }: { label: string; isActive: boolean; onPress: () => void }) => {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.selectorKeyBase,
-        isActive ? styles.selectorKeyActive : styles.selectorKeyInactive,
-        pressed && !isActive && { transform: [{ translateY: 2 }] }, // Subtle press effect when not active
-      ]}
-    >
-      <Text style={[styles.selectorKeyText, isActive && styles.selectorKeyTextActive]}>
-        {label}
-      </Text>
-      {/* "Light" indicator on the key */}
-      <View style={[styles.selectorIndicator, isActive && styles.selectorIndicatorActive]} />
-    </Pressable>
-  );
-};
 
 // 2. Song Card (Data Cassette)
 const SongCard = ({ song }: { song: Song }) => {
@@ -96,27 +75,9 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
 // --- Main Screen ---
 
 export default function SetListScreen() {
-  const [activeFilter, setActiveFilter] = useState('All');
-
   return (
     <View style={styles.container}>
-      {/* Header / Filter Deck */}
-      <View style={styles.filterDeck}>
-        <FlatList
-          data={FILTERS}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <SelectorKey
-              label={item}
-              isActive={activeFilter === item}
-              onPress={() => setActiveFilter(item)}
-            />
-          )}
-          contentContainerStyle={styles.filterListContent}
-        />
-      </View>
+      <LibraryHeader /> {/* Your new header component */}
 
       {/* Song List */}
       <FlatList
@@ -140,60 +101,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.matteFog, // Chassis Base
   },
-  // --- Filter Deck ---
-  filterDeck: {
-    paddingVertical: 16,
-    backgroundColor: Colors.matteFog,
-    borderBottomWidth: 1,
-    borderBottomColor: '#d0d0d0',
-    zIndex: 10,
-  },
-  filterListContent: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  selectorKeyBase: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#b0b0b0',
-    minWidth: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  selectorKeyInactive: {
-    backgroundColor: Colors.alloy,
-    borderBottomWidth: 4, // Physical height
-    borderBottomColor: '#999', // Shadow/Side
-    marginBottom: 4, // Space for the "height"
-  },
-  selectorKeyActive: {
-    backgroundColor: Colors.softWhite,
-    borderBottomWidth: 0,
-    transform: [{ translateY: 4 }], // Physically pressed down
-    borderColor: Colors.vermilion,
-  },
-  selectorKeyText: {
-    fontFamily: 'SpaceGroteskMedium',
-    fontSize: 14,
-    color: Colors.ink,
-  },
-  selectorKeyTextActive: {
-    color: Colors.vermilion,
-  },
-  selectorIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#ccc',
-    marginTop: 4,
-  },
-  selectorIndicatorActive: {
-    backgroundColor: Colors.vermilion, // Lit up
-  },
-
   // --- Song List ---
   songListContent: {
     padding: 16,
