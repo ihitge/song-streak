@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useColorScheme } from '@/components/useColorScheme';
 import { LightThemeColors, DarkThemeColors } from '@/constants/Colors'; // Import custom colors
+import { AuthProvider, useAuth } from '@/ctx/AuthContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -49,13 +50,32 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <RootLayoutNav />
+      <AuthProvider>
+        <RootLayoutNav />
+      </AuthProvider>
     </GestureHandlerRootView>
   );
 }
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { session, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (session && inAuthGroup) {
+      // Redirect to the dashboard if authenticated and trying to access auth screens
+      router.replace('/(tabs)');
+    } else if (!session && !inAuthGroup) {
+      // Redirect to login if not authenticated and trying to access protected screens
+      router.replace('/(auth)');
+    }
+  }, [session, segments, isLoading]);
 
   // Use custom themes
   const customLightTheme = {

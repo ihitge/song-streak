@@ -9,17 +9,63 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { Mail, Lock, User } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
+import { supabase } from '@/utils/supabase/client';
 
 const { width } = Dimensions.get('window');
 
 export default function AuthScreen() {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function signInWithEmail() {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
+
+    if (error) Alert.alert(error.message);
+    setLoading(false);
+  }
+
+  async function signUpWithEmail() {
+    if (password !== confirmPassword) {
+      Alert.alert("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+    });
+
+    if (error) Alert.alert(error.message);
+    else if (!session) Alert.alert('Please check your inbox for email verification!');
+    setLoading(false);
+  }
+
+  const handleAction = () => {
+    if (isRegistering) {
+      signUpWithEmail();
+    } else {
+      signInWithEmail();
+    }
+  };
 
   return (
     <View style={styles.chassis}>
@@ -75,6 +121,9 @@ export default function AuthScreen() {
                   icon={<Mail size={14} color={Colors.graphite} />}
                   placeholder="user@domain.com"
                   keyboardType="email-address"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
                 />
 
                 {/* Security Key (Password) */}
@@ -83,6 +132,9 @@ export default function AuthScreen() {
                   icon={<Lock size={14} color={Colors.graphite} />}
                   placeholder="••••••••"
                   secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
+                  autoCapitalize="none"
                 />
 
                 {/* Confirm Key (Register only) */}
@@ -93,6 +145,9 @@ export default function AuthScreen() {
                       icon={<Lock size={14} color={Colors.graphite} />}
                       placeholder="••••••••"
                       secureTextEntry
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      autoCapitalize="none"
                     />
                   </Animated.View>
                 )}
@@ -100,16 +155,25 @@ export default function AuthScreen() {
             </View>
 
             {/* Primary Action Button */}
-            <TouchableOpacity activeOpacity={0.9} style={styles.actionButtonContainer}>
+            <TouchableOpacity 
+              activeOpacity={0.9} 
+              style={styles.actionButtonContainer} 
+              onPress={handleAction}
+              disabled={loading}
+            >
               <LinearGradient
                 colors={[Colors.vermilion, '#d04620']}
                 style={styles.actionButton}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
               >
-                <Text style={styles.actionButtonText}>
-                  {isRegistering ? 'CREATE CREDENTIALS' : 'GRANT ACCESS'}
-                </Text>
+                {loading ? (
+                   <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.actionButtonText}>
+                    {isRegistering ? 'CREATE CREDENTIALS' : 'GRANT ACCESS'}
+                  </Text>
+                )}
               </LinearGradient>
             </TouchableOpacity>
 
