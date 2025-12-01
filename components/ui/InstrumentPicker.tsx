@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#c0c0c0', // Even darker when pressed
   },
   optionText: {
-    fontFamily: 'SpaceGroteskRegular', // Assuming this font is available
+    fontFamily: 'LexendDecaRegular',
     fontSize: 12,
     color: '#333',
     fontWeight: 'bold',

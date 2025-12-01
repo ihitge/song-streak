@@ -90,14 +90,17 @@ Micro-copy, uppercase labels.
 
 B. Typography
 
-Font Family: System Sans-Serif (San Francisco on iOS / Roboto on Android).
-Why? It mimics the neutral anonymity of Helvetica used on Braun devices.
+Font Family: **Lexend Deca** (custom font, all weights loaded)
+Why? Modern, highly legible typeface with excellent readability. Clean geometric forms complement the industrial aesthetic.
 
-Headings: Light weight, tight tracking. font-weight: 300.
+**Available Weights:**
+- Thin, ExtraLight, Light, Regular, Medium, SemiBold, Bold, ExtraBold, Black
 
-Labels (Micro-copy): Uppercase, wide tracking, small size. tracking-widest (e.g., "VOLUME", "POWER").
-
-Inputs: Medium weight, monospaced digits if possible for numbers.
+**Usage:**
+- Headings: `LexendDecaBold`, tight tracking
+- Labels (Micro-copy): `LexendDecaSemiBold`, uppercase, wide tracking, small size (9-10px)
+- Body/Values: `LexendDecaRegular` or `LexendDecaBold`
+- Inputs: `LexendDecaRegular`
 
 C. Iconography
 

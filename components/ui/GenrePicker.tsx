@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#c0c0c0',
   },
   optionText: {
-    fontFamily: 'SpaceGroteskRegular',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 12,
     color: '#333',
     fontWeight: 'bold',

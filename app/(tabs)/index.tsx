@@ -204,13 +204,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   songTitle: {
-    fontFamily: 'SpaceGroteskBold',
+    fontFamily: 'LexendDecaBold',
     fontSize: 16,
     color: Colors.ink,
     marginBottom: 2,
   },
   songArtist: {
-    fontFamily: 'SpaceGroteskRegular',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 14,
     color: Colors.graphite,
     marginBottom: 6,

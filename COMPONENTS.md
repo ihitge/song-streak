@@ -35,12 +35,26 @@ Import: `import { Colors } from '@/constants/Colors';`
 
 ### Typography
 
+**Primary Font**: Lexend Deca (all weights available)
+
 | Use Case | Font | Size | Weight |
 |----------|------|------|--------|
-| Headlines | System (default) | 20px | Bold |
-| Body text | System | 16px | Regular |
-| Labels | SpaceMono | 9-10px | Bold, uppercase |
-| Values | SpaceGrotesk | 12-16px | Bold |
+| Headlines | LexendDecaBold | 20-24px | Bold |
+| Body text | LexendDecaRegular | 16px | Regular |
+| Labels | LexendDecaSemiBold | 9-10px | SemiBold, uppercase |
+| Values | LexendDecaBold | 12-16px | Bold |
+| Inputs | LexendDecaRegular | 16px | Regular |
+
+**Available Weights**:
+- `LexendDecaThin`
+- `LexendDecaExtraLight`
+- `LexendDecaLight`
+- `LexendDecaRegular`
+- `LexendDecaMedium`
+- `LexendDecaSemiBold`
+- `LexendDecaBold`
+- `LexendDecaExtraBold`
+- `LexendDecaBlack`
 
 ### Spacing
 

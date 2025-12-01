@@ -26,12 +26,15 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    // SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    SpaceGroteskLight: require('../assets/fonts/SpaceGrotesk-Light.ttf'),
-    SpaceGroteskRegular: require('../assets/fonts/SpaceGrotesk-Regular.ttf'),
-    SpaceGroteskMedium: require('../assets/fonts/SpaceGrotesk-Medium.ttf'),
-    SpaceGroteskSemiBold: require('../assets/fonts/SpaceGrotesk-SemiBold.ttf'),
-    SpaceGroteskBold: require('../assets/fonts/SpaceGrotesk-Bold.ttf'),
+    LexendDecaThin: require('../assets/fonts/LexendDeca-Thin.ttf'),
+    LexendDecaExtraLight: require('../assets/fonts/LexendDeca-ExtraLight.ttf'),
+    LexendDecaLight: require('../assets/fonts/LexendDeca-Light.ttf'),
+    LexendDecaRegular: require('../assets/fonts/LexendDeca-Regular.ttf'),
+    LexendDecaMedium: require('../assets/fonts/LexendDeca-Medium.ttf'),
+    LexendDecaSemiBold: require('../assets/fonts/LexendDeca-SemiBold.ttf'),
+    LexendDecaBold: require('../assets/fonts/LexendDeca-Bold.ttf'),
+    LexendDecaExtraBold: require('../assets/fonts/LexendDeca-ExtraBold.ttf'),
+    LexendDecaBlack: require('../assets/fonts/LexendDeca-Black.ttf'),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.

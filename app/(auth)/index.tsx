@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   title: {
-    fontFamily: 'SpaceGroteskBold',
+    fontFamily: 'LexendDecaBold',
     fontSize: 24,
     fontWeight: '900',
     color: Colors.charcoal, // #333333
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   subtitle: {
-    fontFamily: 'SpaceGroteskSemiBold',
+    fontFamily: 'LexendDecaSemiBold',
     fontSize: 10,
     fontWeight: '700',
     color: Colors.graphite, // #888888
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   modeText: {
-    fontFamily: 'SpaceGroteskSemiBold',
+    fontFamily: 'LexendDecaSemiBold',
     fontSize: 12,
     fontWeight: '700',
     color: Colors.graphite,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   label: {
-    fontFamily: 'SpaceGroteskSemiBold',
+    fontFamily: 'LexendDecaSemiBold',
     fontSize: 10,
     fontWeight: '700',
     color: '#666666',
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   input: {
-    fontFamily: 'SpaceGroteskRegular',
+    fontFamily: 'LexendDecaRegular',
     backgroundColor: Colors.softWhite, // #f0f0f0
     height: 48,
     paddingHorizontal: 12,
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.2)', // Shadow
   },
   actionButtonText: {
-    fontFamily: 'SpaceGroteskBold',
+    fontFamily: 'LexendDecaBold',
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   footerLinkText: {
-    fontFamily: 'SpaceGroteskSemiBold',
+    fontFamily: 'LexendDecaSemiBold',
     fontSize: 10,
     fontWeight: '700',
     color: Colors.graphite,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
   sysVersion: {
     textAlign: 'center',
     fontSize: 10,
-    fontFamily: 'SpaceGroteskRegular',
+    fontFamily: 'LexendDecaRegular',
     color: '#a0a0a0',
   },
 });
