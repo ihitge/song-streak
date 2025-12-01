@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     elevation: 3, // For Android
   },
   capActive: {
-    backgroundColor: '#e6e6e6', // matches chassis background
+    backgroundColor: '#E4DFDA', // matches chassis background
     transform: [{ translateY: 2 }], // translate-y-[2px]
     // Inner shadow - mimicking the well's shadow but for the cap
     shadowColor: 'rgba(0,0,0,0.15)',

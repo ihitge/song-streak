@@ -69,7 +69,7 @@ export const LibraryHeader: React.FC = () => {
 
 const styles = StyleSheet.create({
   chassis: {
-    backgroundColor: '#e6e6e6', // Chassis Color: #e6e6e6
+    backgroundColor: '#E4DFDA', // Chassis Color: #E4DFDA
     paddingBottom: 0, // No padding at bottom, border handles seam
   },
   // --- 1. Top Bar ---
