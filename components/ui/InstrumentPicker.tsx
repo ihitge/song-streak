@@ -86,5 +86,6 @@ const styles = StyleSheet.create({
   },
   optionTextActive: {
     color: '#ea5428', // Vermilion for active option
+    fontWeight: '900', // Make active text even bolder
   },
 });
