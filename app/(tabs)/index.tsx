@@ -5,6 +5,8 @@ import { Plus, Music, Clock, Star, Guitar, Drum, Keyboard, MinusCircle } from 'l
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 
 // --- Types & Mock Data ---
+export type Instrument = 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys'; // Exported Instrument type
+
 type Song = {
   id: string;
   title: string;
@@ -72,24 +74,22 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
     }
 }
 
-const INSTRUMENT_FILTER_OPTIONS = ['All', 'Guitar', 'Bass', 'Drums', 'Keys'];
-const INSTRUMENT_ICONS = {
-  All: MinusCircle, // A generic icon for 'All'
-  Guitar: Guitar,
-  Bass: Music, // Using Music for Bass as a placeholder, can change if a better one exists
-  Drums: Drum,
-  Keys: Keyboard,
-};
+const INSTRUMENT_FILTER_OPTIONS: Instrument[] = ['All', 'Guitar', 'Bass', 'Drums', 'Keys'];
+const INSTRUMENT_FILTER_OPTIONS_WITH_ICONS = [
+  { instrument: 'All', IconComponent: MinusCircle },
+  { instrument: 'Guitar', IconComponent: Guitar },
+  { instrument: 'Bass', IconComponent: Music },
+  { instrument: 'Drums', IconComponent: Drum },
+  { instrument: 'Keys', IconComponent: Keyboard },
+];
 
 // --- Main Screen ---
 
 export default function SetListScreen() {
-  const [instrumentFilter, setInstrumentFilter] = useState<'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys'>('All');
+  const [instrumentFilter, setInstrumentFilter] = useState<Instrument>('All');
 
-  const handleInstrumentFilterChange = () => {
-    const currentIndex = INSTRUMENT_FILTER_OPTIONS.indexOf(instrumentFilter);
-    const nextIndex = (currentIndex + 1) % INSTRUMENT_FILTER_OPTIONS.length;
-    setInstrumentFilter(INSTRUMENT_FILTER_OPTIONS[nextIndex] as 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys');
+  const handleInstrumentFilterChange = (instrument: Instrument) => {
+    setInstrumentFilter(instrument);
   };
 
   const filteredSongs = useMemo(() => {
@@ -104,7 +104,7 @@ export default function SetListScreen() {
       <LibraryHeader
         instrumentFilter={instrumentFilter}
         onInstrumentFilterChange={handleInstrumentFilterChange}
-        instrumentIconComponent={INSTRUMENT_ICONS[instrumentFilter]}
+        instrumentOptions={INSTRUMENT_FILTER_OPTIONS_WITH_ICONS} // Pass structured options
       />
       {/* Song List */}
       <FlatList

@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
-import { Search, Guitar, Signal, Music, LogOut, ChevronDown } from 'lucide-react-native';
+import { Search, Guitar, Signal, Music, LogOut, ChevronDown, MinusCircle } from 'lucide-react-native'; // Added MinusCircle
 import { SelectorKey } from './SelectorKey';
-// Removed InstrumentPicker import
+import { InstrumentPicker } from './InstrumentPicker'; // Restored InstrumentPicker import
 import { supabase } from '@/utils/supabase/client';
+import { Instrument } from '@/app/(tabs)/index'; // Import Instrument type
 
 interface LibraryHeaderProps {
-  instrumentFilter: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
-  onInstrumentFilterChange: () => void;
-  instrumentIconComponent: React.ComponentType<any>; // New prop
+  instrumentFilter: Instrument;
+  onInstrumentFilterChange: (instrument: Instrument) => void; // Modified signature
+  instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[]; // Structured options
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   instrumentFilter,
   onInstrumentFilterChange,
-  instrumentIconComponent, // Destructure new prop
+  instrumentOptions, // Destructure new prop
 }) => {
   const [searchText, setSearchText] = useState('');
-  // Removed showInstrumentOptions state
+  const [showInstrumentOptions, setShowInstrumentOptions] = useState(false); // New state for dropdown
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -27,7 +28,14 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
     // AuthProvider will handle navigation after successful sign out
   };
 
-  // Removed handleInstSelectorPress and handleInstrumentSelect
+  const handleInstSelectorPress = () => {
+    setShowInstrumentOptions(prev => !prev);
+  };
+
+  const handleInstrumentSelect = (instrument: Instrument) => {
+    onInstrumentFilterChange(instrument);
+    setShowInstrumentOptions(false); // Close after selection
+  };
 
   return (
     <View style={styles.chassis}>
@@ -71,8 +79,22 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
         {/* Filter Keys (Row of 3) */}
         <View style={styles.filterKeysRow}>
-          {/* Reverted SelectorKey to original usage */}
-          <SelectorKey label="INST" value={instrumentFilter} IconComponent={instrumentIconComponent} onPress={onInstrumentFilterChange} />
+          <View style={{ position: 'relative', zIndex: 100 }}> {/* Wrapper for absolute positioning and zIndex */}
+            <SelectorKey
+              label="INST"
+              value={instrumentFilter}
+              IconComponent={instrumentOptions.find(opt => opt.instrument === instrumentFilter)?.IconComponent || MinusCircle} // Get current icon
+              onPress={handleInstSelectorPress}
+            />
+            {showInstrumentOptions && (
+              <InstrumentPicker
+                options={instrumentOptions}
+                onSelect={handleInstrumentSelect}
+                onClose={() => setShowInstrumentOptions(false)}
+                currentValue={instrumentFilter}
+              />
+            )}
+          </View>
           <SelectorKey label="LEVEL" value="ALL" IconComponent={Signal} onPress={() => console.log('LEVEL')} />
           <SelectorKey label="GENRE" value="ROCK" IconComponent={Music} onPress={() => console.log('GENRE')} />
         </View>
