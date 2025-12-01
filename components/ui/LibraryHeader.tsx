@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native'; // Added Alert for feedback
+import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
 import { Search, Guitar, Signal, Music, LogOut, ChevronDown } from 'lucide-react-native';
 import { SelectorKey } from './SelectorKey';
-import { supabase } from '@/utils/supabase/client'; // Import supabase
+import { InstrumentPicker } from './InstrumentPicker'; // Import InstrumentPicker
+import { supabase } from '@/utils/supabase/client';
 
 interface LibraryHeaderProps {
   instrumentFilter: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
-  onInstrumentFilterChange: () => void;
+  onInstrumentFilterChange: (instrument: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys') => void; // Changed signature
+  instrumentOptions: string[]; // New prop
 }
 
-export const LibraryHeader: React.FC<LibraryHeaderProps> = ({ instrumentFilter, onInstrumentFilterChange }) => {
+export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
+  instrumentFilter,
+  onInstrumentFilterChange,
+  instrumentOptions, // Destructure new prop
+}) => {
   const [searchText, setSearchText] = useState('');
+  const [showInstrumentOptions, setShowInstrumentOptions] = useState(false); // New state for dropdown
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -18,6 +25,15 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({ instrumentFilter, 
       Alert.alert('Sign Out Error', error.message);
     }
     // AuthProvider will handle navigation after successful sign out
+  };
+
+  const handleInstSelectorPress = () => {
+    setShowInstrumentOptions(prev => !prev);
+  };
+
+  const handleInstrumentSelect = (instrument: string) => {
+    onInstrumentFilterChange(instrument as 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys');
+    setShowInstrumentOptions(false); // Close after selection
   };
 
   return (
@@ -37,7 +53,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({ instrumentFilter, 
             <Text style={styles.avatarText}>JD</Text>
           </Pressable>
           {/* Logout */}
-          <Pressable style={styles.logoutButton} onPress={handleSignOut}> {/* Added onPress handler */}
+          <Pressable style={styles.logoutButton} onPress={handleSignOut}>
             <LogOut size={20} color="#333" />
           </Pressable>
         </View>
@@ -54,7 +70,6 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({ instrumentFilter, 
             placeholderTextColor="#888"
             value={searchText}
             onChangeText={setSearchText}
-            // Add any other TextInput props for styling
           />
         </View>
 
@@ -63,7 +78,22 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({ instrumentFilter, 
 
         {/* Filter Keys (Row of 3) */}
         <View style={styles.filterKeysRow}>
-          <SelectorKey label="INST" value={instrumentFilter} IconComponent={Guitar} onPress={onInstrumentFilterChange} />
+          <View style={{ position: 'relative', zIndex: 100 }}> {/* Wrapper for absolute positioning and zIndex */}
+            <SelectorKey
+              label="INST"
+              value={instrumentFilter}
+              IconComponent={Guitar}
+              onPress={handleInstSelectorPress}
+            />
+            {showInstrumentOptions && (
+              <InstrumentPicker
+                options={instrumentOptions}
+                onSelect={handleInstrumentSelect}
+                onClose={() => setShowInstrumentOptions(false)}
+                currentValue={instrumentFilter}
+              />
+            )}
+          </View>
           <SelectorKey label="LEVEL" value="ALL" IconComponent={Signal} onPress={() => console.log('LEVEL')} />
           <SelectorKey label="GENRE" value="ROCK" IconComponent={Music} onPress={() => console.log('GENRE')} />
         </View>

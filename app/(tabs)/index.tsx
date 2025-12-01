@@ -79,10 +79,8 @@ const INSTRUMENT_FILTER_OPTIONS = ['All', 'Guitar', 'Bass', 'Drums', 'Keys'];
 export default function SetListScreen() {
   const [instrumentFilter, setInstrumentFilter] = useState<'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys'>('All');
 
-  const handleInstrumentFilterChange = () => {
-    const currentIndex = INSTRUMENT_FILTER_OPTIONS.indexOf(instrumentFilter);
-    const nextIndex = (currentIndex + 1) % INSTRUMENT_FILTER_OPTIONS.length;
-    setInstrumentFilter(INSTRUMENT_FILTER_OPTIONS[nextIndex] as 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys');
+  const handleInstrumentFilterChange = (instrument: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys') => {
+    setInstrumentFilter(instrument);
   };
 
   const filteredSongs = useMemo(() => {
@@ -97,6 +95,7 @@ export default function SetListScreen() {
       <LibraryHeader
         instrumentFilter={instrumentFilter}
         onInstrumentFilterChange={handleInstrumentFilterChange}
+        instrumentOptions={INSTRUMENT_FILTER_OPTIONS}
       />
       {/* Song List */}
       <FlatList
