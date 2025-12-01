@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'; // Added useState, useMemo
 import { StyleSheet, View, Text, FlatList, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Star } from 'lucide-react-native';
+import { Plus, Music, Clock, Star, Guitar, Drum, Keyboard, MinusCircle } from 'lucide-react-native'; // Added specific icons
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 
 // --- Types & Mock Data ---
@@ -73,6 +73,13 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
 }
 
 const INSTRUMENT_FILTER_OPTIONS = ['All', 'Guitar', 'Bass', 'Drums', 'Keys'];
+const INSTRUMENT_ICONS = {
+  All: MinusCircle, // A generic icon for 'All'
+  Guitar: Guitar,
+  Bass: Music, // Using Music for Bass as a placeholder, can change if a better one exists
+  Drums: Drum,
+  Keys: Keyboard,
+};
 
 // --- Main Screen ---
 
@@ -97,6 +104,7 @@ export default function SetListScreen() {
       <LibraryHeader
         instrumentFilter={instrumentFilter}
         onInstrumentFilterChange={handleInstrumentFilterChange}
+        instrumentIconComponent={INSTRUMENT_ICONS[instrumentFilter]}
       />
       {/* Song List */}
       <FlatList

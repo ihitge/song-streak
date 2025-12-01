@@ -7,14 +7,14 @@ import { supabase } from '@/utils/supabase/client';
 
 interface LibraryHeaderProps {
   instrumentFilter: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
-  onInstrumentFilterChange: () => void; // Reverted signature
-  // Removed instrumentOptions from props
+  onInstrumentFilterChange: () => void;
+  instrumentIconComponent: React.ComponentType<any>; // New prop
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   instrumentFilter,
   onInstrumentFilterChange,
-  // Removed instrumentOptions from destructuring
+  instrumentIconComponent, // Destructure new prop
 }) => {
   const [searchText, setSearchText] = useState('');
   // Removed showInstrumentOptions state
@@ -72,7 +72,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
         {/* Filter Keys (Row of 3) */}
         <View style={styles.filterKeysRow}>
           {/* Reverted SelectorKey to original usage */}
-          <SelectorKey label="INST" value={instrumentFilter} IconComponent={Guitar} onPress={onInstrumentFilterChange} />
+          <SelectorKey label="INST" value={instrumentFilter} IconComponent={instrumentIconComponent} onPress={onInstrumentFilterChange} />
           <SelectorKey label="LEVEL" value="ALL" IconComponent={Signal} onPress={() => console.log('LEVEL')} />
           <SelectorKey label="GENRE" value="ROCK" IconComponent={Music} onPress={() => console.log('GENRE')} />
         </View>
