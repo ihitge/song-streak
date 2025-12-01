@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontFamily: 'SpaceGroteskRegular', // Assuming this font is available
-    fontSize: 14,
+    fontSize: 12,
     color: '#333',
     fontWeight: 'bold',
   },
