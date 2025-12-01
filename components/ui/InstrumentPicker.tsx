@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     position: 'absolute', // Position relative to the parent LibraryHeader
     top: '100%', // Just below the selector key
     left: 0,
-    right: 0,
+    width: 150, // Explicitly set a wider width, removed right: 0
     backgroundColor: '#e0e0e0', // Deck Color like, recessed feel
     borderRadius: 8,
     // Soft inset shadow
