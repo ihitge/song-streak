@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     backgroundColor: Colors.matteFog,
-    borderRadius: 32,
+    borderRadius: 12, // Reduced from 32
     padding: 24,
     // Shadow for the "Card" / Device
     shadowColor: '#000',
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   modeSwitcherWell: {
     flexDirection: 'row',
     backgroundColor: Colors.alloy, // #d6d6d6
-    borderRadius: 12,
+    borderRadius: 6, // Reduced from 12
     padding: 4,
     marginBottom: 24,
     // Inset shadow effect (simulated)
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 4, // Reduced from 8
   },
   modeButtonActive: {
     backgroundColor: Colors.matteFog, // #e6e6e6
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   formDeck: {
     backgroundColor: '#e0e0e0', // Slightly darker than chassis
-    borderRadius: 16,
+    borderRadius: 8, // Reduced from 16
     padding: 20,
     marginBottom: 32,
     // Inner shadow simulation
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     height: 64,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: 2, // Reduced from 4
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.3)', // Highlight
     borderBottomWidth: 1,

@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native'; // Added Alert for feedback
 import { Search, Guitar, Signal, Music, LogOut, ChevronDown } from 'lucide-react-native';
 import { SelectorKey } from './SelectorKey';
+import { supabase } from '@/utils/supabase/client'; // Import supabase
 
 export const LibraryHeader: React.FC = () => {
   const [searchText, setSearchText] = useState('');
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      Alert.alert('Sign Out Error', error.message);
+    }
+    // AuthProvider will handle navigation after successful sign out
+  };
 
   return (
     <View style={styles.chassis}>
@@ -23,7 +32,7 @@ export const LibraryHeader: React.FC = () => {
             <Text style={styles.avatarText}>JD</Text>
           </Pressable>
           {/* Logout */}
-          <Pressable style={styles.logoutButton}>
+          <Pressable style={styles.logoutButton} onPress={handleSignOut}> {/* Added onPress handler */}
             <LogOut size={20} color="#333" />
           </Pressable>
         </View>
