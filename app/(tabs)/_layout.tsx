@@ -36,7 +36,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="setlist"
+        name="index"
         options={{
           title: 'SET LIST',
           tabBarIcon: ({ color }) => <TabBarIcon name="music" color={color} />,
