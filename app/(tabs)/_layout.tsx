@@ -1,54 +1,25 @@
 import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
-
+import { Slot } from 'expo-router'; // Import Slot from expo-router
+import { View, StyleSheet } from 'react-native';
+import { TactileNavbar } from '@/components/ui/TactileNavbar'; // Import your new navbar component
 import { useColorScheme } from '@/components/useColorScheme';
 import { Colors } from '@/constants/Colors';
 
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme(); // Retain if used elsewhere or for context
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors.recording, // Acid Yellow for active
-        tabBarInactiveTintColor: Colors.border, // Aluminum Grey for inactive
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: Colors.chassis, // Primary background (Matte Slate)
-          borderTopWidth: 2,
-          borderTopColor: Colors.border,
-        }
-      }}>
-      <Tabs.Screen
-        name="practice"
-        options={{
-          title: 'PRACTICE STREAK',
-          tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'SET LIST',
-          tabBarIcon: ({ color }) => <TabBarIcon name="music" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="timing"
-        options={{
-          title: 'TIMING MACHINE',
-          tabBarIcon: ({ color }) => <TabBarIcon name="tachometer" color={color} />,
-        }}
-      />
-    </Tabs>
+    <View style={styles.container}>
+      <Slot />
+      <TactileNavbar />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background, // Ensure background is set
+  },
+});
