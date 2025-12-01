@@ -4,7 +4,12 @@ import { Search, Guitar, Signal, Music, LogOut, ChevronDown } from 'lucide-react
 import { SelectorKey } from './SelectorKey';
 import { supabase } from '@/utils/supabase/client'; // Import supabase
 
-export const LibraryHeader: React.FC = () => {
+interface LibraryHeaderProps {
+  instrumentFilter: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
+  onInstrumentFilterChange: () => void;
+}
+
+export const LibraryHeader: React.FC<LibraryHeaderProps> = ({ instrumentFilter, onInstrumentFilterChange }) => {
   const [searchText, setSearchText] = useState('');
 
   const handleSignOut = async () => {
@@ -58,7 +63,7 @@ export const LibraryHeader: React.FC = () => {
 
         {/* Filter Keys (Row of 3) */}
         <View style={styles.filterKeysRow}>
-          <SelectorKey label="INST" value="BASS" IconComponent={Guitar} onPress={() => console.log('INST')} />
+          <SelectorKey label="INST" value={instrumentFilter} IconComponent={Guitar} onPress={onInstrumentFilterChange} />
           <SelectorKey label="LEVEL" value="ALL" IconComponent={Signal} onPress={() => console.log('LEVEL')} />
           <SelectorKey label="GENRE" value="ROCK" IconComponent={Music} onPress={() => console.log('GENRE')} />
         </View>

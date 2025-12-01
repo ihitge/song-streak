@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react'; // Added useState, useMemo
 import { StyleSheet, View, Text, FlatList, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Star } from 'lucide-react-native'; // Re-added Star for SongCard
-import { LibraryHeader } from '@/components/ui/LibraryHeader'; // Minimal LibraryHeader is here
+import { Plus, Music, Clock, Star } from 'lucide-react-native';
+import { LibraryHeader } from '@/components/ui/LibraryHeader';
 
 // --- Types & Mock Data ---
 type Song = {
@@ -12,14 +12,15 @@ type Song = {
   duration: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
   lastPracticed: string;
+  instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
 };
 
 const MOCK_SONGS: Song[] = [
-  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', lastPracticed: '2 days ago' },
-  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', lastPracticed: 'Yesterday' },
-  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', lastPracticed: '1 week ago' },
-  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', lastPracticed: '3 days ago' },
-  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', lastPracticed: 'Just now' },
+  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', lastPracticed: '2 days ago', instrument: 'Guitar' },
+  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', lastPracticed: 'Yesterday', instrument: 'Drums' },
+  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', lastPracticed: '1 week ago', instrument: 'Bass' },
+  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', lastPracticed: '3 days ago', instrument: 'Guitar' },
+  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', lastPracticed: 'Just now', instrument: 'Keys' },
 ];
 
 // --- Components ---
@@ -71,15 +72,35 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
     }
 }
 
+const INSTRUMENT_FILTER_OPTIONS = ['All', 'Guitar', 'Bass', 'Drums', 'Keys'];
+
 // --- Main Screen ---
 
 export default function SetListScreen() {
+  const [instrumentFilter, setInstrumentFilter] = useState<'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys'>('All');
+
+  const handleInstrumentFilterChange = () => {
+    const currentIndex = INSTRUMENT_FILTER_OPTIONS.indexOf(instrumentFilter);
+    const nextIndex = (currentIndex + 1) % INSTRUMENT_FILTER_OPTIONS.length;
+    setInstrumentFilter(INSTRUMENT_FILTER_OPTIONS[nextIndex] as 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys');
+  };
+
+  const filteredSongs = useMemo(() => {
+    if (instrumentFilter === 'All') {
+      return MOCK_SONGS;
+    }
+    return MOCK_SONGS.filter(song => song.instrument === instrumentFilter);
+  }, [instrumentFilter]); // Dependency MOCK_SONGS can be removed if it's constant
+
   return (
     <View style={styles.container}>
-      <LibraryHeader />{/* The minimal LibraryHeader */}
+      <LibraryHeader
+        instrumentFilter={instrumentFilter}
+        onInstrumentFilterChange={handleInstrumentFilterChange}
+      />
       {/* Song List */}
       <FlatList
-        data={MOCK_SONGS}
+        data={filteredSongs} // Use filteredSongs
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <SongCard song={item} />}
         contentContainerStyle={styles.songListContent}
