@@ -5,7 +5,8 @@ import { Plus, Music, Clock, Star, Guitar, Drum, Keyboard, MinusCircle } from 'l
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 
 // --- Types & Mock Data ---
-export type Instrument = 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys'; // Exported Instrument type
+export type Instrument = 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
+export type Genre = 'All' | 'Rock' | 'Blues' | 'Metal' | 'Prog' | 'Jazz' | 'Country' | 'Pop' | 'Classical' | 'Flamenco' | 'Funk' | 'Folk' | 'Punk' | 'Reggae' | 'Bluegrass';
 
 type Song = {
   id: string;
@@ -15,14 +16,15 @@ type Song = {
   difficulty: 'Easy' | 'Medium' | 'Hard';
   lastPracticed: string;
   instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
+  genres: Exclude<Genre, 'All'>[];
 };
 
 const MOCK_SONGS: Song[] = [
-  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', lastPracticed: '2 days ago', instrument: 'Guitar' },
-  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', lastPracticed: 'Yesterday', instrument: 'Drums' },
-  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', lastPracticed: '1 week ago', instrument: 'Bass' },
-  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', lastPracticed: '3 days ago', instrument: 'Guitar' },
-  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', lastPracticed: 'Just now', instrument: 'Keys' },
+  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', lastPracticed: '2 days ago', instrument: 'Guitar', genres: ['Metal', 'Rock'] },
+  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', lastPracticed: 'Yesterday', instrument: 'Drums', genres: ['Prog', 'Rock'] },
+  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', lastPracticed: '1 week ago', instrument: 'Bass', genres: ['Metal', 'Rock'] },
+  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', lastPracticed: '3 days ago', instrument: 'Guitar', genres: ['Metal'] },
+  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', lastPracticed: 'Just now', instrument: 'Keys', genres: ['Prog', 'Rock'] },
 ];
 
 // --- Components ---
@@ -83,28 +85,55 @@ const INSTRUMENT_FILTER_OPTIONS_WITH_ICONS = [
   { instrument: 'Keys', IconComponent: Keyboard },
 ];
 
+const GENRE_FILTER_OPTIONS_WITH_ICONS = [
+  { genre: 'All', IconComponent: MinusCircle },
+  { genre: 'Rock', IconComponent: Music },
+  { genre: 'Blues', IconComponent: Music },
+  { genre: 'Metal', IconComponent: Music },
+  { genre: 'Prog', IconComponent: Music },
+  { genre: 'Jazz', IconComponent: Music },
+  { genre: 'Country', IconComponent: Music },
+  { genre: 'Pop', IconComponent: Music },
+  { genre: 'Classical', IconComponent: Music },
+  { genre: 'Flamenco', IconComponent: Music },
+  { genre: 'Funk', IconComponent: Music },
+  { genre: 'Folk', IconComponent: Music },
+  { genre: 'Punk', IconComponent: Music },
+  { genre: 'Reggae', IconComponent: Music },
+  { genre: 'Bluegrass', IconComponent: Music },
+];
+
 // --- Main Screen ---
 
 export default function SetListScreen() {
   const [instrumentFilter, setInstrumentFilter] = useState<Instrument>('All');
+  const [genreFilter, setGenreFilter] = useState<Genre>('All');
 
   const handleInstrumentFilterChange = (instrument: Instrument) => {
     setInstrumentFilter(instrument);
   };
 
+  const handleGenreFilterChange = (genre: Genre) => {
+    setGenreFilter(genre);
+  };
+
   const filteredSongs = useMemo(() => {
-    if (instrumentFilter === 'All') {
-      return MOCK_SONGS;
-    }
-    return MOCK_SONGS.filter(song => song.instrument === instrumentFilter);
-  }, [instrumentFilter]); // Dependency MOCK_SONGS can be removed if it's constant
+    return MOCK_SONGS.filter(song => {
+      const matchesInstrument = instrumentFilter === 'All' || song.instrument === instrumentFilter;
+      const matchesGenre = genreFilter === 'All' || song.genres.includes(genreFilter as Exclude<Genre, 'All'>);
+      return matchesInstrument && matchesGenre;
+    });
+  }, [instrumentFilter, genreFilter]);
 
   return (
     <View style={styles.container}>
       <LibraryHeader
         instrumentFilter={instrumentFilter}
         onInstrumentFilterChange={handleInstrumentFilterChange}
-        instrumentOptions={INSTRUMENT_FILTER_OPTIONS_WITH_ICONS} // Pass structured options
+        instrumentOptions={INSTRUMENT_FILTER_OPTIONS_WITH_ICONS}
+        genreFilter={genreFilter}
+        onGenreFilterChange={handleGenreFilterChange}
+        genreOptions={GENRE_FILTER_OPTIONS_WITH_ICONS}
       />
       {/* Song List */}
       <FlatList

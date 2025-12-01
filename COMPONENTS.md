@@ -10,7 +10,8 @@
 |-----------|---------|----------|
 | `NavButton` | Tactile navigation button with LED indicator | `components/ui/NavButton.tsx` |
 | `SelectorKey` | Filter/dropdown trigger button | `components/ui/SelectorKey.tsx` |
-| `InstrumentPicker` | Dropdown menu for selection | `components/ui/InstrumentPicker.tsx` |
+| `InstrumentPicker` | Dropdown menu for instrument selection | `components/ui/InstrumentPicker.tsx` |
+| `GenrePicker` | Dropdown menu for genre selection | `components/ui/GenrePicker.tsx` |
 | `TactileNavbar` | Bottom navigation bar | `components/ui/TactileNavbar.tsx` |
 | `LibraryHeader` | Page header with search and filters | `components/ui/LibraryHeader.tsx` |
 
@@ -220,6 +221,66 @@ const options = [
 
 ---
 
+### GenrePicker
+
+**Purpose**: Dropdown menu displaying genre options with icons. Scrollable for long lists. Positioned absolutely below its trigger.
+
+**Location**: `components/ui/GenrePicker.tsx`
+
+**Props**:
+```typescript
+interface GenrePickerProps {
+  options: {
+    genre: Genre;                              // Option value
+    IconComponent: React.ComponentType<any>;   // Lucide icon
+  }[];
+  onSelect: (genre: Genre) => void;            // Selection handler
+  onClose: () => void;                         // Close handler
+  currentValue: Genre;                         // Currently selected value
+}
+```
+
+**Usage**:
+```tsx
+import { GenrePicker } from '@/components/ui/GenrePicker';
+import { Music, MinusCircle } from 'lucide-react-native';
+
+const genreOptions = [
+  { genre: 'All', IconComponent: MinusCircle },
+  { genre: 'Rock', IconComponent: Music },
+  { genre: 'Blues', IconComponent: Music },
+  // ...more genres
+];
+
+{showGenrePicker && (
+  <GenrePicker
+    options={genreOptions}
+    onSelect={handleGenreSelect}
+    onClose={() => setShowGenrePicker(false)}
+    currentValue={currentGenre}
+  />
+)}
+```
+
+**Available Genres**: All, Rock, Blues, Metal, Prog, Jazz, Country, Pop, Classical, Flamenco, Funk, Folk, Punk, Reggae, Bluegrass
+
+**Visual Behavior**:
+- 200px width, max 300px height (scrollable)
+- Active option: darker background, vermilion text/icon
+- Pressed state: even darker background
+- Recessed well shadow styling
+
+**Do**:
+- Wrap parent in `{ position: 'relative', zIndex: 99 }`
+- Always provide `onClose` handler
+- Pair with `SelectorKey` as trigger
+
+**Don't**:
+- Don't render without a visible trigger
+- Don't forget zIndex wrapper (use 99 if INST picker uses 100)
+
+---
+
 ### TactileNavbar
 
 **Purpose**: Bottom navigation bar containing `NavButton` instances. Provides app-wide navigation.
@@ -270,16 +331,19 @@ import { TactileNavbar } from '@/components/ui/TactileNavbar';
 **Props**:
 ```typescript
 interface LibraryHeaderProps {
-  instrumentFilter: Instrument;                                              // Current filter value
-  onInstrumentFilterChange: (instrument: Instrument) => void;               // Filter change handler
-  instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[];  // Dropdown options
+  instrumentFilter: Instrument;
+  onInstrumentFilterChange: (instrument: Instrument) => void;
+  instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[];
+  genreFilter: Genre;
+  onGenreFilterChange: (genre: Genre) => void;
+  genreOptions: { genre: Genre; IconComponent: React.ComponentType<any>; }[];
 }
 ```
 
 **Usage**:
 ```tsx
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
-import { Guitar, Drum, Piano, Music, MinusCircle } from 'lucide-react-native';
+import { Guitar, Drum, Keyboard, Music, MinusCircle } from 'lucide-react-native';
 
 const instrumentOptions = [
   { instrument: 'All', IconComponent: MinusCircle },
@@ -287,10 +351,19 @@ const instrumentOptions = [
   // ...more options
 ];
 
+const genreOptions = [
+  { genre: 'All', IconComponent: MinusCircle },
+  { genre: 'Rock', IconComponent: Music },
+  // ...more options
+];
+
 <LibraryHeader
   instrumentFilter={selectedInstrument}
   onInstrumentFilterChange={setSelectedInstrument}
   instrumentOptions={instrumentOptions}
+  genreFilter={selectedGenre}
+  onGenreFilterChange={setSelectedGenre}
+  genreOptions={genreOptions}
 />
 ```
 
@@ -303,14 +376,15 @@ const instrumentOptions = [
 - White border seams between sections
 - Recessed search input
 - InstrumentPicker dropdown on INST press
+- GenrePicker dropdown on GENRE press
 
 **Do**:
 - Use at top of library/list pages
-- Pass instrument options with appropriate Lucide icons
+- Pass instrument and genre options with appropriate Lucide icons
 
 **Don't**:
 - Don't customize title/subtitle (currently hardcoded)
-- Don't expect LEVEL/GENRE filters to work (placeholder `console.log`)
+- Don't expect LEVEL filter to work (placeholder `console.log`)
 
 ---
 
@@ -405,9 +479,10 @@ import { Ionicons } from '@expo/vector-icons';
 Components that should be extracted or created:
 
 1. **SongCard** - Currently inline in `app/(tabs)/index.tsx`
-2. **Generic Dropdown** - Make `InstrumentPicker` more reusable
-3. **Button variants** - Primary, Secondary, Ghost buttons
-4. **Input** - Standalone input component (currently in LibraryHeader)
+2. **LevelPicker** - Implement Level filter dropdown (similar to Genre/Instrument)
+3. **Generic Picker** - Refactor InstrumentPicker/GenrePicker into reusable component
+4. **Button variants** - Primary, Secondary, Ghost buttons
+5. **Input** - Standalone input component (currently in LibraryHeader)
 
 ---
 

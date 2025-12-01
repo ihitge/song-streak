@@ -4,37 +4,55 @@ import { Search, Guitar, Signal, Music, LogOut, ChevronDown, MinusCircle } from 
 import { SelectorKey } from './SelectorKey';
 import { InstrumentPicker } from './InstrumentPicker'; // Restored InstrumentPicker import
 import { supabase } from '@/utils/supabase/client';
-import { Instrument } from '@/app/(tabs)/index'; // Import Instrument type
+import { Instrument, Genre } from '@/app/(tabs)/index';
+import { GenrePicker } from './GenrePicker';
 
 interface LibraryHeaderProps {
   instrumentFilter: Instrument;
-  onInstrumentFilterChange: (instrument: Instrument) => void; // Modified signature
-  instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[]; // Structured options
+  onInstrumentFilterChange: (instrument: Instrument) => void;
+  instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[];
+  genreFilter: Genre;
+  onGenreFilterChange: (genre: Genre) => void;
+  genreOptions: { genre: Genre; IconComponent: React.ComponentType<any>; }[];
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   instrumentFilter,
   onInstrumentFilterChange,
-  instrumentOptions, // Destructure new prop
+  instrumentOptions,
+  genreFilter,
+  onGenreFilterChange,
+  genreOptions,
 }) => {
   const [searchText, setSearchText] = useState('');
-  const [showInstrumentOptions, setShowInstrumentOptions] = useState(false); // New state for dropdown
+  const [showInstrumentOptions, setShowInstrumentOptions] = useState(false);
+  const [showGenreOptions, setShowGenreOptions] = useState(false);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       Alert.alert('Sign Out Error', error.message);
     }
-    // AuthProvider will handle navigation after successful sign out
   };
 
   const handleInstSelectorPress = () => {
     setShowInstrumentOptions(prev => !prev);
+    setShowGenreOptions(false); // Close other dropdown
   };
 
   const handleInstrumentSelect = (instrument: Instrument) => {
     onInstrumentFilterChange(instrument);
-    setShowInstrumentOptions(false); // Close after selection
+    setShowInstrumentOptions(false);
+  };
+
+  const handleGenreSelectorPress = () => {
+    setShowGenreOptions(prev => !prev);
+    setShowInstrumentOptions(false); // Close other dropdown
+  };
+
+  const handleGenreSelect = (genre: Genre) => {
+    onGenreFilterChange(genre);
+    setShowGenreOptions(false);
   };
 
   return (
@@ -96,7 +114,22 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
             )}
           </View>
           <SelectorKey label="LEVEL" value="ALL" IconComponent={Signal} onPress={() => console.log('LEVEL')} />
-          <SelectorKey label="GENRE" value="ROCK" IconComponent={Music} onPress={() => console.log('GENRE')} />
+          <View style={{ position: 'relative', zIndex: 99 }}>
+            <SelectorKey
+              label="GENRE"
+              value={genreFilter}
+              IconComponent={genreOptions.find(opt => opt.genre === genreFilter)?.IconComponent || Music}
+              onPress={handleGenreSelectorPress}
+            />
+            {showGenreOptions && (
+              <GenrePicker
+                options={genreOptions}
+                onSelect={handleGenreSelect}
+                onClose={() => setShowGenreOptions(false)}
+                currentValue={genreFilter}
+              />
+            )}
+          </View>
         </View>
       </View>
     </View>
