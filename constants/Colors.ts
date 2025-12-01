@@ -1,6 +1,6 @@
 export const Colors = {
   // Design System - "Matte Fog" palette
-  matteFog: '#E4DFDA',       // Chassis (Base)
+  matteFog: '#e6e6e6',       // Chassis (Base)
   softWhite: '#f0f0f0',      // Surface (Inset)
   charcoal: '#333333',       // Control (Dark)
   alloy: '#d6d6d6',         // Control (Light)

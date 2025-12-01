@@ -34,7 +34,9 @@ Description
 
 Chassis (Base)
 
-#E4DFDA
+Matte Fog
+
+#e6e6e6
 
 Main background. The "plastic" casing.
 

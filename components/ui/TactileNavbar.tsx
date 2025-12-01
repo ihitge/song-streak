@@ -40,7 +40,7 @@ export const TactileNavbar: React.FC = () => {
 const styles = StyleSheet.create({
   chassis: {
     height: 128, // h-32 (128px)
-    backgroundColor: '#E4DFDA', // Matte Fog
+    backgroundColor: '#e6e6e6', // Matte Fog
     borderTopWidth: 1,
     borderTopColor: 'white', // 1px white top border
     // Subtle drop shadow upwards

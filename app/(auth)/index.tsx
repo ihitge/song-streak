@@ -214,7 +214,8 @@ function RamsInput({ label, icon, ...props }: any) {
 
 const styles = StyleSheet.create({
   chassis: {
-    backgroundColor: Colors.matteFog, // #E4DFDA
+    flex: 1,
+    backgroundColor: Colors.matteFog, // #e6e6e6
   },
   noiseOverlay: {
     ...StyleSheet.absoluteFillObject,
