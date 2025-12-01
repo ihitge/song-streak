@@ -2,22 +2,22 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
 import { Search, Guitar, Signal, Music, LogOut, ChevronDown } from 'lucide-react-native';
 import { SelectorKey } from './SelectorKey';
-import { InstrumentPicker } from './InstrumentPicker'; // Import InstrumentPicker
+// Removed InstrumentPicker import
 import { supabase } from '@/utils/supabase/client';
 
 interface LibraryHeaderProps {
   instrumentFilter: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
-  onInstrumentFilterChange: (instrument: 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys') => void; // Changed signature
-  instrumentOptions: string[]; // New prop
+  onInstrumentFilterChange: () => void; // Reverted signature
+  // Removed instrumentOptions from props
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   instrumentFilter,
   onInstrumentFilterChange,
-  instrumentOptions, // Destructure new prop
+  // Removed instrumentOptions from destructuring
 }) => {
   const [searchText, setSearchText] = useState('');
-  const [showInstrumentOptions, setShowInstrumentOptions] = useState(false); // New state for dropdown
+  // Removed showInstrumentOptions state
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -27,14 +27,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
     // AuthProvider will handle navigation after successful sign out
   };
 
-  const handleInstSelectorPress = () => {
-    setShowInstrumentOptions(prev => !prev);
-  };
-
-  const handleInstrumentSelect = (instrument: string) => {
-    onInstrumentFilterChange(instrument as 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys');
-    setShowInstrumentOptions(false); // Close after selection
-  };
+  // Removed handleInstSelectorPress and handleInstrumentSelect
 
   return (
     <View style={styles.chassis}>
@@ -78,22 +71,8 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
         {/* Filter Keys (Row of 3) */}
         <View style={styles.filterKeysRow}>
-          <View style={{ position: 'relative', zIndex: 100 }}> {/* Wrapper for absolute positioning and zIndex */}
-            <SelectorKey
-              label="INST"
-              value={instrumentFilter}
-              IconComponent={Guitar}
-              onPress={handleInstSelectorPress}
-            />
-            {showInstrumentOptions && (
-              <InstrumentPicker
-                options={instrumentOptions}
-                onSelect={handleInstrumentSelect}
-                onClose={() => setShowInstrumentOptions(false)}
-                currentValue={instrumentFilter}
-              />
-            )}
-          </View>
+          {/* Reverted SelectorKey to original usage */}
+          <SelectorKey label="INST" value={instrumentFilter} IconComponent={Guitar} onPress={onInstrumentFilterChange} />
           <SelectorKey label="LEVEL" value="ALL" IconComponent={Signal} onPress={() => console.log('LEVEL')} />
           <SelectorKey label="GENRE" value="ROCK" IconComponent={Music} onPress={() => console.log('GENRE')} />
         </View>
