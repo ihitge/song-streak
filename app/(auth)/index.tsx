@@ -264,9 +264,8 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   subtitle: {
-    fontFamily: 'LexendDecaSemiBold',
+    fontFamily: 'LexendDecaMedium',
     fontSize: 14,
-    fontWeight: '700',
     color: Colors.warmGray,
     letterSpacing: 3,
   },
