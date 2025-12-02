@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
 import { Colors } from '@/constants/Colors';
 import type { GangSwitchProps } from '@/types/filters';
 
 const BUTTON_HEIGHT = 36;
 const WELL_HEIGHT = 48; // Match FrequencyTuner height
-const BORDER_RADIUS = 6;
+const BORDER_RADIUS = 4;
 
 export const GangSwitch = <T extends string>({
   label,
@@ -18,6 +18,15 @@ export const GangSwitch = <T extends string>({
   showIcons = false,
   equalWidth = true,
 }: GangSwitchProps<T>) => {
+  const [wellWidth, setWellWidth] = useState(200);
+
+  const handleLayout = (event: LayoutChangeEvent) => {
+    setWellWidth(event.nativeEvent.layout.width);
+  };
+
+  // Calculate button width: (wellWidth - padding - gaps) / number of buttons
+  const buttonWidth = (wellWidth - 12 - (options.length - 1) * 2) / options.length;
+
   const handlePress = (optValue: T) => {
     if (disabled) return;
     // Toggle behavior: if already active, deselect (null), otherwise select
@@ -34,12 +43,12 @@ export const GangSwitch = <T extends string>({
       <Text style={styles.label}>{label}</Text>
 
       {/* The Housing (Well) */}
-      <View style={styles.wellContainer}>
+      <View style={styles.wellContainer} onLayout={handleLayout}>
         {/* Skia Well Background */}
         <View style={styles.wellBackground}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Box
-              box={rrect(rect(0, 0, 200, WELL_HEIGHT), 8, 8)}
+              box={rrect(rect(0, 0, wellWidth, WELL_HEIGHT), 6, 6)}
               color={Colors.alloy}
             >
               <BoxShadow dx={2} dy={2} blur={5} color="rgba(0,0,0,0.15)" inner />
@@ -66,7 +75,7 @@ export const GangSwitch = <T extends string>({
                 <View style={[styles.buttonCap, isActive && styles.buttonCapActive]}>
                   <Canvas style={StyleSheet.absoluteFill}>
                     <Box
-                      box={rrect(rect(0, 0, 100, BUTTON_HEIGHT), BORDER_RADIUS, BORDER_RADIUS)}
+                      box={rrect(rect(0, 0, buttonWidth, BUTTON_HEIGHT), BORDER_RADIUS, BORDER_RADIUS)}
                       color={isActive ? Colors.charcoal : Colors.softWhite}
                     >
                       {!isActive ? (
@@ -110,8 +119,8 @@ export const GangSwitch = <T extends string>({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     gap: 6,
+    width: '100%',
   },
   label: {
     fontSize: 9,
@@ -123,7 +132,7 @@ const styles = StyleSheet.create({
   wellContainer: {
     position: 'relative',
     height: WELL_HEIGHT,
-    borderRadius: 8,
+    borderRadius: 6,
     overflow: 'hidden',
   },
   wellBackground: {
@@ -142,12 +151,11 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS,
     justifyContent: 'center',
     alignItems: 'center',
-    transform: [{ translateY: -1 }],
     position: 'relative',
     overflow: 'hidden',
   },
   buttonCapActive: {
-    transform: [{ translateY: 1 }],
+    // Visual pressed state achieved through color/shadow changes
   },
   buttonLabel: {
     fontSize: 8,

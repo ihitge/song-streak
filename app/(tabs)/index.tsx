@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, Text, FlatList, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Star } from 'lucide-react-native';
+import { Plus, Music, Clock } from 'lucide-react-native';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
+import { FrequencyTuner, GangSwitch, RotaryKnob } from '@/components/ui/filters';
+import { instrumentOptions, difficultyOptions, genreOptions } from '@/config/filterOptions';
+import type { Instrument, Difficulty, Fluency, Genre } from '@/types/filters';
 
-// --- Types & Mock Data ---
-export type Instrument = 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
-export type Difficulty = 'All' | 'Easy' | 'Medium' | 'Hard';
-export type Fluency = 'All' | 'Learning' | 'Practicing' | 'Comfortable' | 'Mastered';
-export type Genre = 'All' | 'Rock' | 'Blues' | 'Metal' | 'Prog' | 'Jazz' | 'Country' | 'Pop' | 'Classical' | 'Flamenco' | 'Funk' | 'Folk' | 'Punk' | 'Reggae' | 'Bluegrass';
+// Re-export types for backwards compatibility
+export type { Instrument, Difficulty, Fluency, Genre } from '@/types/filters';
 
 type Song = {
   id: string;
@@ -16,18 +16,17 @@ type Song = {
   artist: string;
   duration: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
-  fluency: 'Learning' | 'Practicing' | 'Comfortable' | 'Mastered';
   lastPracticed: string;
   instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
   genres: Exclude<Genre, 'All'>[];
 };
 
 const MOCK_SONGS: Song[] = [
-  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', fluency: 'Practicing', lastPracticed: '2 days ago', instrument: 'Guitar', genres: ['Metal', 'Rock'] },
-  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', fluency: 'Learning', lastPracticed: 'Yesterday', instrument: 'Drums', genres: ['Prog', 'Rock'] },
-  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', fluency: 'Mastered', lastPracticed: '1 week ago', instrument: 'Bass', genres: ['Metal', 'Rock'] },
-  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', fluency: 'Learning', lastPracticed: '3 days ago', instrument: 'Guitar', genres: ['Metal'] },
-  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', fluency: 'Comfortable', lastPracticed: 'Just now', instrument: 'Keys', genres: ['Prog', 'Rock'] },
+  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', lastPracticed: '2 days ago', instrument: 'Guitar', genres: ['Metal', 'Rock'] },
+  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', lastPracticed: 'Yesterday', instrument: 'Drums', genres: ['Prog', 'Rock'] },
+  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', lastPracticed: '1 week ago', instrument: 'Bass', genres: ['Metal', 'Rock'] },
+  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', lastPracticed: '3 days ago', instrument: 'Guitar', genres: ['Metal'] },
+  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', lastPracticed: 'Just now', instrument: 'Keys', genres: ['Prog', 'Rock'] },
 ];
 
 // --- Components ---
@@ -83,12 +82,15 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
 
 export default function SetListScreen() {
   const [searchText, setSearchText] = useState('');
+  const [instrument, setInstrument] = useState<Instrument>('All');
+  const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+  const [genre, setGenre] = useState<Genre>('All');
 
   const handleSearchChange = (text: string) => {
     setSearchText(text);
   };
 
-  const handleSuggestionSelect = (song: typeof MOCK_SONGS[0]) => {
+  const handleSuggestionSelect = (song: { id: string; title: string; artist: string }) => {
     setSearchText(song.title);
   };
 
@@ -108,9 +110,12 @@ export default function SetListScreen() {
       const matchesSearch = searchText === '' ||
         song.title.toLowerCase().includes(searchText.toLowerCase()) ||
         song.artist.toLowerCase().includes(searchText.toLowerCase());
-      return matchesSearch;
+      const matchesInstrument = instrument === 'All' || song.instrument === instrument;
+      const matchesDifficulty = difficulty === null || song.difficulty === difficulty;
+      const matchesGenre = genre === 'All' || song.genres.includes(genre as Exclude<Genre, 'All'>);
+      return matchesSearch && matchesInstrument && matchesDifficulty && matchesGenre;
     });
-  }, [searchText]);
+  }, [searchText, instrument, difficulty, genre]);
 
   return (
     <View style={styles.container}>
@@ -119,7 +124,32 @@ export default function SetListScreen() {
         onSearchChange={handleSearchChange}
         searchSuggestions={searchSuggestions}
         onSuggestionSelect={handleSuggestionSelect}
+        difficultyFilter={
+          <GangSwitch
+            label="DIFF"
+            value={difficulty}
+            onChange={setDifficulty}
+            options={difficultyOptions}
+          />
+        }
+        instrumentFilter={
+          <FrequencyTuner
+            label="INST"
+            value={instrument}
+            onChange={setInstrument}
+            options={instrumentOptions}
+          />
+        }
+        genreFilter={
+          <RotaryKnob
+            label="GENRE"
+            value={genre}
+            onChange={setGenre}
+            options={genreOptions}
+          />
+        }
       />
+
       {/* Song List */}
       <FlatList
         data={filteredSongs}
@@ -153,7 +183,7 @@ const styles = StyleSheet.create({
   // --- Card (Data Cassette) ---
   cardChassis: {
     backgroundColor: Colors.softWhite,
-    borderRadius: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#ccc',
     // Raised Shadow
@@ -173,7 +203,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     backgroundColor: '#e0e0e0', // Etched look
-    borderRadius: 4,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#c0c0c0',
     justifyContent: 'center',

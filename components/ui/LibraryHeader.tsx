@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
 import { Search, LogOut } from 'lucide-react-native';
 import { supabase } from '@/utils/supabase/client';
@@ -15,6 +15,9 @@ interface LibraryHeaderProps {
   onSearchChange: (text: string) => void;
   searchSuggestions: Song[];
   onSuggestionSelect: (song: Song) => void;
+  difficultyFilter?: ReactNode;
+  instrumentFilter?: ReactNode;
+  genreFilter?: ReactNode;
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
@@ -22,6 +25,9 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   onSearchChange,
   searchSuggestions,
   onSuggestionSelect,
+  difficultyFilter,
+  instrumentFilter,
+  genreFilter,
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -65,14 +71,13 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
       {/* 2. Filter Deck (The Control Surface) */}
       <View style={styles.filterDeck}>
-        {/* Search Row with Suggestions */}
-        <View style={styles.searchWrapper}>
+        {/* Row 1: Search */}
+        <View style={{ backgroundColor: 'yellow' }}>
+          <Text style={styles.label}>SEARCH</Text>
           <View style={styles.searchRow}>
             <Search size={16} color="#888" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="SEARCH"
-              placeholderTextColor="#888"
               value={searchText}
               onChangeText={onSearchChange}
               onFocus={handleSearchFocus}
@@ -87,6 +92,27 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
             />
           )}
         </View>
+
+        {/* Row 2: Difficulty */}
+        {difficultyFilter && (
+          <View style={{ backgroundColor: 'green' }}>
+            {difficultyFilter}
+          </View>
+        )}
+
+        {/* Row 3: Instrument */}
+        {instrumentFilter && (
+          <View style={{ backgroundColor: 'red' }}>
+            {instrumentFilter}
+          </View>
+        )}
+
+        {/* Row 4: Genre */}
+        {genreFilter && (
+          <View style={{ backgroundColor: 'purple' }}>
+            {genreFilter}
+          </View>
+        )}
       </View>
     </View>
   );
@@ -157,20 +183,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#e8e8e8', // Deck Color: #e8e8e8
     paddingVertical: 16, // py-4
     paddingHorizontal: 24, // px-6
+    gap: 12, // Spacing between rows
     // Highlights: border-b border-white (seam at the bottom of the filterDeck)
     borderBottomWidth: 1,
     borderBottomColor: 'white',
   },
-  searchWrapper: {
-    position: 'relative',
+  filterRow: {
+    flexDirection: 'row',
+    gap: 24,
+  },
+  gridCell: {
+    flex: 1,
+    minWidth: 0,
+  },
+  label: {
+    fontSize: 9,
+    fontFamily: 'LexendDecaSemiBold',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    color: '#888',
+    marginBottom: 6,
   },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    height: 48, // Match GangSwitch WELL_HEIGHT
     backgroundColor: '#e0e0e0', // Background for the input field to simulate recessed well
-    borderRadius: 8,
+    borderRadius: 6,
     paddingHorizontal: 12,
-    paddingVertical: 8,
     // Shadow for recessed input
     shadowColor: 'rgba(0,0,0,0.1)',
     shadowOffset: { width: 0, height: 2 },

@@ -42,3 +42,4 @@ Colors.graphite      // #888888 - Labels/secondary text
 3. If new component needed, follow existing patterns
 4. Document new components in `COMPONENTS.md`
 5. Test in browser (user must verify - Claude cannot browser test)
+- Never make assumptions. Never get lazy. Never hallucinate. Never take the easy route. Always engineer for scalability and the long-term view. Ask when unsure.

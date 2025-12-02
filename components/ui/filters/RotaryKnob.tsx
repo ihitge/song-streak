@@ -63,7 +63,7 @@ export const RotaryKnob = <T extends string>({
         <View style={styles.readoutContainer}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Box
-              box={rrect(rect(0, 0, 100, READOUT_HEIGHT), 8, 8)}
+              box={rrect(rect(0, 0, 100, READOUT_HEIGHT), 6, 6)}
               color={Colors.alloy}
             >
               <BoxShadow dx={2} dy={2} blur={5} color="rgba(0,0,0,0.15)" inner />
@@ -108,8 +108,8 @@ export const RotaryKnob = <T extends string>({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     gap: 6,
+    width: '100%',
   },
   label: {
     fontSize: 9,
@@ -123,11 +123,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     height: READOUT_HEIGHT,
+    width: '100%',
   },
   readoutContainer: {
     flex: 1,
     height: READOUT_HEIGHT,
-    borderRadius: 8,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',

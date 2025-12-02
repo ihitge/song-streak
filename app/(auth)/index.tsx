@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   modeSwitcherWell: {
     flexDirection: 'row',
     backgroundColor: Colors.alloy, // #d6d6d6
-    borderRadius: 6, // Reduced from 12
+    borderRadius: 12,
     padding: 4,
     marginBottom: 24,
     // Inset shadow effect (simulated)
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 4, // Reduced from 8
+    borderRadius: 8,
   },
   modeButtonActive: {
     backgroundColor: Colors.matteFog, // #e6e6e6
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
   },
   formDeck: {
     backgroundColor: '#e0e0e0', // Slightly darker than chassis
-    borderRadius: 8, // Reduced from 16
+    borderRadius: 12,
     padding: 20,
     marginBottom: 32,
     // Inner shadow simulation
