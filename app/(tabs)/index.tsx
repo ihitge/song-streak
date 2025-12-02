@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   songArtist: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 12,
-    color: Colors.graphite,
+    color: Colors.warmGray,
     marginBottom: 6,
     textTransform: 'uppercase',
   },
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   metaText: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 10,
-    color: Colors.graphite,
+    color: Colors.warmGray,
     textTransform: 'uppercase',
   },
   difficultyBadge: {
