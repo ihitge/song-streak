@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect } from '@shopify/react-native-skia';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
@@ -19,6 +19,12 @@ export const RotaryKnob = <T extends string>({
   showNotches = true,
   hapticFeedback = true,
 }: RotaryKnobProps<T>) => {
+  const [readoutWidth, setReadoutWidth] = useState(100);
+
+  const handleLayout = (event: LayoutChangeEvent) => {
+    setReadoutWidth(event.nativeEvent.layout.width);
+  };
+
   const selectedIndex = options.findIndex((opt) => opt.value === value);
   const rotation = useMemo(() => {
     // Calculate rotation: spread options across 270 degrees (-135 to +135)
@@ -60,10 +66,10 @@ export const RotaryKnob = <T extends string>({
 
       <View style={styles.row}>
         {/* Digital Readout */}
-        <View style={styles.readoutContainer}>
+        <View style={styles.readoutContainer} onLayout={handleLayout}>
           <Canvas style={StyleSheet.absoluteFill}>
             <Box
-              box={rrect(rect(0, 0, 100, READOUT_HEIGHT), 6, 6)}
+              box={rrect(rect(0, 0, readoutWidth, READOUT_HEIGHT), 6, 6)}
               color={Colors.alloy}
             >
               <BoxShadow dx={2} dy={2} blur={5} color="rgba(0,0,0,0.15)" inner />
