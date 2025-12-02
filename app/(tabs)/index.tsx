@@ -288,14 +288,14 @@ const styles = StyleSheet.create({
   },
   songTitle: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.ink,
     marginBottom: 2,
     textTransform: 'uppercase',
   },
   songArtist: {
     fontFamily: 'LexendDecaRegular',
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.graphite,
     marginBottom: 6,
     textTransform: 'uppercase',
