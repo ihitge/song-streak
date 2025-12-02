@@ -114,17 +114,32 @@ Warmer alternative to Graphite.
 
 B. Typography
 
-Font Family: **Lexend Deca** (custom font, all weights loaded)
+**Primary Font Family:** Lexend Deca (custom font, all weights loaded)
 Why? Modern, highly legible typeface with excellent readability. Clean geometric forms complement the industrial aesthetic.
 
-**Available Weights:**
+**Logo Font:** MomoTrustDisplay (custom font)
+Why? Distinctive display font for the SongStreak brand. Used exclusively for the app logo.
+
+**Available Lexend Deca Weights:**
 - Thin, ExtraLight, Light, Regular, Medium, SemiBold, Bold, ExtraBold, Black
 
-**Usage:**
-- Headings: `LexendDecaBold`, tight tracking
-- Labels (Micro-copy): `LexendDecaSemiBold`, uppercase, wide tracking, small size (9-10px)
-- Body/Values: `LexendDecaRegular` or `LexendDecaBold`
-- Inputs: `LexendDecaRegular`
+**Centralized Typography:** Import from `@/constants/Styles`
+```typescript
+import { Typography } from '@/constants/Styles';
+// Typography.appLogo, Typography.pageSubtitle, Typography.songTitle, etc.
+```
+
+**Usage Table:**
+
+| Use Case | Font | Size | Weight | Notes |
+|----------|------|------|--------|-------|
+| App Logo | MomoTrustDisplay | 24px | Bold | deepSpaceBlue color |
+| Page Subtitles | LexendDecaRegular | 12px | Regular | uppercase, warmGray |
+| Song Titles | LexendDecaBold | 14px | Bold | Title case |
+| Artist Names | LexendDecaRegular | 12px | Regular | uppercase, warmGray |
+| Labels | LexendDecaSemiBold | 9-10px | SemiBold | uppercase, wide tracking |
+| Body/Values | LexendDecaRegular/Bold | 16px | Regular/Bold | |
+| Inputs | LexendDecaRegular | 16px | Regular | |
 
 C. Iconography
 
@@ -176,7 +191,9 @@ Goal: Change the mood without rewriting complex components.
 
 [x] Global Background: #E4DFDA (Warm Bone).
 
-[x] Typography: Lexend Deca / Space Mono implemented.
+[x] Typography: Lexend Deca implemented. MomoTrustDisplay for logo.
+
+[x] Centralized Typography: `constants/Styles.ts` with Typography styles.
 
 Phase 2: The "Tactile" Core (Component Library) (Completed)
 
@@ -185,6 +202,10 @@ Goal: Build the reusable physics-based components.
 [x] Build Filter Widgets: `GangSwitch`, `FrequencyTuner`, `RotaryKnob` using Skia.
 
 [x] Haptics Integration: Added Expo Haptics to interactive elements.
+
+[x] DRY Refactoring: `PageHeader` component for consistent page headers.
+
+[x] Centralized Hooks: `useSignOut` hook for sign-out logic.
 
 Phase 3: The "Chassis" Layout (Depth & Structure) (In Progress)
 

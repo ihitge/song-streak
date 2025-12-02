@@ -16,12 +16,19 @@
 
 | Need | Use This Component |
 |------|-------------------|
+| **Page header (new pages)** | `PageHeader` |
+| Page header with filters | `LibraryHeader` (uses PageHeader) |
 | Navigation button | `NavButton` |
 | Selection Switch | `GangSwitch` |
 | Tuner Control | `FrequencyTuner` |
 | Rotary Control | `RotaryKnob` |
 | Bottom navigation | `TactileNavbar` |
-| Page header with filters | `LibraryHeader` |
+
+### Hooks
+
+| Need | Use This Hook |
+|------|---------------|
+| Sign out functionality | `useSignOut` |
 
 ### Design Tokens
 
