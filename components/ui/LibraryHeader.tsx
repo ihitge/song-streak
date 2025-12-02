@@ -54,7 +54,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
       <View style={styles.topBar}>
         {/* Left */}
         <View>
-          <Text style={styles.h1Title}>SONG STREAK</Text>
+          <Text style={styles.h1Title}>SongStreak</Text>
           <Text style={styles.subtitle}>LIBRARY</Text>
         </View>
 
@@ -139,10 +139,10 @@ const styles = StyleSheet.create({
     borderBottomColor: 'white',
   },
   h1Title: {
-    fontSize: 20, // Adjust size as needed for H1
-    fontWeight: 'bold',
-    letterSpacing: -1, // tight tracking
-    color: '#333', // #333 (Primary)
+    fontFamily: 'MomoTrustDisplay',
+    fontSize: 24,
+    letterSpacing: -0.5,
+    color: '#333',
   },
   subtitle: Typography.pageSubtitle,
   topBarControls: {

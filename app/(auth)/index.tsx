@@ -85,7 +85,7 @@ export default function AuthScreen() {
           <View style={styles.deviceContainer}>
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>SONG STREAK</Text>
+              <Text style={styles.title}>SongStreak</Text>
               <View style={styles.accentLine} />
               <Text style={styles.subtitle}>ACCESS CONTROL</Text>
             </View>
@@ -249,9 +249,8 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   title: {
-    fontFamily: 'LexendDecaBold',
-    fontSize: 24,
-    fontWeight: '900',
+    fontFamily: 'MomoTrustDisplay',
+    fontSize: 28,
     color: Colors.charcoal, // #333333
     letterSpacing: -0.5,
   },

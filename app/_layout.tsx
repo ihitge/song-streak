@@ -36,6 +36,7 @@ export default function RootLayout() {
     LexendDecaBold: require('../assets/fonts/LexendDeca-Bold.ttf'),
     LexendDecaExtraBold: require('../assets/fonts/LexendDeca-ExtraBold.ttf'),
     LexendDecaBlack: require('../assets/fonts/LexendDeca-Black.ttf'),
+    MomoTrustDisplay: require('../assets/fonts/MomoTrustDisplay-Regular.ttf'),
   });
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.

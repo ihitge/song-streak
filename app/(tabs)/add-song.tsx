@@ -38,7 +38,7 @@ export default function AddSongScreen() {
       <View style={styles.topBar}>
         {/* Left */}
         <View>
-          <Text style={styles.h1Title}>SONG STREAK</Text>
+          <Text style={styles.h1Title}>SongStreak</Text>
           <Text style={styles.subtitle}>ADD SONG</Text>
         </View>
 
@@ -89,9 +89,9 @@ const styles = StyleSheet.create({
     borderBottomColor: 'white',
   },
   h1Title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: -1,
+    fontFamily: 'MomoTrustDisplay',
+    fontSize: 24,
+    letterSpacing: -0.5,
     color: '#333',
   },
   subtitle: Typography.pageSubtitle,
