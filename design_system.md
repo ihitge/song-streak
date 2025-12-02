@@ -36,9 +36,9 @@ Chassis (Base)
 
 Matte Fog
 
-#e6e6e6
+#E4DFDA
 
-Main background. The "plastic" casing.
+Main background. The "plastic" casing (Warm Bone).
 
 Surface (Inset)
 
@@ -68,7 +68,7 @@ Action (Hero)
 
 Vermilion
 
-#ea5428
+#EE6C4D
 
 ONLY for primary actions (Save, Record, Play).
 
@@ -76,9 +76,9 @@ Text (Primary)
 
 Ink
 
-#222222
+#221E22
 
-Never pure black. Soft, legible dark grey.
+Never pure black. Soft Black / Dark Charcoal.
 
 Text (Label)
 
@@ -87,6 +87,30 @@ Graphite
 #888888
 
 Micro-copy, uppercase labels.
+
+Accent (Highlight)
+
+Lobster Pink
+
+#DB5461
+
+For subtle accents or highlights.
+
+Dark Accent
+
+Deep Space Blue
+
+#0E273C
+
+For deep, dark accents.
+
+Secondary Text
+
+Warm Gray
+
+#847577
+
+Warmer alternative to Graphite.
 
 B. Typography
 

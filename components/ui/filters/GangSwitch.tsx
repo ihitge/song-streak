@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
+import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import type { GangSwitchProps } from '@/types/filters';
 
-const BUTTON_HEIGHT = 36;
-const WELL_HEIGHT = 48; // Match FrequencyTuner height
+const BUTTON_HEIGHT = 28;
+const WELL_HEIGHT = 38; // Match FrequencyTuner height
 const BORDER_RADIUS = 4;
 
 export const GangSwitch = <T extends string>({
@@ -17,6 +18,7 @@ export const GangSwitch = <T extends string>({
   orientation = 'horizontal',
   showIcons = false,
   equalWidth = true,
+  allowDeselect = true,
 }: GangSwitchProps<T>) => {
   const [wellWidth, setWellWidth] = useState(200);
 
@@ -29,9 +31,14 @@ export const GangSwitch = <T extends string>({
 
   const handlePress = (optValue: T) => {
     if (disabled) return;
-    // Toggle behavior: if already active, deselect (null), otherwise select
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Add haptic feedback
+
+    // Toggle behavior: if already active, deselect (null) only if allowed, otherwise select
     if (value === optValue) {
-      onChange(null as unknown as T);
+      if (allowDeselect) {
+        onChange(null as unknown as T);
+      }
     } else {
       onChange(optValue);
     }
@@ -127,7 +134,7 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaSemiBold',
     textTransform: 'uppercase',
     letterSpacing: 2,
-    color: Colors.graphite,
+    color: Colors.warmGray,
   },
   wellContainer: {
     position: 'relative',
@@ -158,7 +165,7 @@ const styles = StyleSheet.create({
     // Visual pressed state achieved through color/shadow changes
   },
   buttonLabel: {
-    fontSize: 8,
+    fontSize: 10,
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
     letterSpacing: 1,

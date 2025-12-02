@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   noiseOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#000',
+    backgroundColor: Colors.ink,
     opacity: 0.02, // Subtle noise effect substitute
   },
   keyboardAvoid: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, // Reduced from 32
     padding: 24,
     // Shadow for the "Card" / Device
-    shadowColor: '#000',
+    shadowColor: Colors.ink,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
     shadowRadius: 20,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   },
   modeButtonActive: {
     backgroundColor: Colors.matteFog, // #e6e6e6
-    shadowColor: '#000',
+    shadowColor: Colors.ink,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   },
   actionButtonContainer: {
     marginBottom: 24,
-    shadowColor: '#000',
+    shadowColor: Colors.ink,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 4,

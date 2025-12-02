@@ -1,13 +1,46 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect } from '@shopify/react-native-skia';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, Keyframe } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import type { RotaryKnobProps } from '@/types/filters';
 
-const KNOB_SIZE = 48;
-const READOUT_HEIGHT = 48; // Match FrequencyTuner height
+const KNOB_SIZE = 38;
+const READOUT_HEIGHT = 38; // Match FrequencyTuner height
+
+// --- Glitch Animations (Adapted from FrequencyTuner) ---
+
+const EnterFromRight = new Keyframe({
+  0: { transform: [{ translateX: 20 }], opacity: 0 },
+  20: { transform: [{ translateX: 15 }], opacity: 0.5 },
+  40: { transform: [{ translateX: 10 }], opacity: 0.1 }, // flicker
+  60: { transform: [{ translateX: 5 }], opacity: 0.9 },
+  80: { transform: [{ translateX: 2 }], opacity: 0.4 },
+  100: { transform: [{ translateX: 0 }], opacity: 1 },
+}).duration(250);
+
+const ExitToLeft = new Keyframe({
+  0: { transform: [{ translateX: 0 }], opacity: 1 },
+  40: { transform: [{ translateX: -10 }], opacity: 0.5 },
+  100: { transform: [{ translateX: -20 }], opacity: 0 },
+}).duration(200);
+
+const EnterFromLeft = new Keyframe({
+  0: { transform: [{ translateX: -20 }], opacity: 0 },
+  20: { transform: [{ translateX: -15 }], opacity: 0.5 },
+  40: { transform: [{ translateX: -10 }], opacity: 0.1 }, // flicker
+  60: { transform: [{ translateX: -5 }], opacity: 0.9 },
+  80: { transform: [{ translateX: -2 }], opacity: 0.4 },
+  100: { transform: [{ translateX: 0 }], opacity: 1 },
+}).duration(250);
+
+const ExitToRight = new Keyframe({
+  0: { transform: [{ translateX: 0 }], opacity: 1 },
+  40: { transform: [{ translateX: 10 }], opacity: 0.5 },
+  100: { transform: [{ translateX: 20 }], opacity: 0 },
+}).duration(200);
+
 
 export const RotaryKnob = <T extends string>({
   label,
@@ -20,6 +53,8 @@ export const RotaryKnob = <T extends string>({
   hapticFeedback = true,
 }: RotaryKnobProps<T>) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
+  const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
+
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setReadoutWidth(event.nativeEvent.layout.width);
@@ -38,7 +73,7 @@ export const RotaryKnob = <T extends string>({
   const animatedRotation = useSharedValue(rotation);
 
   // Update animated rotation when value changes - snap animation
-  React.useEffect(() => {
+  useEffect(() => {
     animatedRotation.value = withTiming(rotation, {
       duration: 100,
       easing: Easing.out(Easing.quad)
@@ -49,10 +84,12 @@ export const RotaryKnob = <T extends string>({
     transform: [{ rotate: `${animatedRotation.value}deg` }],
   }));
 
-  const cycle = (direction: number) => {
+  const cycle = (dir: number) => { // Renamed from 'direction' to 'dir' to avoid conflict with state
     if (disabled) return;
 
-    let nextIndex = selectedIndex + direction;
+    setDirection(dir); // Set direction before calling onChange
+
+    let nextIndex = selectedIndex + dir;
     if (nextIndex < 0) nextIndex = options.length - 1;
     if (nextIndex >= options.length) nextIndex = 0;
 
@@ -82,9 +119,16 @@ export const RotaryKnob = <T extends string>({
               <BoxShadow dx={-1} dy={-1} blur={3} color="rgba(255,255,255,0.5)" inner />
             </Box>
           </Canvas>
-          <Text style={styles.readoutText} numberOfLines={1}>
-            {currentOption?.label || value}
-          </Text>
+          <Animated.View
+                key={value} // Trigger animation on value change
+                entering={direction > 0 ? EnterFromRight : EnterFromLeft}
+                exiting={direction > 0 ? ExitToLeft : ExitToRight}
+                style={styles.readoutTextWrapper}
+            >
+                <Text style={styles.readoutText} numberOfLines={1}>
+                    {currentOption?.label || value}
+                </Text>
+            </Animated.View>
         </View>
 
         {/* Physical Knob */}
@@ -128,7 +172,7 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaSemiBold',
     textTransform: 'uppercase',
     letterSpacing: 2,
-    color: Colors.graphite,
+    color: Colors.warmGray,
   },
   row: {
     flexDirection: 'row',
@@ -146,13 +190,16 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   readoutText: {
-    fontSize: 8,
+    fontSize: 10,
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
     letterSpacing: 1,
     color: Colors.charcoal,
     textAlign: 'center',
-    paddingHorizontal: 8,
+    // Underline
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.vermilion,
+    paddingBottom: 2, // Add a little space between text and underline
   },
   knobContainer: {
     position: 'relative',
@@ -178,11 +225,17 @@ const styles = StyleSheet.create({
   },
   indicatorDot: {
     position: 'absolute',
-    top: 6,
+    top: 4,
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: Colors.vermilion,
+  },
+  readoutTextWrapper: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 8, // Keep padding from original Text style
   },
   touchTargetLeft: {
     position: 'absolute',

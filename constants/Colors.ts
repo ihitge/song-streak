@@ -1,16 +1,20 @@
 export const Colors = {
   // Design System - "Matte Fog" palette
-  matteFog: '#e6e6e6',       // Chassis (Base)
+  matteFog: '#E4DFDA',       // Chassis (Base) - Warm Bone/Concrete
   softWhite: '#f0f0f0',      // Surface (Inset)
   charcoal: '#333333',       // Control (Dark)
   alloy: '#d6d6d6',         // Control (Light)
-  vermilion: '#ea5428',      // Action (Hero)
-  ink: '#222222',           // Text (Primary)
+  vermilion: '#EE6C4D',      // Action (Hero)
+  ink: '#221E22',           // Text (Primary) - Off-Black
   graphite: '#888888',       // Text (Label)
+  moss: '#417B5A',           // Success/Easy (Green)
+  lobsterPink: '#DB5461',    // Accent/Highlight (Lobster Pink)
+  deepSpaceBlue: '#0E273C',  // Dark Accent (Deep Space Blue)
+  warmGray: '#847577',       // Secondary Text (Warm Gray)
 
   // PRD - "Industrial Play" palette (Color Semantics)
   chassis: '#2F3136',       // Primary background
-  surface: '#4A5D49',       // Secondary background (PCB Green)
+  surface: '#417B5A',       // Secondary background (PCB Green - Updated)
   border: '#BFCAD0',        // Borders, inactive text (Aluminum Grey)
   placeholder: '#6B7580',   // Placeholder text (Grey)
   rhythm: '#FF5722',        // Play, record, metronome (Signal Orange)

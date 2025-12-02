@@ -27,6 +27,7 @@ export interface GangSwitchProps<T extends string = string> extends BaseFilterPr
   orientation?: 'horizontal' | 'vertical';
   showIcons?: boolean;
   equalWidth?: boolean;
+  allowDeselect?: boolean;
 }
 
 // RotaryKnob-specific props

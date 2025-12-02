@@ -17,8 +17,9 @@
 | Need | Use This Component |
 |------|-------------------|
 | Navigation button | `NavButton` |
-| Filter/dropdown trigger | `SelectorKey` |
-| Dropdown menu | `InstrumentPicker` |
+| Selection Switch | `GangSwitch` |
+| Tuner Control | `FrequencyTuner` |
+| Rotary Control | `RotaryKnob` |
 | Bottom navigation | `TactileNavbar` |
 | Page header with filters | `LibraryHeader` |
 
@@ -28,11 +29,16 @@
 import { Colors } from '@/constants/Colors';
 
 // Primary colors
-Colors.matteFog      // #e6e6e6 - Background/chassis
+Colors.matteFog      // #E4DFDA - Background/chassis (Warm Bone)
 Colors.softWhite     // #f0f0f0 - Inset surfaces
 Colors.charcoal      // #333333 - Dark controls/text
-Colors.vermilion     // #ea5428 - Action/accent (use sparingly)
+Colors.vermilion     // #EE6C4D - Action/accent (use sparingly)
+Colors.ink           // #221E22 - Primary text (Off-Black)
 Colors.graphite      // #888888 - Labels/secondary text
+Colors.moss          // #417B5A - Success/Easy (Green)
+Colors.lobsterPink   // #DB5461 - Accent/Highlight (Lobster Pink)
+Colors.deepSpaceBlue // #0E273C - Dark Accent (Deep Space Blue)
+Colors.warmGray      // #847577 - Secondary Text (Warm Gray)
 ```
 
 ### Workflow

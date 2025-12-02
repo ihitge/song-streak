@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { NavButton } from './NavButton';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter, usePathname } from 'expo-router';
+import { Colors } from '@/constants/Colors';
 
 // Define the navigation items
 interface NavItem {
@@ -40,7 +41,7 @@ export const TactileNavbar: React.FC = () => {
 const styles = StyleSheet.create({
   chassis: {
     height: 128, // h-32 (128px)
-    backgroundColor: '#e6e6e6', // Matte Fog
+    backgroundColor: Colors.matteFog,
     borderTopWidth: 1,
     borderTopColor: 'white', // 1px white top border
     // Subtle drop shadow upwards

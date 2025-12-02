@@ -9,13 +9,12 @@
 | Component | Purpose | Location |
 |-----------|---------|----------|
 | `NavButton` | Tactile navigation button with LED indicator | `components/ui/NavButton.tsx` |
-| `SelectorKey` | Filter/dropdown trigger button | `components/ui/SelectorKey.tsx` |
-| `InstrumentPicker` | Dropdown menu for instrument selection | `components/ui/InstrumentPicker.tsx` |
-| `GenrePicker` | Dropdown menu for genre selection | `components/ui/GenrePicker.tsx` |
-| `DifficultyPicker` | Dropdown menu for difficulty selection | `components/ui/DifficultyPicker.tsx` |
-| `FluencyPicker` | Dropdown menu for fluency level selection | `components/ui/FluencyPicker.tsx` |
+| `GangSwitch` | Horizontal/vertical switch with LED indicators | `components/ui/filters/GangSwitch.tsx` |
+| `FrequencyTuner` | Horizontal tuner with glass overlay | `components/ui/filters/FrequencyTuner.tsx` |
+| `RotaryKnob` | Rotary control with digital readout | `components/ui/filters/RotaryKnob.tsx` |
 | `TactileNavbar` | Bottom navigation bar | `components/ui/TactileNavbar.tsx` |
 | `LibraryHeader` | Page header with search and filters | `components/ui/LibraryHeader.tsx` |
+| `SearchSuggestions` | Dropdown for search results | `components/ui/SearchSuggestions.tsx` |
 
 ---
 
@@ -27,13 +26,17 @@ Import: `import { Colors } from '@/constants/Colors';`
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `Colors.matteFog` | `#e6e6e6` | Chassis/background |
+| `Colors.matteFog` | `#E4DFDA` | Chassis/background (Warm Bone) |
 | `Colors.softWhite` | `#f0f0f0` | Inset surfaces, highlights |
 | `Colors.charcoal` | `#333333` | Dark controls, primary text |
 | `Colors.alloy` | `#d6d6d6` | Light controls, wells |
-| `Colors.vermilion` | `#ea5428` | Action/accent (hero color) |
-| `Colors.ink` | `#222222` | Text primary |
+| `Colors.vermilion` | `#EE6C4D` | Action/accent (hero color) |
+| `Colors.ink` | `#221E22` | Text primary (Off-Black) |
 | `Colors.graphite` | `#888888` | Labels, secondary text |
+| `Colors.moss` | `#417B5A` | Success/Easy (Green) |
+| `Colors.lobsterPink` | `#DB5461` | Accent/Highlight (Lobster Pink) |
+| `Colors.deepSpaceBlue` | `#0E273C` | Dark Accent (Deep Space Blue) |
+| `Colors.warmGray` | `#847577` | Secondary Text (Warm Gray) |
 
 ### Typography
 
@@ -47,608 +50,165 @@ Import: `import { Colors } from '@/constants/Colors';`
 | Values | LexendDecaBold | 12-16px | Bold |
 | Inputs | LexendDecaRegular | 16px | Regular |
 
-**Available Weights**:
-- `LexendDecaThin`
-- `LexendDecaExtraLight`
-- `LexendDecaLight`
-- `LexendDecaRegular`
-- `LexendDecaMedium`
-- `LexendDecaSemiBold`
-- `LexendDecaBold`
-- `LexendDecaExtraBold`
-- `LexendDecaBlack`
-
-### Spacing
-
-| Size | Value | Usage |
-|------|-------|-------|
-| xs | 4px | Gap between icon and text |
-| sm | 8px | Internal padding, small gaps |
-| md | 12px | Component padding |
-| lg | 16px | Section spacing |
-| xl | 24px | Page margins |
-
-### Shadow Pattern (Recessed Well)
-
-```typescript
-// Standard inset shadow for wells/inputs
-{
-  shadowColor: 'rgba(0,0,0,0.1)',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 1,
-  shadowRadius: 5,
-  elevation: 3,
-  borderTopWidth: 1,
-  borderLeftWidth: 1,
-  borderColor: '#c0c0c0',
-  borderBottomWidth: 1,
-  borderRightWidth: 1,
-  borderBottomColor: '#f0f0f0',
-  borderRightColor: '#f0f0f0',
-}
-```
-
 ---
 
 ## Component Catalog
 
-### NavButton
+### GangSwitch
 
-**Purpose**: Tactile navigation button with "Deep Dish" design - includes well, cap, and LED indicator.
+**Purpose**: Multi-option switch inspired by analog mixing consoles. Supports both exclusive selection (radio) and optional de-selection.
 
-**Location**: `components/ui/NavButton.tsx`
-
-**Props**:
-```typescript
-interface NavButtonProps {
-  iconName: React.ComponentProps<typeof FontAwesome>['name']; // FontAwesome icon name
-  label: string;                                               // Button label (uppercase, small)
-  isActive: boolean;                                           // Active state (LED on, pressed look)
-  onPress: () => void;                                         // Press handler
-}
-```
-
-**Usage**:
-```tsx
-import { NavButton } from '@/components/ui/NavButton';
-
-<NavButton
-  iconName="bolt"
-  label="Streak"
-  isActive={currentRoute === '/practice'}
-  onPress={() => router.push('/practice')}
-/>
-```
-
-**Visual Behavior**:
-- **Inactive**: Cap raised (`translateY: -2`), LED grey (`#cccccc`)
-- **Active**: Cap pressed (`translateY: 2`), LED orange with glow (`#ea5428`), icon turns orange
-
-**Do**:
-- Use for primary navigation actions
-- Pair with `TactileNavbar` for bottom navigation
-
-**Don't**:
-- Don't use for form submissions
-- Don't use for inline actions (use `SelectorKey` instead)
-
----
-
-### SelectorKey
-
-**Purpose**: Filter/dropdown trigger with label, icon, value display, and chevron indicator. Creates a "recessed well" appearance.
-
-**Location**: `components/ui/SelectorKey.tsx`
+**Location**: `components/ui/filters/GangSwitch.tsx`
 
 **Props**:
 ```typescript
-interface SelectorKeyProps {
-  label: string;                              // Top label (uppercase, small)
-  value: string;                              // Current value displayed
-  IconComponent: React.ComponentType<any>;   // Lucide icon component
-  onPress?: () => void;                       // Press handler (toggle dropdown)
+interface GangSwitchProps<T extends string> {
+  label: string;              // Label above the switch (increased to 10px)
+  value: T | null;            // Current selected value
+  options: FilterOption<T>[]; // Array of options (value text increased to 10px)
+  onChange: (val: T) => void; // Selection handler
+  disabled?: boolean;         // Disable interaction
+  orientation?: 'horizontal' | 'vertical'; // Layout direction
+  allowDeselect?: boolean;    // If true, clicking active toggles off (default: true)
 }
 ```
 
-**Usage**:
-```tsx
-import { SelectorKey } from '@/components/ui/SelectorKey';
-import { Guitar } from 'lucide-react-native';
-
-<SelectorKey
-  label="INST"
-  value="Guitar"
-  IconComponent={Guitar}
-  onPress={() => setShowDropdown(true)}
-/>
-```
-
 **Visual Behavior**:
-- 40px height with recessed well styling
-- Uses `flex: 1` for even distribution in filter rows
-- Chevron down indicator on right side
-- Label above button in small uppercase
-
-**Do**:
-- Use for filter controls
-- Pair with picker components for dropdown functionality
-- Use Lucide icons (thin stroke, 16px)
-
-**Don't**:
-- Don't use for navigation (use `NavButton`)
-- Don't nest inside other pressables
+- **Height**: Reduced to 38px.
+- Recessed "well" background
+- Raised buttons that depress when active
+- LED indicator for active state
 
 ---
 
-### InstrumentPicker
+### FrequencyTuner
 
-**Purpose**: Dropdown menu displaying selectable options with icons. Positioned absolutely below its trigger.
+**Purpose**: Horizontal sliding tuner control with a glass overlay effect.
 
-**Location**: `components/ui/InstrumentPicker.tsx`
+**Location**: `components/ui/filters/FrequencyTuner.tsx`
 
 **Props**:
 ```typescript
-interface InstrumentPickerProps {
-  options: {
-    instrument: Instrument;                    // Option value
-    IconComponent: React.ComponentType<any>;   // Lucide icon
-  }[];
-  onSelect: (instrument: Instrument) => void;  // Selection handler
-  onClose: () => void;                         // Close handler
-  currentValue: Instrument;                    // Currently selected value
+interface FrequencyTunerProps<T extends string> {
+  label: string; // Label above the tuner (increased to 10px)
+  value: T;      // Current selected value (value text increased to 10px)
+  options: FilterOption<T>[];
+  onChange: (val: T) => void;
+  disabled?: boolean;
 }
 ```
 
-**Usage**:
-```tsx
-import { InstrumentPicker } from '@/components/ui/InstrumentPicker';
-import { Guitar, Drum, Piano, Music } from 'lucide-react-native';
-
-const options = [
-  { instrument: 'All', IconComponent: Music },
-  { instrument: 'Guitar', IconComponent: Guitar },
-  { instrument: 'Drums', IconComponent: Drum },
-  { instrument: 'Keys', IconComponent: Piano },
-];
-
-{showPicker && (
-  <InstrumentPicker
-    options={options}
-    onSelect={handleSelect}
-    onClose={() => setShowPicker(false)}
-    currentValue={currentInstrument}
-  />
-)}
-```
-
 **Visual Behavior**:
-- 140px width, absolute positioned
-- Active option: darker background, vermilion text/icon
-- Pressed state: even darker background
-- Recessed well shadow styling
-
-**Do**:
-- Wrap parent in `{ position: 'relative', zIndex: 100 }`
-- Always provide `onClose` handler
-- Call `onClose` after selection
-
-**Don't**:
-- Don't render without a visible trigger
-- Don't forget zIndex wrapper
+- **Height**: Reduced to 38px.
+- Dark window with scale markings
+- "Glass" reflection overlay
+- Orange hairline indicator
+- **Animated Text**: Value text animates with a "glitchy" slide from the side when changed.
 
 ---
 
-### GenrePicker
+### RotaryKnob
 
-**Purpose**: Dropdown menu displaying genre options with icons. Scrollable for long lists. Positioned absolutely below its trigger.
+**Purpose**: Rotary control with a digital readout display.
 
-**Location**: `components/ui/GenrePicker.tsx`
+**Location**: `components/ui/filters/RotaryKnob.tsx`
 
 **Props**:
 ```typescript
-interface GenrePickerProps {
-  options: {
-    genre: Genre;                              // Option value
-    IconComponent: React.ComponentType<any>;   // Lucide icon
-  }[];
-  onSelect: (genre: Genre) => void;            // Selection handler
-  onClose: () => void;                         // Close handler
-  currentValue: Genre;                         // Currently selected value
+interface RotaryKnobProps<T extends string> {
+  label: string; // Label above the knob (increased to 10px)
+  value: T;      // Current selected value (readout text increased to 10px)
+  options: FilterOption<T>[];
+  onChange: (val: T) => void;
+  disabled?: boolean;
 }
 ```
 
-**Usage**:
-```tsx
-import { GenrePicker } from '@/components/ui/GenrePicker';
-import { Music, MinusCircle } from 'lucide-react-native';
-
-const genreOptions = [
-  { genre: 'All', IconComponent: MinusCircle },
-  { genre: 'Rock', IconComponent: Music },
-  { genre: 'Blues', IconComponent: Music },
-  // ...more genres
-];
-
-{showGenrePicker && (
-  <GenrePicker
-    options={genreOptions}
-    onSelect={handleGenreSelect}
-    onClose={() => setShowGenrePicker(false)}
-    currentValue={currentGenre}
-  />
-)}
-```
-
-**Available Genres**: All, Rock, Blues, Metal, Prog, Jazz, Country, Pop, Classical, Flamenco, Funk, Folk, Punk, Reggae, Bluegrass
-
 **Visual Behavior**:
-- 140px width, max 300px height (scrollable)
-- Active option: darker background, vermilion text/icon
-- Pressed state: even darker background
-- Recessed well shadow styling
-
-**Do**:
-- Wrap parent in `{ position: 'relative', zIndex: 97 }`
-- Always provide `onClose` handler
-- Pair with `SelectorKey` as trigger
-
-**Don't**:
-- Don't render without a visible trigger
-- Don't forget zIndex wrapper (use 97, below INST at 100, DIFFICULTY at 99, and FLUENCY at 98)
-
----
-
-### DifficultyPicker
-
-**Purpose**: Dropdown menu displaying difficulty level options with icons. Positioned absolutely below its trigger.
-
-**Location**: `components/ui/DifficultyPicker.tsx`
-
-**Props**:
-```typescript
-interface DifficultyPickerProps {
-  options: {
-    difficulty: Difficulty;                    // Option value
-    IconComponent: React.ComponentType<any>;   // Lucide icon
-  }[];
-  onSelect: (difficulty: Difficulty) => void;  // Selection handler
-  onClose: () => void;                         // Close handler
-  currentValue: Difficulty;                    // Currently selected value
-}
-```
-
-**Usage**:
-```tsx
-import { DifficultyPicker } from '@/components/ui/DifficultyPicker';
-import { Signal, MinusCircle } from 'lucide-react-native';
-
-const difficultyOptions = [
-  { difficulty: 'All', IconComponent: MinusCircle },
-  { difficulty: 'Easy', IconComponent: Signal },
-  { difficulty: 'Medium', IconComponent: Signal },
-  { difficulty: 'Hard', IconComponent: Signal },
-];
-
-{showDifficultyPicker && (
-  <DifficultyPicker
-    options={difficultyOptions}
-    onSelect={handleDifficultySelect}
-    onClose={() => setShowDifficultyPicker(false)}
-    currentValue={currentDifficulty}
-  />
-)}
-```
-
-**Available Difficulties**: All, Easy, Medium, Hard
-
-**Visual Behavior**:
-- 140px width
-- Active option: darker background, vermilion text/icon
-- Pressed state: even darker background
-- Recessed well shadow styling
-
-**Do**:
-- Wrap parent in `{ position: 'relative', zIndex: 99 }`
-- Always provide `onClose` handler
-- Pair with `SelectorKey` as trigger
-
-**Don't**:
-- Don't render without a visible trigger
-- Don't forget zIndex wrapper (use 99, between INST at 100 and FLUENCY at 98)
-
----
-
-### FluencyPicker
-
-**Purpose**: Dropdown menu displaying fluency level options with icons. Represents the user's skill/comfort level with a song. Positioned absolutely below its trigger.
-
-**Location**: `components/ui/FluencyPicker.tsx`
-
-**Props**:
-```typescript
-interface FluencyPickerProps {
-  options: {
-    fluency: Fluency;                          // Option value
-    IconComponent: React.ComponentType<any>;   // Lucide icon
-  }[];
-  onSelect: (fluency: Fluency) => void;        // Selection handler
-  onClose: () => void;                         // Close handler
-  currentValue: Fluency;                       // Currently selected value
-}
-```
-
-**Usage**:
-```tsx
-import { FluencyPicker } from '@/components/ui/FluencyPicker';
-import { Star, MinusCircle } from 'lucide-react-native';
-
-const fluencyOptions = [
-  { fluency: 'All', IconComponent: MinusCircle },
-  { fluency: 'Learning', IconComponent: Star },
-  { fluency: 'Practicing', IconComponent: Star },
-  { fluency: 'Comfortable', IconComponent: Star },
-  { fluency: 'Mastered', IconComponent: Star },
-];
-
-{showFluencyPicker && (
-  <FluencyPicker
-    options={fluencyOptions}
-    onSelect={handleFluencySelect}
-    onClose={() => setShowFluencyPicker(false)}
-    currentValue={currentFluency}
-  />
-)}
-```
-
-**Available Fluency Levels**: All, Learning, Practicing, Comfortable, Mastered
-
-**Visual Behavior**:
-- 140px width
-- Active option: darker background, vermilion text/icon
-- Pressed state: even darker background
-- Recessed well shadow styling
-
-**Do**:
-- Wrap parent in `{ position: 'relative', zIndex: 98 }`
-- Always provide `onClose` handler
-- Pair with `SelectorKey` as trigger
-
-**Don't**:
-- Don't render without a visible trigger
-- Don't forget zIndex wrapper (use 98, between DIFFICULTY at 99 and GENRE at 97)
-
----
-
-### TactileNavbar
-
-**Purpose**: Bottom navigation bar containing `NavButton` instances. Provides app-wide navigation.
-
-**Location**: `components/ui/TactileNavbar.tsx`
-
-**Props**: None (internally manages navigation items)
-
-**Usage**:
-```tsx
-import { TactileNavbar } from '@/components/ui/TactileNavbar';
-
-// In your layout
-<View style={{ flex: 1 }}>
-  <View style={{ flex: 1 }}>{/* Page content */}</View>
-  <TactileNavbar />
-</View>
-```
-
-**Current Navigation Items**:
-| Name | Icon | Label | Route |
-|------|------|-------|-------|
-| streak | bolt | Streak | /practice |
-| set-list | list | Set List | / |
-| metronome | play | Metronome | /timing |
-
-**Visual Behavior**:
-- 128px height
-- Matte fog background (`#e6e6e6`)
-- White top border (seam effect)
-- Active detection via `usePathname()`
-
-**Do**:
-- Place at bottom of tab layouts
-- Let it handle its own routing
-
-**Don't**:
-- Don't override with custom nav items (currently hardcoded)
+- **Height**: Reduced to 38px.
+- Digital text readout in a recessed well
+- Physical rotating knob with position indicator
+- Haptic feedback on change
+- **Animated Text**: Readout text animates with a "glitchy" slide from the side when changed.
 
 ---
 
 ### LibraryHeader
 
-**Purpose**: Page header with branding, user controls, search input, and filter keys.
+**Purpose**: Page header with branding, user controls, search input, and slots for filter widgets.
 
 **Location**: `components/ui/LibraryHeader.tsx`
 
 **Props**:
 ```typescript
 interface LibraryHeaderProps {
-  instrumentFilter: Instrument;
-  onInstrumentFilterChange: (instrument: Instrument) => void;
-  instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[];
-  difficultyFilter: Difficulty;
-  onDifficultyFilterChange: (difficulty: Difficulty) => void;
-  difficultyOptions: { difficulty: Difficulty; IconComponent: React.ComponentType<any>; }[];
-  fluencyFilter: Fluency;
-  onFluencyFilterChange: (fluency: Fluency) => void;
-  fluencyOptions: { fluency: Fluency; IconComponent: React.ComponentType<any>; }[];
-  genreFilter: Genre;
-  onGenreFilterChange: (genre: Genre) => void;
-  genreOptions: { genre: Genre; IconComponent: React.ComponentType<any>; }[];
+  searchText: string;
+  onSearchChange: (text: string) => void;
+  searchSuggestions: Song[];
+  onSuggestionSelect: (song: Song) => void;
+  difficultyFilter?: ReactNode; // Slot for GangSwitch
+  instrumentFilter?: ReactNode; // Slot for FrequencyTuner
+  genreFilter?: ReactNode;      // Slot for RotaryKnob
 }
 ```
 
-**Usage**:
-```tsx
-import { LibraryHeader } from '@/components/ui/LibraryHeader';
-import { Guitar, Drum, Keyboard, Music, MinusCircle, Signal, Star } from 'lucide-react-native';
-
-const instrumentOptions = [
-  { instrument: 'All', IconComponent: MinusCircle },
-  { instrument: 'Guitar', IconComponent: Guitar },
-  // ...more options
-];
-
-const difficultyOptions = [
-  { difficulty: 'All', IconComponent: MinusCircle },
-  { difficulty: 'Easy', IconComponent: Signal },
-  { difficulty: 'Medium', IconComponent: Signal },
-  { difficulty: 'Hard', IconComponent: Signal },
-];
-
-const fluencyOptions = [
-  { fluency: 'All', IconComponent: MinusCircle },
-  { fluency: 'Learning', IconComponent: Star },
-  { fluency: 'Practicing', IconComponent: Star },
-  { fluency: 'Comfortable', IconComponent: Star },
-  { fluency: 'Mastered', IconComponent: Star },
-];
-
-const genreOptions = [
-  { genre: 'All', IconComponent: MinusCircle },
-  { genre: 'Rock', IconComponent: Music },
-  // ...more options
-];
-
-<LibraryHeader
-  instrumentFilter={selectedInstrument}
-  onInstrumentFilterChange={setSelectedInstrument}
-  instrumentOptions={instrumentOptions}
-  difficultyFilter={selectedDifficulty}
-  onDifficultyFilterChange={setSelectedDifficulty}
-  difficultyOptions={difficultyOptions}
-  fluencyFilter={selectedFluency}
-  onFluencyFilterChange={setSelectedFluency}
-  fluencyOptions={fluencyOptions}
-  genreFilter={selectedGenre}
-  onGenreFilterChange={setSelectedGenre}
-  genreOptions={genreOptions}
-/>
-```
-
-**Sections**:
-1. **Top Bar**: "SONG STREAK" title, "LIBRARY" subtitle, avatar, logout button
-2. **Filter Deck**: Search input, divider, filter keys row (INST, DIFFICULTY, FLUENCY, GENRE)
-
 **Visual Behavior**:
-- Matte fog chassis background
-- White border seams between sections
-- Recessed search input
-- InstrumentPicker dropdown on INST press
-- DifficultyPicker dropdown on DIFFICULTY press
-- FluencyPicker dropdown on FLUENCY press
-- GenrePicker dropdown on GENRE press
+- **Top Bar**: Branding and User Avatar/Logout
+- **Filter Deck**: Two-row grid configuration
+  - Row 1: Search Widget | Difficulty Widget
+  - Row 2: Instrument Widget | Genre Widget
+- **Search Widget**: Flat, recessed input. Height reduced to 38px.
 
-**Do**:
-- Use at top of library/list pages
-- Pass instrument, difficulty, fluency, and genre options with appropriate Lucide icons
+---
 
-**Don't**:
-- Don't customize title/subtitle (currently hardcoded)
+### AddSongScreen
+
+**Purpose**: Screen for adding new songs, featuring a tabbed interface using `GangSwitch`.
+
+**Location**: `app/(tabs)/add-song.tsx`
+
+**Features**:
+- **Header**: Matches `LibraryHeader` style for consistency.
+- **Tabs**: Uses `GangSwitch` with `allowDeselect={false}` to switch between 'Basics', 'Theory', and 'Lyrics'.
+- **Navigation**: Accessible via the FAB on the Library screen; integrated into the main Tab layout.
 
 ---
 
 ## Design Patterns
 
-### "Deep Dish" Button Pattern
-
-Used in `NavButton`. Creates tactile, hardware-inspired buttons.
-
-**Structure**:
-```
-┌─────────────────┐
-│     Well        │  ← Recessed container (dark shadow)
-│  ┌───────────┐  │
-│  │    Cap    │  │  ← Raised surface (press transforms)
-│  │   [LED]   │  │  ← Status indicator (glow when active)
-│  │   [Icon]  │  │
-│  └───────────┘  │
-└─────────────────┘
-     [Label]         ← Uppercase small text
-```
-
 ### "Recessed Well" Pattern
 
-Used in `SelectorKey`, inputs, and filter areas. Creates inset appearance.
+Used in `GangSwitch`, `Search` input, `RotaryKnob` readout, and `FrequencyTuner` window.
 
 **CSS Properties**:
-- Background: `#e0e0e0`
-- Border: Top/left lighter (`#c0c0c0`), bottom/right lighter (`#f0f0f0`)
-- Shadow: Soft inner shadow effect
-- Border radius: 8px
+- Background: `#d6d6d6` (Alloy) or `#e0e0e0`
+- Inner Shadow: Top-left dark, bottom-right light
 
-### "LED Indicator" Pattern
+### "Tactile Control" Pattern
 
-Used in `NavButton` for active state feedback.
+Physical metaphors for digital controls.
+- **Switch**: Depressible buttons with LEDs
+- **Tuner**: Sliding scale behind glass
+- **Knob**: Rotation with haptics
 
-**States**:
-- **Inactive**: `#cccccc` (dead grey)
-- **Active**: `#ea5428` with glow shadow
+### "Analog Glitch" Animation Pattern
+
+Applied to `FrequencyTuner` and `RotaryKnob` text displays.
+Creates a quick, slightly jittery slide animation for text value changes, evoking a mechanical or distorted signal aesthetic.
 
 ---
 
-## Anti-Patterns (Don't Do This)
+## Anti-Patterns
 
 ### Don't hardcode colors
-```typescript
-// BAD
-backgroundColor: '#e6e6e6'
+Use `Colors` from `@/constants/Colors`.
 
-// GOOD
-import { Colors } from '@/constants/Colors';
-backgroundColor: Colors.matteFog
-```
+### Don't inline complex styles
+Extract to `StyleSheet.create`.
 
-### Don't create inline button styles
-```typescript
-// BAD - Creating custom button in page
-<Pressable style={{ backgroundColor: '#ea5428', padding: 12 }}>
-  <Text>Click me</Text>
-</Pressable>
-
-// GOOD - Use existing component
-<NavButton iconName="play" label="Action" isActive={false} onPress={handlePress} />
-```
-
-### Don't define components inline in pages
-```typescript
-// BAD - Component defined in page file
-const SongCard = ({ song }) => { ... }; // In app/(tabs)/index.tsx
-
-// GOOD - Extract to components folder
-// components/ui/SongCard.tsx
-export const SongCard = ({ song }) => { ... };
-```
-
-### Don't mix icon libraries
-```typescript
-// BAD - Using multiple icon libraries
-import { FontAwesome } from '@expo/vector-icons';
-import { Guitar } from 'lucide-react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-// GOOD - Stick to one library per context
-// Navigation: FontAwesome (via NavButton)
-// UI elements: Lucide React Native (thin stroke, consistent)
-```
+### Don't mix UI metaphors
+Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches).
 
 ---
 
-## Future Improvements
-
-Components that should be extracted or created:
-
-1. **SongCard** - Currently inline in `app/(tabs)/index.tsx`
-2. **Generic Picker** - Refactor InstrumentPicker/DifficultyPicker/FluencyPicker/GenrePicker into reusable component
-3. **Button variants** - Primary, Secondary, Ghost buttons
-4. **Input** - Standalone input component (currently in LibraryHeader)
-
----
-
-*Last updated: Document first, refactor later.*
+*Last updated: Dec 2, 2025*

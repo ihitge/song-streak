@@ -2,6 +2,8 @@ import React, { useState, ReactNode } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
 import { Search, LogOut } from 'lucide-react-native';
 import { supabase } from '@/utils/supabase/client';
+import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Styles';
 import { SearchSuggestions } from './SearchSuggestions';
 
 interface Song {
@@ -71,48 +73,50 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
       {/* 2. Filter Deck (The Control Surface) */}
       <View style={styles.filterDeck}>
-        {/* Row 1: Search */}
-        <View style={{ backgroundColor: 'yellow' }}>
-          <Text style={styles.label}>SEARCH</Text>
-          <View style={styles.searchRow}>
-            <Search size={16} color="#888" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              value={searchText}
-              onChangeText={onSearchChange}
-              onFocus={handleSearchFocus}
-              onBlur={handleSearchBlur}
-            />
+        {/* Row 1: Search | Difficulty */}
+        <View style={[styles.filterRow, { zIndex: 10 }]}>
+          <View style={styles.filterCell}>
+            <View style={styles.widgetContainer}>
+              <Text style={styles.label}>FIND</Text>
+              <View style={styles.searchRow}>
+                <Search size={16} color="#888" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  value={searchText}
+                  onChangeText={onSearchChange}
+                  onFocus={handleSearchFocus}
+                  onBlur={handleSearchBlur}
+                />
+              </View>
+            </View>
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <SearchSuggestions
+                suggestions={searchSuggestions}
+                onSelect={onSuggestionSelect}
+                onClose={() => setShowSuggestions(false)}
+              />
+            )}
           </View>
-          {showSuggestions && searchSuggestions.length > 0 && (
-            <SearchSuggestions
-              suggestions={searchSuggestions}
-              onSelect={onSuggestionSelect}
-              onClose={() => setShowSuggestions(false)}
-            />
+          {difficultyFilter && (
+            <View style={styles.filterCell}>
+              {difficultyFilter}
+            </View>
           )}
         </View>
 
-        {/* Row 2: Difficulty */}
-        {difficultyFilter && (
-          <View style={{ backgroundColor: 'green' }}>
-            {difficultyFilter}
-          </View>
-        )}
-
-        {/* Row 3: Instrument */}
-        {instrumentFilter && (
-          <View style={{ backgroundColor: 'red' }}>
-            {instrumentFilter}
-          </View>
-        )}
-
-        {/* Row 4: Genre */}
-        {genreFilter && (
-          <View style={{ backgroundColor: 'purple' }}>
-            {genreFilter}
-          </View>
-        )}
+        {/* Row 2: Instrument | Genre */}
+        <View style={[styles.filterRow, { zIndex: 1 }]}>
+          {instrumentFilter && (
+            <View style={styles.filterCell}>
+              {instrumentFilter}
+            </View>
+          )}
+          {genreFilter && (
+            <View style={styles.filterCell}>
+              {genreFilter}
+            </View>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -120,7 +124,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
 const styles = StyleSheet.create({
   chassis: {
-    backgroundColor: '#e6e6e6', // Chassis Color: #e6e6e6
+    backgroundColor: Colors.matteFog, // Chassis Color
     paddingBottom: 0, // No padding at bottom, border handles seam
   },
   // --- 1. Top Bar ---
@@ -140,13 +144,7 @@ const styles = StyleSheet.create({
     letterSpacing: -1, // tight tracking
     color: '#333', // #333 (Primary)
   },
-  subtitle: {
-    fontSize: 10, // 10px
-    fontFamily: 'SpaceMono', // monospace (using SpaceMono which is in project)
-    textTransform: 'uppercase', // uppercase
-    letterSpacing: 2, // tracking-widest
-    color: '#888', // #888 (Labels/Secondary)
-  },
+  subtitle: Typography.pageSubtitle,
   topBarControls: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,38 +190,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 24,
   },
-  gridCell: {
+  filterCell: {
     flex: 1,
+    flexBasis: 0,
     minWidth: 0,
+    position: 'relative',
+  },
+  widgetContainer: {
+    width: '100%',
+    gap: 6,
   },
   label: {
     fontSize: 9,
     fontFamily: 'LexendDecaSemiBold',
     textTransform: 'uppercase',
     letterSpacing: 2,
-    color: '#888',
-    marginBottom: 6,
+    color: Colors.warmGray,
   },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 48, // Match GangSwitch WELL_HEIGHT
-    backgroundColor: '#e0e0e0', // Background for the input field to simulate recessed well
+    height: 38, // Match GangSwitch WELL_HEIGHT
+    backgroundColor: Colors.alloy, // Background for the input field to simulate recessed well
     borderRadius: 6,
     paddingHorizontal: 12,
-    // Shadow for recessed input
-    shadowColor: 'rgba(0,0,0,0.1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 5,
-    elevation: 3,
     borderTopWidth: 1,
     borderLeftWidth: 1,
-    borderColor: '#c0c0c0',
     borderBottomWidth: 1,
     borderRightWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    borderRightColor: '#f0f0f0',
+    borderTopColor: 'rgba(255,255,255,0.5)', // Lighter (highlight)
+    borderLeftColor: 'rgba(255,255,255,0.5)', // Lighter (highlight)
+    borderBottomColor: 'rgba(0,0,0,0.15)', // Darker (shadow)
+    borderRightColor: 'rgba(0,0,0,0.15)', // Darker (shadow)
   },
   searchIcon: {
     marginRight: 8,
