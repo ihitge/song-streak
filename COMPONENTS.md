@@ -41,14 +41,18 @@ Import: `import { Colors } from '@/constants/Colors';`
 ### Typography
 
 **Primary Font**: Lexend Deca (all weights available)
+**Logo Font**: MomoTrustDisplay
 
-| Use Case | Font | Size | Weight |
-|----------|------|------|--------|
-| Headlines | LexendDecaBold | 20-24px | Bold |
-| Body text | LexendDecaRegular | 16px | Regular |
-| Labels | LexendDecaSemiBold | 9-10px | SemiBold, uppercase |
-| Values | LexendDecaBold | 12-16px | Bold |
-| Inputs | LexendDecaRegular | 16px | Regular |
+| Use Case | Font | Size | Weight | Notes |
+|----------|------|------|--------|-------|
+| App Logo | MomoTrustDisplay | 24-28px | Bold | deepSpaceBlue color |
+| Page Titles | LexendDecaRegular | 12px | Regular | uppercase, warmGray |
+| Song Titles | LexendDecaBold | 14px | Bold | Title case |
+| Artist Names | LexendDecaRegular | 12px | Regular | uppercase |
+| Body text | LexendDecaRegular | 16px | Regular | |
+| Labels | LexendDecaSemiBold | 9-10px | SemiBold | uppercase |
+| Values | LexendDecaBold | 12-16px | Bold | |
+| Inputs | LexendDecaRegular | 16px | Regular | |
 
 ---
 
@@ -153,7 +157,7 @@ interface LibraryHeaderProps {
 ```
 
 **Visual Behavior**:
-- **Top Bar**: Branding and User Avatar/Logout
+- **Top Bar**: "SongStreak" logo (MomoTrustDisplay, deepSpaceBlue) + page title + User Avatar/Logout
 - **Filter Deck**: Two-row grid configuration
   - Row 1: Search Widget | Difficulty Widget
   - Row 2: Instrument Widget | Genre Widget
