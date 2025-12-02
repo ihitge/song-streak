@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect } from '@shopify/react-native-skia';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import type { RotaryKnobProps } from '@/types/filters';
@@ -26,18 +26,24 @@ export const RotaryKnob = <T extends string>({
   };
 
   const selectedIndex = options.findIndex((opt) => opt.value === value);
+  const safeIndex = selectedIndex === -1 ? 0 : selectedIndex;
+
   const rotation = useMemo(() => {
     // Calculate rotation: spread options across 270 degrees (-135 to +135)
-    const step = 270 / (options.length - 1 || 1);
-    return -135 + selectedIndex * step;
-  }, [selectedIndex, options.length]);
+    // Each option gets a fixed position like clock positions
+    const step = options.length > 1 ? 270 / (options.length - 1) : 0;
+    return -135 + safeIndex * step;
+  }, [safeIndex, options.length]);
 
   const animatedRotation = useSharedValue(rotation);
 
-  // Update animated rotation when value changes
+  // Update animated rotation when value changes - snap animation
   React.useEffect(() => {
-    animatedRotation.value = withSpring(rotation, { damping: 15, stiffness: 150 });
-  }, [rotation]);
+    animatedRotation.value = withTiming(rotation, {
+      duration: 100,
+      easing: Easing.out(Easing.quad)
+    });
+  }, [rotation, animatedRotation]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${animatedRotation.value}deg` }],
