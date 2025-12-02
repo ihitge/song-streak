@@ -25,8 +25,13 @@
 
 ### Design Tokens
 
+**IMPORTANT**: Always use **named imports** for Colors (with curly braces). Never use default imports.
 ```typescript
+// ✅ CORRECT - Named import
 import { Colors } from '@/constants/Colors';
+
+// ❌ WRONG - Default import (will cause ReferenceError)
+// import Colors from '@/constants/Colors';
 
 // Primary colors
 Colors.matteFog      // #E4DFDA - Background/chassis (Warm Bone)
