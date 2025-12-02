@@ -264,10 +264,10 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: 'LexendDecaSemiBold',
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '700',
-    color: Colors.graphite, // #888888
-    letterSpacing: 4, // Wide spacing
+    color: Colors.warmGray,
+    letterSpacing: 3,
   },
   modeSwitcherWell: {
     flexDirection: 'row',

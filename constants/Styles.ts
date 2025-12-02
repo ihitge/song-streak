@@ -3,10 +3,10 @@ import { Colors } from './Colors';
 
 export const Typography = StyleSheet.create({
   pageSubtitle: {
-    fontSize: 10,
-    fontFamily: 'SpaceMono',
+    fontSize: 14,
+    fontFamily: 'LexendDecaSemiBold',
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: 3,
     color: Colors.warmGray,
   },
   // Add other shared typography styles here
