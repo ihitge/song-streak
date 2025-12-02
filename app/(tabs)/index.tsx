@@ -291,12 +291,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.ink,
     marginBottom: 2,
+    textTransform: 'uppercase',
   },
   songArtist: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 14,
     color: Colors.graphite,
     marginBottom: 6,
+    textTransform: 'uppercase',
   },
   cardMetaRow: {
     flexDirection: 'row',
@@ -309,9 +311,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   metaText: {
-    fontFamily: 'SpaceMono',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 10,
     color: Colors.graphite,
+    textTransform: 'uppercase',
   },
   difficultyBadge: {
       width: 6,
