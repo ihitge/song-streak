@@ -1,48 +1,29 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
-import { Search, Guitar, Signal, Music, LogOut, ChevronDown, MinusCircle, Star } from 'lucide-react-native';
-import { SelectorKey } from './SelectorKey';
-import { InstrumentPicker } from './InstrumentPicker'; // Restored InstrumentPicker import
+import { Search, LogOut } from 'lucide-react-native';
 import { supabase } from '@/utils/supabase/client';
-import { Instrument, Difficulty, Fluency, Genre } from '@/app/(tabs)/index';
-import { GenrePicker } from './GenrePicker';
-import { DifficultyPicker } from './DifficultyPicker';
-import { FluencyPicker } from './FluencyPicker';
+import { SearchSuggestions } from './SearchSuggestions';
+
+interface Song {
+  id: string;
+  title: string;
+  artist: string;
+}
 
 interface LibraryHeaderProps {
-  instrumentFilter: Instrument;
-  onInstrumentFilterChange: (instrument: Instrument) => void;
-  instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[];
-  difficultyFilter: Difficulty;
-  onDifficultyFilterChange: (difficulty: Difficulty) => void;
-  difficultyOptions: { difficulty: Difficulty; IconComponent: React.ComponentType<any>; }[];
-  fluencyFilter: Fluency;
-  onFluencyFilterChange: (fluency: Fluency) => void;
-  fluencyOptions: { fluency: Fluency; IconComponent: React.ComponentType<any>; }[];
-  genreFilter: Genre;
-  onGenreFilterChange: (genre: Genre) => void;
-  genreOptions: { genre: Genre; IconComponent: React.ComponentType<any>; }[];
+  searchText: string;
+  onSearchChange: (text: string) => void;
+  searchSuggestions: Song[];
+  onSuggestionSelect: (song: Song) => void;
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
-  instrumentFilter,
-  onInstrumentFilterChange,
-  instrumentOptions,
-  difficultyFilter,
-  onDifficultyFilterChange,
-  difficultyOptions,
-  fluencyFilter,
-  onFluencyFilterChange,
-  fluencyOptions,
-  genreFilter,
-  onGenreFilterChange,
-  genreOptions,
+  searchText,
+  onSearchChange,
+  searchSuggestions,
+  onSuggestionSelect,
 }) => {
-  const [searchText, setSearchText] = useState('');
-  const [showInstrumentOptions, setShowInstrumentOptions] = useState(false);
-  const [showDifficultyOptions, setShowDifficultyOptions] = useState(false);
-  const [showFluencyOptions, setShowFluencyOptions] = useState(false);
-  const [showGenreOptions, setShowGenreOptions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -51,52 +32,12 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
     }
   };
 
-  const handleInstSelectorPress = () => {
-    setShowInstrumentOptions(prev => !prev);
-    setShowDifficultyOptions(false);
-    setShowFluencyOptions(false);
-    setShowGenreOptions(false);
+  const handleSearchFocus = () => {
+    setShowSuggestions(true);
   };
 
-  const handleInstrumentSelect = (instrument: Instrument) => {
-    onInstrumentFilterChange(instrument);
-    setShowInstrumentOptions(false);
-  };
-
-  const handleDifficultySelectorPress = () => {
-    setShowDifficultyOptions(prev => !prev);
-    setShowInstrumentOptions(false);
-    setShowFluencyOptions(false);
-    setShowGenreOptions(false);
-  };
-
-  const handleDifficultySelect = (difficulty: Difficulty) => {
-    onDifficultyFilterChange(difficulty);
-    setShowDifficultyOptions(false);
-  };
-
-  const handleFluencySelectorPress = () => {
-    setShowFluencyOptions(prev => !prev);
-    setShowInstrumentOptions(false);
-    setShowDifficultyOptions(false);
-    setShowGenreOptions(false);
-  };
-
-  const handleFluencySelect = (fluency: Fluency) => {
-    onFluencyFilterChange(fluency);
-    setShowFluencyOptions(false);
-  };
-
-  const handleGenreSelectorPress = () => {
-    setShowGenreOptions(prev => !prev);
-    setShowInstrumentOptions(false);
-    setShowDifficultyOptions(false);
-    setShowFluencyOptions(false);
-  };
-
-  const handleGenreSelect = (genre: Genre) => {
-    onGenreFilterChange(genre);
-    setShowGenreOptions(false);
+  const handleSearchBlur = () => {
+    setTimeout(() => setShowSuggestions(false), 200);
   };
 
   return (
@@ -124,87 +65,27 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
       {/* 2. Filter Deck (The Control Surface) */}
       <View style={styles.filterDeck}>
-        {/* Search Row */}
-        <View style={styles.searchRow}>
-          <Search size={16} color="#888" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="SEARCH"
-            placeholderTextColor="#888"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-        </View>
-
-        {/* Divider */}
-        <View style={styles.divider} />
-
-        {/* Filter Keys (Row of 4) */}
-        <View style={styles.filterKeysRow}>
-          <View style={{ position: 'relative', zIndex: 100 }}>
-            <SelectorKey
-              label="INST"
-              value={instrumentFilter}
-              IconComponent={instrumentOptions.find(opt => opt.instrument === instrumentFilter)?.IconComponent || MinusCircle}
-              onPress={handleInstSelectorPress}
+        {/* Search Row with Suggestions */}
+        <View style={styles.searchWrapper}>
+          <View style={styles.searchRow}>
+            <Search size={16} color="#888" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="SEARCH"
+              placeholderTextColor="#888"
+              value={searchText}
+              onChangeText={onSearchChange}
+              onFocus={handleSearchFocus}
+              onBlur={handleSearchBlur}
             />
-            {showInstrumentOptions && (
-              <InstrumentPicker
-                options={instrumentOptions}
-                onSelect={handleInstrumentSelect}
-                onClose={() => setShowInstrumentOptions(false)}
-                currentValue={instrumentFilter}
-              />
-            )}
           </View>
-          <View style={{ position: 'relative', zIndex: 99 }}>
-            <SelectorKey
-              label="DIFFICULTY"
-              value={difficultyFilter}
-              IconComponent={difficultyOptions.find(opt => opt.difficulty === difficultyFilter)?.IconComponent || Signal}
-              onPress={handleDifficultySelectorPress}
+          {showSuggestions && searchSuggestions.length > 0 && (
+            <SearchSuggestions
+              suggestions={searchSuggestions}
+              onSelect={onSuggestionSelect}
+              onClose={() => setShowSuggestions(false)}
             />
-            {showDifficultyOptions && (
-              <DifficultyPicker
-                options={difficultyOptions}
-                onSelect={handleDifficultySelect}
-                onClose={() => setShowDifficultyOptions(false)}
-                currentValue={difficultyFilter}
-              />
-            )}
-          </View>
-          <View style={{ position: 'relative', zIndex: 98 }}>
-            <SelectorKey
-              label="FLUENCY"
-              value={fluencyFilter}
-              IconComponent={fluencyOptions.find(opt => opt.fluency === fluencyFilter)?.IconComponent || Star}
-              onPress={handleFluencySelectorPress}
-            />
-            {showFluencyOptions && (
-              <FluencyPicker
-                options={fluencyOptions}
-                onSelect={handleFluencySelect}
-                onClose={() => setShowFluencyOptions(false)}
-                currentValue={fluencyFilter}
-              />
-            )}
-          </View>
-          <View style={{ position: 'relative', zIndex: 97 }}>
-            <SelectorKey
-              label="GENRE"
-              value={genreFilter}
-              IconComponent={genreOptions.find(opt => opt.genre === genreFilter)?.IconComponent || Music}
-              onPress={handleGenreSelectorPress}
-            />
-            {showGenreOptions && (
-              <GenrePicker
-                options={genreOptions}
-                onSelect={handleGenreSelect}
-                onClose={() => setShowGenreOptions(false)}
-                currentValue={genreFilter}
-              />
-            )}
-          </View>
+          )}
         </View>
       </View>
     </View>
@@ -280,6 +161,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'white',
   },
+  searchWrapper: {
+    position: 'relative',
+  },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -300,7 +184,6 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderBottomColor: '#f0f0f0',
     borderRightColor: '#f0f0f0',
-    marginBottom: 16, // Spacing before divider
   },
   searchIcon: {
     marginRight: 8,
@@ -312,16 +195,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     // No default border (transparent background handled by parent view)
-  },
-  divider: {
-    height: 1, // 1px
-    backgroundColor: 'white', // 1px white horizontal line
-    marginVertical: 16, // Spacing around divider
-  },
-  filterKeysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 8,
-    paddingTop: 8,
   },
 });

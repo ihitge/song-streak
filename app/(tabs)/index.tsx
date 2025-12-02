@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react'; // Added useState, useMemo
+import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, Text, FlatList, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Star, Guitar, Drum, Keyboard, MinusCircle, Signal } from 'lucide-react-native';
+import { Plus, Music, Clock, Star } from 'lucide-react-native';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 
 // --- Types & Mock Data ---
@@ -32,7 +32,7 @@ const MOCK_SONGS: Song[] = [
 
 // --- Components ---
 
-// 2. Song Card (Data Cassette)
+// Song Card (Data Cassette)
 const SongCard = ({ song }: { song: Song }) => {
   return (
     <View style={styles.cardChassis}>
@@ -46,7 +46,7 @@ const SongCard = ({ song }: { song: Song }) => {
         <View style={styles.cardContent}>
           <Text style={styles.songTitle}>{song.title}</Text>
           <Text style={styles.songArtist}>{song.artist}</Text>
-          
+
           <View style={styles.cardMetaRow}>
             <View style={styles.metaItem}>
               <Clock size={12} color={Colors.graphite} />
@@ -58,7 +58,7 @@ const SongCard = ({ song }: { song: Song }) => {
             </View>
           </View>
         </View>
-        
+
         {/* Decorative "Grip" Lines */}
         <View style={styles.gripLines}>
             <View style={styles.gripLine} />
@@ -79,101 +79,50 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
     }
 }
 
-const INSTRUMENT_FILTER_OPTIONS: Instrument[] = ['All', 'Guitar', 'Bass', 'Drums', 'Keys'];
-const INSTRUMENT_FILTER_OPTIONS_WITH_ICONS = [
-  { instrument: 'All', IconComponent: MinusCircle },
-  { instrument: 'Guitar', IconComponent: Guitar },
-  { instrument: 'Bass', IconComponent: Music },
-  { instrument: 'Drums', IconComponent: Drum },
-  { instrument: 'Keys', IconComponent: Keyboard },
-];
-
-const GENRE_FILTER_OPTIONS_WITH_ICONS = [
-  { genre: 'All', IconComponent: MinusCircle },
-  { genre: 'Rock', IconComponent: Music },
-  { genre: 'Blues', IconComponent: Music },
-  { genre: 'Metal', IconComponent: Music },
-  { genre: 'Prog', IconComponent: Music },
-  { genre: 'Jazz', IconComponent: Music },
-  { genre: 'Country', IconComponent: Music },
-  { genre: 'Pop', IconComponent: Music },
-  { genre: 'Classical', IconComponent: Music },
-  { genre: 'Flamenco', IconComponent: Music },
-  { genre: 'Funk', IconComponent: Music },
-  { genre: 'Folk', IconComponent: Music },
-  { genre: 'Punk', IconComponent: Music },
-  { genre: 'Reggae', IconComponent: Music },
-  { genre: 'Bluegrass', IconComponent: Music },
-];
-
-const DIFFICULTY_FILTER_OPTIONS_WITH_ICONS = [
-  { difficulty: 'All', IconComponent: MinusCircle },
-  { difficulty: 'Easy', IconComponent: Signal },
-  { difficulty: 'Medium', IconComponent: Signal },
-  { difficulty: 'Hard', IconComponent: Signal },
-];
-
-const FLUENCY_FILTER_OPTIONS_WITH_ICONS = [
-  { fluency: 'All', IconComponent: MinusCircle },
-  { fluency: 'Learning', IconComponent: Star },
-  { fluency: 'Practicing', IconComponent: Star },
-  { fluency: 'Comfortable', IconComponent: Star },
-  { fluency: 'Mastered', IconComponent: Star },
-];
-
 // --- Main Screen ---
 
 export default function SetListScreen() {
-  const [instrumentFilter, setInstrumentFilter] = useState<Instrument>('All');
-  const [difficultyFilter, setDifficultyFilter] = useState<Difficulty>('All');
-  const [fluencyFilter, setFluencyFilter] = useState<Fluency>('All');
-  const [genreFilter, setGenreFilter] = useState<Genre>('All');
+  const [searchText, setSearchText] = useState('');
 
-  const handleInstrumentFilterChange = (instrument: Instrument) => {
-    setInstrumentFilter(instrument);
+  const handleSearchChange = (text: string) => {
+    setSearchText(text);
   };
 
-  const handleDifficultyFilterChange = (difficulty: Difficulty) => {
-    setDifficultyFilter(difficulty);
+  const handleSuggestionSelect = (song: typeof MOCK_SONGS[0]) => {
+    setSearchText(song.title);
   };
 
-  const handleFluencyFilterChange = (fluency: Fluency) => {
-    setFluencyFilter(fluency);
-  };
-
-  const handleGenreFilterChange = (genre: Genre) => {
-    setGenreFilter(genre);
-  };
+  const searchSuggestions = useMemo(() => {
+    if (searchText.length < 2) return [];
+    const query = searchText.toLowerCase();
+    return MOCK_SONGS
+      .filter(song =>
+        song.title.toLowerCase().includes(query) ||
+        song.artist.toLowerCase().includes(query)
+      )
+      .slice(0, 5);
+  }, [searchText]);
 
   const filteredSongs = useMemo(() => {
     return MOCK_SONGS.filter(song => {
-      const matchesInstrument = instrumentFilter === 'All' || song.instrument === instrumentFilter;
-      const matchesDifficulty = difficultyFilter === 'All' || song.difficulty === difficultyFilter;
-      const matchesFluency = fluencyFilter === 'All' || song.fluency === fluencyFilter;
-      const matchesGenre = genreFilter === 'All' || song.genres.includes(genreFilter as Exclude<Genre, 'All'>);
-      return matchesInstrument && matchesDifficulty && matchesFluency && matchesGenre;
+      const matchesSearch = searchText === '' ||
+        song.title.toLowerCase().includes(searchText.toLowerCase()) ||
+        song.artist.toLowerCase().includes(searchText.toLowerCase());
+      return matchesSearch;
     });
-  }, [instrumentFilter, difficultyFilter, fluencyFilter, genreFilter]);
+  }, [searchText]);
 
   return (
     <View style={styles.container}>
       <LibraryHeader
-        instrumentFilter={instrumentFilter}
-        onInstrumentFilterChange={handleInstrumentFilterChange}
-        instrumentOptions={INSTRUMENT_FILTER_OPTIONS_WITH_ICONS}
-        difficultyFilter={difficultyFilter}
-        onDifficultyFilterChange={handleDifficultyFilterChange}
-        difficultyOptions={DIFFICULTY_FILTER_OPTIONS_WITH_ICONS}
-        fluencyFilter={fluencyFilter}
-        onFluencyFilterChange={handleFluencyFilterChange}
-        fluencyOptions={FLUENCY_FILTER_OPTIONS_WITH_ICONS}
-        genreFilter={genreFilter}
-        onGenreFilterChange={handleGenreFilterChange}
-        genreOptions={GENRE_FILTER_OPTIONS_WITH_ICONS}
+        searchText={searchText}
+        onSearchChange={handleSearchChange}
+        searchSuggestions={searchSuggestions}
+        onSuggestionSelect={handleSuggestionSelect}
       />
       {/* Song List */}
       <FlatList
-        data={filteredSongs} // Use filteredSongs
+        data={filteredSongs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <SongCard song={item} />}
         contentContainerStyle={styles.songListContent}
@@ -200,7 +149,7 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
     gap: 16,
   },
-  
+
   // --- Card (Data Cassette) ---
   cardChassis: {
     backgroundColor: Colors.softWhite,
