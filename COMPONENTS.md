@@ -8,13 +8,20 @@
 
 | Component | Purpose | Location |
 |-----------|---------|----------|
+| `PageHeader` | **Reusable page header with logo and user controls** | `components/ui/PageHeader.tsx` |
 | `NavButton` | Tactile navigation button with LED indicator | `components/ui/NavButton.tsx` |
 | `GangSwitch` | Horizontal/vertical switch with LED indicators | `components/ui/filters/GangSwitch.tsx` |
 | `FrequencyTuner` | Horizontal tuner with glass overlay | `components/ui/filters/FrequencyTuner.tsx` |
 | `RotaryKnob` | Rotary control with digital readout | `components/ui/filters/RotaryKnob.tsx` |
 | `TactileNavbar` | Bottom navigation bar | `components/ui/TactileNavbar.tsx` |
-| `LibraryHeader` | Page header with search and filters | `components/ui/LibraryHeader.tsx` |
+| `LibraryHeader` | Page header with search and filters (uses PageHeader) | `components/ui/LibraryHeader.tsx` |
 | `SearchSuggestions` | Dropdown for search results | `components/ui/SearchSuggestions.tsx` |
+
+### Hooks
+
+| Hook | Purpose | Location |
+|------|---------|----------|
+| `useSignOut` | Centralized sign-out logic with error handling | `hooks/useSignOut.ts` |
 
 ---
 
@@ -57,6 +64,39 @@ Import: `import { Colors } from '@/constants/Colors';`
 ---
 
 ## Component Catalog
+
+### PageHeader
+
+**Purpose**: Reusable page header component with SongStreak logo, page subtitle, and user controls. Use this for all new pages to ensure consistent branding.
+
+**Location**: `components/ui/PageHeader.tsx`
+
+**Props**:
+```typescript
+interface PageHeaderProps {
+  subtitle: string;    // Page title (e.g., "LIBRARY", "ADD SONG")
+  children?: ReactNode; // Optional content below header (e.g., filter deck)
+}
+```
+
+**Usage**:
+```typescript
+// Basic page
+<PageHeader subtitle="PAGE NAME" />
+
+// Page with additional content below header
+<PageHeader subtitle="LIBRARY">
+  <FilterDeck>...</FilterDeck>
+</PageHeader>
+```
+
+**Visual Behavior**:
+- SongStreak logo (MomoTrustDisplay, deepSpaceBlue)
+- Page subtitle (uppercase, warmGray)
+- User avatar button
+- Logout button (uses `useSignOut` hook)
+
+---
 
 ### GangSwitch
 
@@ -172,7 +212,7 @@ interface LibraryHeaderProps {
 **Location**: `app/(tabs)/add-song.tsx`
 
 **Features**:
-- **Header**: Matches `LibraryHeader` style for consistency.
+- **Header**: Uses `PageHeader` component for consistent branding.
 - **Tabs**: Uses `GangSwitch` with `allowDeselect={false}` to switch between 'Basics', 'Theory', and 'Lyrics'.
 - **Navigation**: Accessible via the FAB on the Library screen; integrated into the main Tab layout.
 

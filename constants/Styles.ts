@@ -2,6 +2,17 @@ import { StyleSheet } from 'react-native';
 import { Colors } from './Colors';
 
 export const Typography = StyleSheet.create({
+  // App branding
+  appLogo: {
+    fontFamily: 'MomoTrustDisplay',
+    fontSize: 24,
+    fontWeight: 'bold',
+    letterSpacing: -0.5,
+    color: Colors.deepSpaceBlue,
+    marginBottom: 4,
+  },
+
+  // Page titles
   pageSubtitle: {
     fontSize: 12,
     fontFamily: 'LexendDecaRegular',
@@ -9,5 +20,32 @@ export const Typography = StyleSheet.create({
     letterSpacing: 3,
     color: Colors.warmGray,
   },
-  // Add other shared typography styles here
+
+  // Song card typography
+  songTitle: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 14,
+    color: Colors.ink,
+  },
+  songArtist: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 12,
+    color: Colors.warmGray,
+    textTransform: 'uppercase',
+  },
+
+  // Labels and meta text
+  label: {
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    color: Colors.warmGray,
+  },
+  metaText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 10,
+    color: Colors.warmGray,
+    textTransform: 'uppercase',
+  },
 });
