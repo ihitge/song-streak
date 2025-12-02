@@ -254,6 +254,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.deepSpaceBlue,
     letterSpacing: -0.5,
+    marginBottom: 4,
   },
   accentLine: {
     width: 48,

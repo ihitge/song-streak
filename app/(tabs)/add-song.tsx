@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: -0.5,
     color: Colors.deepSpaceBlue,
+    marginBottom: 4,
   },
   subtitle: Typography.pageSubtitle,
   topBarControls: {
