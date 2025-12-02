@@ -251,7 +251,8 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: 'MomoTrustDisplay',
     fontSize: 28,
-    color: Colors.charcoal, // #333333
+    fontWeight: 'bold',
+    color: Colors.deepSpaceBlue,
     letterSpacing: -0.5,
   },
   accentLine: {

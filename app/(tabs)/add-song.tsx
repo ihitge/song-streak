@@ -91,8 +91,9 @@ const styles = StyleSheet.create({
   h1Title: {
     fontFamily: 'MomoTrustDisplay',
     fontSize: 24,
+    fontWeight: 'bold',
     letterSpacing: -0.5,
-    color: '#333',
+    color: Colors.deepSpaceBlue,
   },
   subtitle: Typography.pageSubtitle,
   topBarControls: {
