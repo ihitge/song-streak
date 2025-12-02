@@ -134,19 +134,19 @@ Library: Lucide React Native (perfect match).
 
 Usage: Icons should often be enclosed in a circular or rounded-square "keycap."
 
-2. Component "Recipes" (React Native Specifics)
+2. Component "Recipes" (Skia & React Native Specifics)
 
 The "Deep Dish" Button (Signature Component)
 
-Unlike flat buttons, these have depth. In React Native, this requires layering.
+Unlike flat buttons, these have depth. We use **React Native Skia** for high-fidelity shadowing and rendering.
 
 Shape: borderRadius: 12-16 (Soft industrial curve).
 
 The "Well" (Container):
 
-Background: Darker than chassis (#d6d6d6).
+Background: Darker than chassis (#d6d6d6 / Alloy).
 
-Shadow: Inner shadow (use an inset SVG gradient or react-native-inset-shadow).
+Shadow: Skia `BoxShadow` (inner) for realistic depth.
 
 The "Cap" (Pressable Surface):
 
@@ -156,57 +156,49 @@ Border: 1px, very subtle. Top border is lighter (highlight), bottom border is da
 
 Interaction:
 
-Press In: Scale down to 0.98. translateY down by 2px. Haptic Feedback (ImpactFeedbackStyle.Light).
+Press In: Scale down / Depress effect. Haptic Feedback (ImpactFeedbackStyle.Light).
 
 The Input Field (The "Etched" Look)
 
-No Boxes: Remove borderWidth: 1.
+No Boxes: Remove default borders.
 
-The Well: Light grey background (#f0f0f0).
+The Well: Alloy background (`Colors.alloy`).
 
-The Line: A single 2px bottom border (borderBottomColor: #ccc).
-
-Depth: A 1px white line below the bottom border to create a "groove" effect in the plastic.
+The Shadow: Inset borders (Top/Left: White, Bottom/Right: Dark) to create a "recessed" effect.
 
 3. Migration Roadmap (Phased Approach)
 
-Phase 1: The "Coat of Paint" (Low Effort, High Impact)
+Phase 1: The "Coat of Paint" (Completed)
 
 Goal: Change the mood without rewriting complex components.
 
-[ ] Update constants/theme.ts: Replace the "Industrial Play" palette with the "Matte Fog" palette above.
+[x] Update constants/theme.ts: "Matte Fog" palette implemented.
 
-[ ] Global Background: Change the main <View> background from Black/Slate to #e6e6e6.
+[x] Global Background: #E4DFDA (Warm Bone).
 
-[ ] Typography: Switch all headers to font-weight: 300 and all micro-labels to uppercase tracking-widest.
+[x] Typography: Lexend Deca / Space Mono implemented.
 
-[ ] Remove Borders: Strip the thick borders from your existing cards and inputs.
-
-Phase 2: The "Tactile" Core (Component Library)
+Phase 2: The "Tactile" Core (Component Library) (Completed)
 
 Goal: Build the reusable physics-based components.
 
-[ ] Build <RamsButton />: Create the single component described above. Use react-native-svg for the gradients. Replace all main buttons with this.
+[x] Build Filter Widgets: `GangSwitch`, `FrequencyTuner`, `RotaryKnob` using Skia.
 
-[ ] Build <RamsToggle />: Replace standard React Native switches with the custom "Physical Toggle" (the square dark button with the LED).
+[x] Haptics Integration: Added Expo Haptics to interactive elements.
 
-[ ] Haptics Integration: Add Expo Haptics to these two components.
-
-Phase 3: The "Chassis" Layout (Depth & Structure)
+Phase 3: The "Chassis" Layout (Depth & Structure) (In Progress)
 
 Goal: Make the app feel like a device.
 
-[ ] Container Shadows: Add "drop shadows" to your main content cards (shadowRadius: 20, shadowOpacity: 0.1) to make them float above the background.
-
-[ ] The "Well" Effect: For the Tab Bar and Control Panels, add inner shadows (or darker backgrounds) to make them look recessed into the device body.
+[x] "Recessed Well" Styling: Applied to Search inputs and thumbnail containers.
 
 [ ] Noise Texture: Add the subtle SVG noise overlay (as an ImageBackground) to the main wrapper to kill the "digital flatness."
 
-Phase 4: The Polish (Animation)
+Phase 4: The Polish (Animation) (In Progress)
+
+[x] Analog Glitch: Added slide/flicker animations to Tuner and Knob readouts.
 
 [ ] LED Logic: Animate the little orange dots on your toggles with a "glow" (shadow opacity) when active.
-
-[ ] Transitions: Use LayoutAnimation or Reanimated to make content fade in/slide up smoothly, mimicking an old TV or stereo turning on.
 
 4. Technical "Gotchas" for React Native
 

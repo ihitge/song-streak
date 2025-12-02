@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import type { FrequencyTunerProps } from '@/types/filters';
 
-const TUNER_HEIGHT = 38;
+const TUNER_HEIGHT = 44; // Increased from 38px
 
 // --- Glitch Animations ---
 

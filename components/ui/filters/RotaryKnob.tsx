@@ -6,8 +6,8 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import type { RotaryKnobProps } from '@/types/filters';
 
-const KNOB_SIZE = 38;
-const READOUT_HEIGHT = 38; // Match FrequencyTuner height
+const KNOB_SIZE = 44; // Increased from 38px
+const READOUT_HEIGHT = 44; // Increased from 38px
 
 // --- Glitch Animations (Adapted from FrequencyTuner) ---
 
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
   },
   indicatorDot: {
     position: 'absolute',
-    top: 4,
+    top: 6, // Adjusted from 4
     width: 6,
     height: 6,
     borderRadius: 3,

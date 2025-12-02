@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 38, // Match GangSwitch WELL_HEIGHT
+    height: 44, // Increased from 38px by 15%
     backgroundColor: Colors.alloy, // Background for the input field to simulate recessed well
     borderRadius: 6,
     paddingHorizontal: 12,

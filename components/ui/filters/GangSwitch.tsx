@@ -5,8 +5,8 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import type { GangSwitchProps } from '@/types/filters';
 
-const BUTTON_HEIGHT = 28;
-const WELL_HEIGHT = 38; // Match FrequencyTuner height
+const BUTTON_HEIGHT = 32; // Increased from 28
+const WELL_HEIGHT = 44; // Increased from 38
 const BORDER_RADIUS = 4;
 
 export const GangSwitch = <T extends string>({
@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     minWidth: 40,
+    height: '100%', // Ensure the Pressable fills the available vertical space for a larger touch target
   },
   buttonCap: {
     height: BUTTON_HEIGHT,

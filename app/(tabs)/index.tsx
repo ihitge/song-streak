@@ -93,7 +93,7 @@ const SongCard = ({ song }: { song: Song }) => {
             {song.artwork ? (
               <Image source={{ uri: song.artwork }} style={styles.thumbnailImage} />
             ) : (
-              <Music size={20} color={Colors.graphite} />
+              <Music size={24} color={Colors.graphite} /> // Increased from 20
             )}
         </View>
 
@@ -257,8 +257,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   thumbnailContainer: {
-    width: 50, // Reduced from 56
-    height: 50, // Reduced from 56
+    width: 58, // Increased from 50 by 15%
+    height: 58, // Increased from 50 by 15%
     backgroundColor: Colors.alloy, // Etched look - changed to match GangSwitch well
     borderRadius: 8,
     // border: 1, // original
