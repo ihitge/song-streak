@@ -291,7 +291,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.ink,
     marginBottom: 2,
-    textTransform: 'uppercase',
   },
   songArtist: {
     fontFamily: 'LexendDecaRegular',
