@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react'; // Added useState, useMemo
 import { StyleSheet, View, Text, FlatList, Pressable } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Star, Guitar, Drum, Keyboard, MinusCircle } from 'lucide-react-native'; // Added specific icons
+import { Plus, Music, Clock, Star, Guitar, Drum, Keyboard, MinusCircle, Signal } from 'lucide-react-native';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 
 // --- Types & Mock Data ---
 export type Instrument = 'All' | 'Guitar' | 'Bass' | 'Drums' | 'Keys';
+export type Difficulty = 'All' | 'Easy' | 'Medium' | 'Hard';
+export type Fluency = 'All' | 'Learning' | 'Practicing' | 'Comfortable' | 'Mastered';
 export type Genre = 'All' | 'Rock' | 'Blues' | 'Metal' | 'Prog' | 'Jazz' | 'Country' | 'Pop' | 'Classical' | 'Flamenco' | 'Funk' | 'Folk' | 'Punk' | 'Reggae' | 'Bluegrass';
 
 type Song = {
@@ -14,17 +16,18 @@ type Song = {
   artist: string;
   duration: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
+  fluency: 'Learning' | 'Practicing' | 'Comfortable' | 'Mastered';
   lastPracticed: string;
   instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
   genres: Exclude<Genre, 'All'>[];
 };
 
 const MOCK_SONGS: Song[] = [
-  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', lastPracticed: '2 days ago', instrument: 'Guitar', genres: ['Metal', 'Rock'] },
-  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', lastPracticed: 'Yesterday', instrument: 'Drums', genres: ['Prog', 'Rock'] },
-  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', lastPracticed: '1 week ago', instrument: 'Bass', genres: ['Metal', 'Rock'] },
-  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', lastPracticed: '3 days ago', instrument: 'Guitar', genres: ['Metal'] },
-  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', lastPracticed: 'Just now', instrument: 'Keys', genres: ['Prog', 'Rock'] },
+  { id: '1', title: 'Neon Knights', artist: 'Black Sabbath', duration: '3:53', difficulty: 'Medium', fluency: 'Practicing', lastPracticed: '2 days ago', instrument: 'Guitar', genres: ['Metal', 'Rock'] },
+  { id: '2', title: 'Tom Sawyer', artist: 'Rush', duration: '4:34', difficulty: 'Hard', fluency: 'Learning', lastPracticed: 'Yesterday', instrument: 'Drums', genres: ['Prog', 'Rock'] },
+  { id: '3', title: 'Paranoid', artist: 'Black Sabbath', duration: '2:48', difficulty: 'Easy', fluency: 'Mastered', lastPracticed: '1 week ago', instrument: 'Bass', genres: ['Metal', 'Rock'] },
+  { id: '4', title: 'Master of Puppets', artist: 'Metallica', duration: '8:35', difficulty: 'Hard', fluency: 'Learning', lastPracticed: '3 days ago', instrument: 'Guitar', genres: ['Metal'] },
+  { id: '5', title: 'Comfortably Numb', artist: 'Pink Floyd', duration: '6:21', difficulty: 'Medium', fluency: 'Comfortable', lastPracticed: 'Just now', instrument: 'Keys', genres: ['Prog', 'Rock'] },
 ];
 
 // --- Components ---
@@ -103,14 +106,39 @@ const GENRE_FILTER_OPTIONS_WITH_ICONS = [
   { genre: 'Bluegrass', IconComponent: Music },
 ];
 
+const DIFFICULTY_FILTER_OPTIONS_WITH_ICONS = [
+  { difficulty: 'All', IconComponent: MinusCircle },
+  { difficulty: 'Easy', IconComponent: Signal },
+  { difficulty: 'Medium', IconComponent: Signal },
+  { difficulty: 'Hard', IconComponent: Signal },
+];
+
+const FLUENCY_FILTER_OPTIONS_WITH_ICONS = [
+  { fluency: 'All', IconComponent: MinusCircle },
+  { fluency: 'Learning', IconComponent: Star },
+  { fluency: 'Practicing', IconComponent: Star },
+  { fluency: 'Comfortable', IconComponent: Star },
+  { fluency: 'Mastered', IconComponent: Star },
+];
+
 // --- Main Screen ---
 
 export default function SetListScreen() {
   const [instrumentFilter, setInstrumentFilter] = useState<Instrument>('All');
+  const [difficultyFilter, setDifficultyFilter] = useState<Difficulty>('All');
+  const [fluencyFilter, setFluencyFilter] = useState<Fluency>('All');
   const [genreFilter, setGenreFilter] = useState<Genre>('All');
 
   const handleInstrumentFilterChange = (instrument: Instrument) => {
     setInstrumentFilter(instrument);
+  };
+
+  const handleDifficultyFilterChange = (difficulty: Difficulty) => {
+    setDifficultyFilter(difficulty);
+  };
+
+  const handleFluencyFilterChange = (fluency: Fluency) => {
+    setFluencyFilter(fluency);
   };
 
   const handleGenreFilterChange = (genre: Genre) => {
@@ -120,10 +148,12 @@ export default function SetListScreen() {
   const filteredSongs = useMemo(() => {
     return MOCK_SONGS.filter(song => {
       const matchesInstrument = instrumentFilter === 'All' || song.instrument === instrumentFilter;
+      const matchesDifficulty = difficultyFilter === 'All' || song.difficulty === difficultyFilter;
+      const matchesFluency = fluencyFilter === 'All' || song.fluency === fluencyFilter;
       const matchesGenre = genreFilter === 'All' || song.genres.includes(genreFilter as Exclude<Genre, 'All'>);
-      return matchesInstrument && matchesGenre;
+      return matchesInstrument && matchesDifficulty && matchesFluency && matchesGenre;
     });
-  }, [instrumentFilter, genreFilter]);
+  }, [instrumentFilter, difficultyFilter, fluencyFilter, genreFilter]);
 
   return (
     <View style={styles.container}>
@@ -131,6 +161,12 @@ export default function SetListScreen() {
         instrumentFilter={instrumentFilter}
         onInstrumentFilterChange={handleInstrumentFilterChange}
         instrumentOptions={INSTRUMENT_FILTER_OPTIONS_WITH_ICONS}
+        difficultyFilter={difficultyFilter}
+        onDifficultyFilterChange={handleDifficultyFilterChange}
+        difficultyOptions={DIFFICULTY_FILTER_OPTIONS_WITH_ICONS}
+        fluencyFilter={fluencyFilter}
+        onFluencyFilterChange={handleFluencyFilterChange}
+        fluencyOptions={FLUENCY_FILTER_OPTIONS_WITH_ICONS}
         genreFilter={genreFilter}
         onGenreFilterChange={handleGenreFilterChange}
         genreOptions={GENRE_FILTER_OPTIONS_WITH_ICONS}
@@ -159,8 +195,9 @@ const styles = StyleSheet.create({
   },
   // --- Song List ---
   songListContent: {
-    padding: 16,
-    paddingBottom: 100, // Space for FAB
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingBottom: 100,
     gap: 16,
   },
   

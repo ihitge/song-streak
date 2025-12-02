@@ -26,8 +26,9 @@ export const SelectorKey: React.FC<SelectorKeyProps> = ({ label, value, IconComp
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     alignItems: 'center',
-    gap: 4, // Spacing between label and button
+    gap: 4,
   },
   labelText: {
     fontSize: 9, // tiny
@@ -36,7 +37,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   buttonWell: {
-    height: 40, // h-10 (40px)
+    height: 40,
+    width: '100%',
     backgroundColor: '#e0e0e0',
     borderRadius: 8, // rounded corners (example, adjust as needed)
     flexDirection: 'row',

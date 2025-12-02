@@ -1,41 +1,39 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
-import { Genre } from '@/app/(tabs)/index';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Difficulty } from '@/app/(tabs)/index';
 
-interface GenrePickerProps {
+interface DifficultyPickerProps {
   options: {
-    genre: Genre;
+    difficulty: Difficulty;
     IconComponent: React.ComponentType<any>;
   }[];
-  onSelect: (genre: Genre) => void;
+  onSelect: (difficulty: Difficulty) => void;
   onClose: () => void;
-  currentValue: Genre;
+  currentValue: Difficulty;
 }
 
-export const GenrePicker: React.FC<GenrePickerProps> = ({ options, onSelect, onClose, currentValue }) => {
+export const DifficultyPicker: React.FC<DifficultyPickerProps> = ({ options, onSelect, onClose, currentValue }) => {
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {options.map((option) => (
-          <Pressable
-            key={option.genre}
-            onPress={() => {
-              onSelect(option.genre);
-              onClose();
-            }}
-            style={({ pressed }) => [
-              styles.optionButton,
-              currentValue === option.genre && styles.optionButtonActive,
-              pressed && styles.optionButtonPressed,
-            ]}
-          >
-            <option.IconComponent size={18} color={currentValue === option.genre ? '#ea5428' : '#333'} />
-            <Text style={[styles.optionText, currentValue === option.genre && styles.optionTextActive]}>
-              {option.genre.toUpperCase()}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+      {options.map((option) => (
+        <Pressable
+          key={option.difficulty}
+          onPress={() => {
+            onSelect(option.difficulty);
+            onClose();
+          }}
+          style={({ pressed }) => [
+            styles.optionButton,
+            currentValue === option.difficulty && styles.optionButtonActive,
+            pressed && styles.optionButtonPressed,
+          ]}
+        >
+          <option.IconComponent size={18} color={currentValue === option.difficulty ? '#ea5428' : '#333'} />
+          <Text style={[styles.optionText, currentValue === option.difficulty && styles.optionTextActive]}>
+            {option.difficulty.toUpperCase()}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   );
 };
@@ -46,7 +44,6 @@ const styles = StyleSheet.create({
     top: '100%',
     left: 0,
     width: 140,
-    maxHeight: 300,
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
     shadowColor: 'rgba(0,0,0,0.1)',
@@ -64,9 +61,6 @@ const styles = StyleSheet.create({
     zIndex: 100,
     overflow: 'hidden',
     marginTop: 4,
-  },
-  scrollView: {
-    maxHeight: 300,
   },
   optionButton: {
     flexDirection: 'row',

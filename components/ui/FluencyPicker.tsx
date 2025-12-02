@@ -1,41 +1,39 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
-import { Genre } from '@/app/(tabs)/index';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Fluency } from '@/app/(tabs)/index';
 
-interface GenrePickerProps {
+interface FluencyPickerProps {
   options: {
-    genre: Genre;
+    fluency: Fluency;
     IconComponent: React.ComponentType<any>;
   }[];
-  onSelect: (genre: Genre) => void;
+  onSelect: (fluency: Fluency) => void;
   onClose: () => void;
-  currentValue: Genre;
+  currentValue: Fluency;
 }
 
-export const GenrePicker: React.FC<GenrePickerProps> = ({ options, onSelect, onClose, currentValue }) => {
+export const FluencyPicker: React.FC<FluencyPickerProps> = ({ options, onSelect, onClose, currentValue }) => {
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {options.map((option) => (
-          <Pressable
-            key={option.genre}
-            onPress={() => {
-              onSelect(option.genre);
-              onClose();
-            }}
-            style={({ pressed }) => [
-              styles.optionButton,
-              currentValue === option.genre && styles.optionButtonActive,
-              pressed && styles.optionButtonPressed,
-            ]}
-          >
-            <option.IconComponent size={18} color={currentValue === option.genre ? '#ea5428' : '#333'} />
-            <Text style={[styles.optionText, currentValue === option.genre && styles.optionTextActive]}>
-              {option.genre.toUpperCase()}
-            </Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+      {options.map((option) => (
+        <Pressable
+          key={option.fluency}
+          onPress={() => {
+            onSelect(option.fluency);
+            onClose();
+          }}
+          style={({ pressed }) => [
+            styles.optionButton,
+            currentValue === option.fluency && styles.optionButtonActive,
+            pressed && styles.optionButtonPressed,
+          ]}
+        >
+          <option.IconComponent size={18} color={currentValue === option.fluency ? '#ea5428' : '#333'} />
+          <Text style={[styles.optionText, currentValue === option.fluency && styles.optionTextActive]}>
+            {option.fluency.toUpperCase()}
+          </Text>
+        </Pressable>
+      ))}
     </View>
   );
 };
@@ -46,7 +44,6 @@ const styles = StyleSheet.create({
     top: '100%',
     left: 0,
     width: 140,
-    maxHeight: 300,
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
     shadowColor: 'rgba(0,0,0,0.1)',
@@ -64,9 +61,6 @@ const styles = StyleSheet.create({
     zIndex: 100,
     overflow: 'hidden',
     marginTop: 4,
-  },
-  scrollView: {
-    maxHeight: 300,
   },
   optionButton: {
     flexDirection: 'row',

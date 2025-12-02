@@ -1,16 +1,24 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
-import { Search, Guitar, Signal, Music, LogOut, ChevronDown, MinusCircle } from 'lucide-react-native'; // Added MinusCircle
+import { Search, Guitar, Signal, Music, LogOut, ChevronDown, MinusCircle, Star } from 'lucide-react-native';
 import { SelectorKey } from './SelectorKey';
 import { InstrumentPicker } from './InstrumentPicker'; // Restored InstrumentPicker import
 import { supabase } from '@/utils/supabase/client';
-import { Instrument, Genre } from '@/app/(tabs)/index';
+import { Instrument, Difficulty, Fluency, Genre } from '@/app/(tabs)/index';
 import { GenrePicker } from './GenrePicker';
+import { DifficultyPicker } from './DifficultyPicker';
+import { FluencyPicker } from './FluencyPicker';
 
 interface LibraryHeaderProps {
   instrumentFilter: Instrument;
   onInstrumentFilterChange: (instrument: Instrument) => void;
   instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[];
+  difficultyFilter: Difficulty;
+  onDifficultyFilterChange: (difficulty: Difficulty) => void;
+  difficultyOptions: { difficulty: Difficulty; IconComponent: React.ComponentType<any>; }[];
+  fluencyFilter: Fluency;
+  onFluencyFilterChange: (fluency: Fluency) => void;
+  fluencyOptions: { fluency: Fluency; IconComponent: React.ComponentType<any>; }[];
   genreFilter: Genre;
   onGenreFilterChange: (genre: Genre) => void;
   genreOptions: { genre: Genre; IconComponent: React.ComponentType<any>; }[];
@@ -20,12 +28,20 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   instrumentFilter,
   onInstrumentFilterChange,
   instrumentOptions,
+  difficultyFilter,
+  onDifficultyFilterChange,
+  difficultyOptions,
+  fluencyFilter,
+  onFluencyFilterChange,
+  fluencyOptions,
   genreFilter,
   onGenreFilterChange,
   genreOptions,
 }) => {
   const [searchText, setSearchText] = useState('');
   const [showInstrumentOptions, setShowInstrumentOptions] = useState(false);
+  const [showDifficultyOptions, setShowDifficultyOptions] = useState(false);
+  const [showFluencyOptions, setShowFluencyOptions] = useState(false);
   const [showGenreOptions, setShowGenreOptions] = useState(false);
 
   const handleSignOut = async () => {
@@ -37,7 +53,9 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 
   const handleInstSelectorPress = () => {
     setShowInstrumentOptions(prev => !prev);
-    setShowGenreOptions(false); // Close other dropdown
+    setShowDifficultyOptions(false);
+    setShowFluencyOptions(false);
+    setShowGenreOptions(false);
   };
 
   const handleInstrumentSelect = (instrument: Instrument) => {
@@ -45,9 +63,35 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
     setShowInstrumentOptions(false);
   };
 
+  const handleDifficultySelectorPress = () => {
+    setShowDifficultyOptions(prev => !prev);
+    setShowInstrumentOptions(false);
+    setShowFluencyOptions(false);
+    setShowGenreOptions(false);
+  };
+
+  const handleDifficultySelect = (difficulty: Difficulty) => {
+    onDifficultyFilterChange(difficulty);
+    setShowDifficultyOptions(false);
+  };
+
+  const handleFluencySelectorPress = () => {
+    setShowFluencyOptions(prev => !prev);
+    setShowInstrumentOptions(false);
+    setShowDifficultyOptions(false);
+    setShowGenreOptions(false);
+  };
+
+  const handleFluencySelect = (fluency: Fluency) => {
+    onFluencyFilterChange(fluency);
+    setShowFluencyOptions(false);
+  };
+
   const handleGenreSelectorPress = () => {
     setShowGenreOptions(prev => !prev);
-    setShowInstrumentOptions(false); // Close other dropdown
+    setShowInstrumentOptions(false);
+    setShowDifficultyOptions(false);
+    setShowFluencyOptions(false);
   };
 
   const handleGenreSelect = (genre: Genre) => {
@@ -95,13 +139,13 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
         {/* Divider */}
         <View style={styles.divider} />
 
-        {/* Filter Keys (Row of 3) */}
+        {/* Filter Keys (Row of 4) */}
         <View style={styles.filterKeysRow}>
-          <View style={{ position: 'relative', zIndex: 100 }}> {/* Wrapper for absolute positioning and zIndex */}
+          <View style={{ position: 'relative', zIndex: 100 }}>
             <SelectorKey
               label="INST"
               value={instrumentFilter}
-              IconComponent={instrumentOptions.find(opt => opt.instrument === instrumentFilter)?.IconComponent || MinusCircle} // Get current icon
+              IconComponent={instrumentOptions.find(opt => opt.instrument === instrumentFilter)?.IconComponent || MinusCircle}
               onPress={handleInstSelectorPress}
             />
             {showInstrumentOptions && (
@@ -113,8 +157,39 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
               />
             )}
           </View>
-          <SelectorKey label="LEVEL" value="ALL" IconComponent={Signal} onPress={() => console.log('LEVEL')} />
           <View style={{ position: 'relative', zIndex: 99 }}>
+            <SelectorKey
+              label="DIFFICULTY"
+              value={difficultyFilter}
+              IconComponent={difficultyOptions.find(opt => opt.difficulty === difficultyFilter)?.IconComponent || Signal}
+              onPress={handleDifficultySelectorPress}
+            />
+            {showDifficultyOptions && (
+              <DifficultyPicker
+                options={difficultyOptions}
+                onSelect={handleDifficultySelect}
+                onClose={() => setShowDifficultyOptions(false)}
+                currentValue={difficultyFilter}
+              />
+            )}
+          </View>
+          <View style={{ position: 'relative', zIndex: 98 }}>
+            <SelectorKey
+              label="FLUENCY"
+              value={fluencyFilter}
+              IconComponent={fluencyOptions.find(opt => opt.fluency === fluencyFilter)?.IconComponent || Star}
+              onPress={handleFluencySelectorPress}
+            />
+            {showFluencyOptions && (
+              <FluencyPicker
+                options={fluencyOptions}
+                onSelect={handleFluencySelect}
+                onClose={() => setShowFluencyOptions(false)}
+                currentValue={fluencyFilter}
+              />
+            )}
+          </View>
+          <View style={{ position: 'relative', zIndex: 97 }}>
             <SelectorKey
               label="GENRE"
               value={genreFilter}
@@ -245,8 +320,8 @@ const styles = StyleSheet.create({
   },
   filterKeysRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around', // Distribute items evenly
-    gap: 16, // Spacing between keys
-    paddingTop: 8, // Spacing from divider
+    justifyContent: 'space-between',
+    gap: 8,
+    paddingTop: 8,
   },
 });

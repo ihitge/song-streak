@@ -12,6 +12,8 @@
 | `SelectorKey` | Filter/dropdown trigger button | `components/ui/SelectorKey.tsx` |
 | `InstrumentPicker` | Dropdown menu for instrument selection | `components/ui/InstrumentPicker.tsx` |
 | `GenrePicker` | Dropdown menu for genre selection | `components/ui/GenrePicker.tsx` |
+| `DifficultyPicker` | Dropdown menu for difficulty selection | `components/ui/DifficultyPicker.tsx` |
+| `FluencyPicker` | Dropdown menu for fluency level selection | `components/ui/FluencyPicker.tsx` |
 | `TactileNavbar` | Bottom navigation bar | `components/ui/TactileNavbar.tsx` |
 | `LibraryHeader` | Page header with search and filters | `components/ui/LibraryHeader.tsx` |
 
@@ -163,12 +165,13 @@ import { Guitar } from 'lucide-react-native';
 
 **Visual Behavior**:
 - 40px height with recessed well styling
+- Uses `flex: 1` for even distribution in filter rows
 - Chevron down indicator on right side
 - Label above button in small uppercase
 
 **Do**:
 - Use for filter controls
-- Pair with `InstrumentPicker` for dropdown functionality
+- Pair with picker components for dropdown functionality
 - Use Lucide icons (thin stroke, 16px)
 
 **Don't**:
@@ -219,7 +222,7 @@ const options = [
 ```
 
 **Visual Behavior**:
-- 200px width, absolute positioned
+- 140px width, absolute positioned
 - Active option: darker background, vermilion text/icon
 - Pressed state: even darker background
 - Recessed well shadow styling
@@ -279,7 +282,67 @@ const genreOptions = [
 **Available Genres**: All, Rock, Blues, Metal, Prog, Jazz, Country, Pop, Classical, Flamenco, Funk, Folk, Punk, Reggae, Bluegrass
 
 **Visual Behavior**:
-- 200px width, max 300px height (scrollable)
+- 140px width, max 300px height (scrollable)
+- Active option: darker background, vermilion text/icon
+- Pressed state: even darker background
+- Recessed well shadow styling
+
+**Do**:
+- Wrap parent in `{ position: 'relative', zIndex: 97 }`
+- Always provide `onClose` handler
+- Pair with `SelectorKey` as trigger
+
+**Don't**:
+- Don't render without a visible trigger
+- Don't forget zIndex wrapper (use 97, below INST at 100, DIFFICULTY at 99, and FLUENCY at 98)
+
+---
+
+### DifficultyPicker
+
+**Purpose**: Dropdown menu displaying difficulty level options with icons. Positioned absolutely below its trigger.
+
+**Location**: `components/ui/DifficultyPicker.tsx`
+
+**Props**:
+```typescript
+interface DifficultyPickerProps {
+  options: {
+    difficulty: Difficulty;                    // Option value
+    IconComponent: React.ComponentType<any>;   // Lucide icon
+  }[];
+  onSelect: (difficulty: Difficulty) => void;  // Selection handler
+  onClose: () => void;                         // Close handler
+  currentValue: Difficulty;                    // Currently selected value
+}
+```
+
+**Usage**:
+```tsx
+import { DifficultyPicker } from '@/components/ui/DifficultyPicker';
+import { Signal, MinusCircle } from 'lucide-react-native';
+
+const difficultyOptions = [
+  { difficulty: 'All', IconComponent: MinusCircle },
+  { difficulty: 'Easy', IconComponent: Signal },
+  { difficulty: 'Medium', IconComponent: Signal },
+  { difficulty: 'Hard', IconComponent: Signal },
+];
+
+{showDifficultyPicker && (
+  <DifficultyPicker
+    options={difficultyOptions}
+    onSelect={handleDifficultySelect}
+    onClose={() => setShowDifficultyPicker(false)}
+    currentValue={currentDifficulty}
+  />
+)}
+```
+
+**Available Difficulties**: All, Easy, Medium, Hard
+
+**Visual Behavior**:
+- 140px width
 - Active option: darker background, vermilion text/icon
 - Pressed state: even darker background
 - Recessed well shadow styling
@@ -291,7 +354,68 @@ const genreOptions = [
 
 **Don't**:
 - Don't render without a visible trigger
-- Don't forget zIndex wrapper (use 99 if INST picker uses 100)
+- Don't forget zIndex wrapper (use 99, between INST at 100 and FLUENCY at 98)
+
+---
+
+### FluencyPicker
+
+**Purpose**: Dropdown menu displaying fluency level options with icons. Represents the user's skill/comfort level with a song. Positioned absolutely below its trigger.
+
+**Location**: `components/ui/FluencyPicker.tsx`
+
+**Props**:
+```typescript
+interface FluencyPickerProps {
+  options: {
+    fluency: Fluency;                          // Option value
+    IconComponent: React.ComponentType<any>;   // Lucide icon
+  }[];
+  onSelect: (fluency: Fluency) => void;        // Selection handler
+  onClose: () => void;                         // Close handler
+  currentValue: Fluency;                       // Currently selected value
+}
+```
+
+**Usage**:
+```tsx
+import { FluencyPicker } from '@/components/ui/FluencyPicker';
+import { Star, MinusCircle } from 'lucide-react-native';
+
+const fluencyOptions = [
+  { fluency: 'All', IconComponent: MinusCircle },
+  { fluency: 'Learning', IconComponent: Star },
+  { fluency: 'Practicing', IconComponent: Star },
+  { fluency: 'Comfortable', IconComponent: Star },
+  { fluency: 'Mastered', IconComponent: Star },
+];
+
+{showFluencyPicker && (
+  <FluencyPicker
+    options={fluencyOptions}
+    onSelect={handleFluencySelect}
+    onClose={() => setShowFluencyPicker(false)}
+    currentValue={currentFluency}
+  />
+)}
+```
+
+**Available Fluency Levels**: All, Learning, Practicing, Comfortable, Mastered
+
+**Visual Behavior**:
+- 140px width
+- Active option: darker background, vermilion text/icon
+- Pressed state: even darker background
+- Recessed well shadow styling
+
+**Do**:
+- Wrap parent in `{ position: 'relative', zIndex: 98 }`
+- Always provide `onClose` handler
+- Pair with `SelectorKey` as trigger
+
+**Don't**:
+- Don't render without a visible trigger
+- Don't forget zIndex wrapper (use 98, between DIFFICULTY at 99 and GENRE at 97)
 
 ---
 
@@ -348,6 +472,12 @@ interface LibraryHeaderProps {
   instrumentFilter: Instrument;
   onInstrumentFilterChange: (instrument: Instrument) => void;
   instrumentOptions: { instrument: Instrument; IconComponent: React.ComponentType<any>; }[];
+  difficultyFilter: Difficulty;
+  onDifficultyFilterChange: (difficulty: Difficulty) => void;
+  difficultyOptions: { difficulty: Difficulty; IconComponent: React.ComponentType<any>; }[];
+  fluencyFilter: Fluency;
+  onFluencyFilterChange: (fluency: Fluency) => void;
+  fluencyOptions: { fluency: Fluency; IconComponent: React.ComponentType<any>; }[];
   genreFilter: Genre;
   onGenreFilterChange: (genre: Genre) => void;
   genreOptions: { genre: Genre; IconComponent: React.ComponentType<any>; }[];
@@ -357,12 +487,27 @@ interface LibraryHeaderProps {
 **Usage**:
 ```tsx
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
-import { Guitar, Drum, Keyboard, Music, MinusCircle } from 'lucide-react-native';
+import { Guitar, Drum, Keyboard, Music, MinusCircle, Signal, Star } from 'lucide-react-native';
 
 const instrumentOptions = [
   { instrument: 'All', IconComponent: MinusCircle },
   { instrument: 'Guitar', IconComponent: Guitar },
   // ...more options
+];
+
+const difficultyOptions = [
+  { difficulty: 'All', IconComponent: MinusCircle },
+  { difficulty: 'Easy', IconComponent: Signal },
+  { difficulty: 'Medium', IconComponent: Signal },
+  { difficulty: 'Hard', IconComponent: Signal },
+];
+
+const fluencyOptions = [
+  { fluency: 'All', IconComponent: MinusCircle },
+  { fluency: 'Learning', IconComponent: Star },
+  { fluency: 'Practicing', IconComponent: Star },
+  { fluency: 'Comfortable', IconComponent: Star },
+  { fluency: 'Mastered', IconComponent: Star },
 ];
 
 const genreOptions = [
@@ -375,6 +520,12 @@ const genreOptions = [
   instrumentFilter={selectedInstrument}
   onInstrumentFilterChange={setSelectedInstrument}
   instrumentOptions={instrumentOptions}
+  difficultyFilter={selectedDifficulty}
+  onDifficultyFilterChange={setSelectedDifficulty}
+  difficultyOptions={difficultyOptions}
+  fluencyFilter={selectedFluency}
+  onFluencyFilterChange={setSelectedFluency}
+  fluencyOptions={fluencyOptions}
   genreFilter={selectedGenre}
   onGenreFilterChange={setSelectedGenre}
   genreOptions={genreOptions}
@@ -383,22 +534,23 @@ const genreOptions = [
 
 **Sections**:
 1. **Top Bar**: "SONG STREAK" title, "LIBRARY" subtitle, avatar, logout button
-2. **Filter Deck**: Search input, divider, filter keys row (INST, LEVEL, GENRE)
+2. **Filter Deck**: Search input, divider, filter keys row (INST, DIFFICULTY, FLUENCY, GENRE)
 
 **Visual Behavior**:
 - Matte fog chassis background
 - White border seams between sections
 - Recessed search input
 - InstrumentPicker dropdown on INST press
+- DifficultyPicker dropdown on DIFFICULTY press
+- FluencyPicker dropdown on FLUENCY press
 - GenrePicker dropdown on GENRE press
 
 **Do**:
 - Use at top of library/list pages
-- Pass instrument and genre options with appropriate Lucide icons
+- Pass instrument, difficulty, fluency, and genre options with appropriate Lucide icons
 
 **Don't**:
 - Don't customize title/subtitle (currently hardcoded)
-- Don't expect LEVEL filter to work (placeholder `console.log`)
 
 ---
 
@@ -493,10 +645,9 @@ import { Ionicons } from '@expo/vector-icons';
 Components that should be extracted or created:
 
 1. **SongCard** - Currently inline in `app/(tabs)/index.tsx`
-2. **LevelPicker** - Implement Level filter dropdown (similar to Genre/Instrument)
-3. **Generic Picker** - Refactor InstrumentPicker/GenrePicker into reusable component
-4. **Button variants** - Primary, Secondary, Ghost buttons
-5. **Input** - Standalone input component (currently in LibraryHeader)
+2. **Generic Picker** - Refactor InstrumentPicker/DifficultyPicker/FluencyPicker/GenrePicker into reusable component
+3. **Button variants** - Primary, Secondary, Ghost buttons
+4. **Input** - Standalone input component (currently in LibraryHeader)
 
 ---
 
