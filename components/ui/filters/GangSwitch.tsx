@@ -72,12 +72,12 @@ export const GangSwitch = <T extends string>({
                       {!isActive ? (
                         <>
                           {/* Raised appearance */}
-                          <BoxShadow dx={0} dy={2} blur={3} color="rgba(0,0,0,0.15)" />
-                          <BoxShadow dx={0} dy={-1} blur={1} color="rgba(255,255,255,0.8)" />
+                          <BoxShadow dx={0} dy={2} blur={3} color="rgba(0,0,0,0.18)" />
+                          <BoxShadow dx={0} dy={-1} blur={1} color="rgba(255,255,255,0.9)" />
                           <LinearGradient
                             start={vec(0, 0)}
                             end={vec(0, BUTTON_HEIGHT)}
-                            colors={[Colors.softWhite, Colors.matteFog]}
+                            colors={['#fafafa', '#d4d4d4']}
                           />
                         </>
                       ) : (
