@@ -4,7 +4,7 @@ import { Colors } from './Colors';
 export const Typography = StyleSheet.create({
   pageSubtitle: {
     fontSize: 14,
-    fontFamily: 'LexendDecaThin',
+    fontFamily: 'LexendDecaRegular',
     textTransform: 'uppercase',
     letterSpacing: 3,
     color: Colors.warmGray,
