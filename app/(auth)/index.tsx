@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: 'LexendDecaRegular',
-    fontSize: 14,
+    fontSize: 12,
     color: Colors.warmGray,
     letterSpacing: 3,
   },

@@ -3,7 +3,7 @@ import { Colors } from './Colors';
 
 export const Typography = StyleSheet.create({
   pageSubtitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'LexendDecaRegular',
     textTransform: 'uppercase',
     letterSpacing: 3,
