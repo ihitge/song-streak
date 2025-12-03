@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/Colors';
 
 interface Song {
   id: string;
@@ -22,7 +21,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
 
   return (
     <View style={styles.container}>
-      {suggestions.map((song) => (
+      {suggestions.map((song, index) => (
         <Pressable
           key={song.id}
           onPress={() => {
@@ -32,6 +31,7 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
           style={({ pressed }) => [
             styles.suggestionItem,
             pressed && styles.suggestionItemPressed,
+            index === suggestions.length - 1 && styles.lastItem,
           ]}
         >
           <Text style={styles.titleText} numberOfLines={1}>
@@ -52,41 +52,43 @@ const styles = StyleSheet.create({
     top: '100%',
     left: 0,
     right: 0,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 12,
-    shadowColor: 'rgba(0,0,0,0.1)',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 5,
-    elevation: 5,
-    borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderColor: '#c0c0c0',
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    borderRightColor: '#f0f0f0',
+    marginTop: 8,
+    backgroundColor: Colors.softWhite,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.alloy,
+    // Raised Shadow
+    shadowColor: Colors.charcoal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 8,
     overflow: 'hidden',
-    marginTop: 4,
+    zIndex: 1000,
   },
   suggestionItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#d6d6d6',
+    borderBottomColor: Colors.alloy,
+    backgroundColor: Colors.softWhite,
+  },
+  lastItem: {
+    borderBottomWidth: 0,
   },
   suggestionItemPressed: {
-    backgroundColor: '#c0c0c0',
+    backgroundColor: Colors.matteFog,
   },
   titleText: {
     fontFamily: 'LexendDecaBold',
     fontSize: 14,
-    color: '#333',
+    color: Colors.ink,
+    marginBottom: 2,
   },
   artistText: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 12,
-    color: '#888',
-    marginTop: 2,
+    color: Colors.warmGray,
+    textTransform: 'uppercase',
   },
 });
