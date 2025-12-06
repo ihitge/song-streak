@@ -25,7 +25,7 @@ export function useNavButtonSound() {
 
         // Load the nav button click sound
         const { sound: loadedSound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/sound-click-01.wav'),
+          require('@/assets/audio/sound-nav-button.wav'),
         );
 
         if (mounted) {

@@ -25,7 +25,7 @@ export function useGangSwitchSound() {
 
         // Load the gang switch click sound
         const { sound: loadedSound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/sound-click-02.wav'),
+          require('@/assets/audio/sound-gang-switch.wav'),
         );
 
         if (mounted) {

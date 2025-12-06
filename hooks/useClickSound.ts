@@ -25,7 +25,7 @@ export function useClickSound() {
 
         // Load the click sound
         const { sound: loadedSound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/sound-click-07.mp3'),
+          require('@/assets/audio/sound-shared-click.mp3'),
         );
 
         if (mounted) {

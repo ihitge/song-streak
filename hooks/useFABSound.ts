@@ -25,7 +25,7 @@ export function useFABSound() {
 
         // Load the FAB click sound
         const { sound: loadedSound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/sound-click-03.wav'),
+          require('@/assets/audio/sound-fab.wav'),
         );
 
         if (mounted) {

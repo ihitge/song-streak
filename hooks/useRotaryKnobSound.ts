@@ -25,7 +25,7 @@ export function useRotaryKnobSound() {
 
         // Load the rotary knob click sound
         const { sound: loadedSound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/sound-click-08.wav'),
+          require('@/assets/audio/sound-rotary-knob.wav'),
         );
 
         if (mounted) {
