@@ -194,8 +194,8 @@ const styles = StyleSheet.create({
   },
   ledContainer: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: 3,
+    right: 3,
   },
   ledDot: {
     width: 6,
