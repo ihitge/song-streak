@@ -9,7 +9,7 @@
 | Component | Purpose | Location |
 |-----------|---------|----------|
 | `PageHeader` | **Reusable page header with logo and user controls** | `components/ui/PageHeader.tsx` |
-| `NavButton` | Tactile navigation button with LED indicator | `components/ui/NavButton.tsx` |
+| `NavButton` | Tactile navigation button with LED indicator + audio/haptic feedback | `components/ui/NavButton.tsx` |
 | `GangSwitch` | Horizontal/vertical switch with LED indicators | `components/ui/filters/GangSwitch.tsx` |
 | `FrequencyTuner` | Horizontal tuner with glass overlay | `components/ui/filters/FrequencyTuner.tsx` |
 | `RotaryKnob` | Rotary control with digital readout | `components/ui/filters/RotaryKnob.tsx` |
@@ -22,6 +22,7 @@
 | Hook | Purpose | Location |
 |------|---------|----------|
 | `useSignOut` | Centralized sign-out logic with error handling | `hooks/useSignOut.ts` |
+| `useClickSound` | Audio feedback for interactive components | `hooks/useClickSound.ts` |
 
 ---
 
@@ -93,8 +94,10 @@ interface PageHeaderProps {
 **Visual Behavior**:
 - SongStreak logo (MomoTrustDisplay, deepSpaceBlue)
 - Page subtitle (uppercase, warmGray)
-- User avatar button
-- Logout button (uses `useSignOut` hook)
+- User avatar button with audio + haptic feedback
+- Logout button with audio + haptic feedback (uses `useSignOut` hook)
+
+**Audio Feedback**: Both avatar and logout buttons provide haptic + sound feedback on press (`useClickSound` hook)
 
 ---
 
@@ -122,12 +125,13 @@ interface GangSwitchProps<T extends string> {
 - Recessed "well" background
 - Raised buttons that depress when active
 - LED indicator for active state
+- Audio + haptic feedback on selection (`useClickSound` hook)
 
 ---
 
 ### FrequencyTuner
 
-**Purpose**: Horizontal sliding tuner control with a glass overlay effect.
+**Purpose**: Horizontal sliding tuner control with a glass overlay effect. Used for instrument selection.
 
 **Location**: `components/ui/filters/FrequencyTuner.tsx`
 
@@ -148,12 +152,13 @@ interface FrequencyTunerProps<T extends string> {
 - "Glass" reflection overlay
 - Orange hairline indicator
 - **Animated Text**: Value text animates with a "glitchy" slide from the side when changed.
+- Audio + haptic feedback on chevron taps (`useClickSound` hook)
 
 ---
 
 ### RotaryKnob
 
-**Purpose**: Rotary control with a digital readout display.
+**Purpose**: Rotary control with a digital readout display. Used for genre selection and other rotary controls.
 
 **Location**: `components/ui/filters/RotaryKnob.tsx`
 
@@ -174,6 +179,7 @@ interface RotaryKnobProps<T extends string> {
 - Physical rotating knob with position indicator
 - Haptic feedback on change
 - **Animated Text**: Readout text animates with a "glitchy" slide from the side when changed.
+- Audio + haptic feedback on rotation (`useClickSound` hook)
 
 ---
 
@@ -231,14 +237,31 @@ Used in `GangSwitch`, `Search` input, `RotaryKnob` readout, and `FrequencyTuner`
 ### "Tactile Control" Pattern
 
 Physical metaphors for digital controls.
-- **Switch**: Depressible buttons with LEDs
-- **Tuner**: Sliding scale behind glass
-- **Knob**: Rotation with haptics
+- **Switch**: Depressible buttons with LEDs + audio/haptic feedback
+- **Tuner**: Sliding scale behind glass + audio/haptic feedback
+- **Knob**: Rotation with haptics + audio feedback
 
 ### "Analog Glitch" Animation Pattern
 
 Applied to `FrequencyTuner` and `RotaryKnob` text displays.
 Creates a quick, slightly jittery slide animation for text value changes, evoking a mechanical or distorted signal aesthetic.
+
+### "Audio + Haptic Feedback" Pattern
+
+Every interactive component triggers both feedback types in sequence:
+1. **Haptic**: `Haptics.impactAsync(ImpactFeedbackStyle.Light)` (immediate)
+2. **Audio**: `playSound()` from `useClickSound` hook (async, non-blocking)
+
+Used in: `NavButton`, `GangSwitch`, `FrequencyTuner`, `RotaryKnob`, `SearchSuggestions`, `PageHeader`
+
+**Implementation**:
+```typescript
+const handlePress = async () => {
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  await playSound();
+  // Perform action
+};
+```
 
 ---
 
@@ -255,4 +278,4 @@ Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches).
 
 ---
 
-*Last updated: Dec 2, 2025*
+*Last updated: Dec 6, 2025 (Added audio feedback documentation)*

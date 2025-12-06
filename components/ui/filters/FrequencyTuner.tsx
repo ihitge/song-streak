@@ -5,6 +5,7 @@ import Animated, { Keyframe } from 'react-native-reanimated';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { useClickSound } from '@/hooks/useClickSound';
 import type { FrequencyTunerProps } from '@/types/filters';
 
 const TUNER_HEIGHT = 44; // Increased from 38px
@@ -57,6 +58,7 @@ export const FrequencyTuner = <T extends string>({
 }: FrequencyTunerProps<T>) => {
   const [width, setWidth] = useState(200); // default fallback
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
+  const { playSound } = useClickSound();
   const selectedIndex = options.findIndex((opt) => opt.value === value);
   const currentOption = options[selectedIndex];
   const height = size === 'compact' ? 40 : TUNER_HEIGHT;
@@ -65,7 +67,7 @@ export const FrequencyTuner = <T extends string>({
     setWidth(event.nativeEvent.layout.width);
   };
 
-  const cycle = (dir: number) => {
+  const cycle = async (dir: number) => {
     if (disabled) return;
 
     setDirection(dir);
@@ -74,7 +76,8 @@ export const FrequencyTuner = <T extends string>({
     if (nextIndex < 0) nextIndex = options.length - 1;
     if (nextIndex >= options.length) nextIndex = 0;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
     onChange(options[nextIndex].value);
   };
 

@@ -1,9 +1,11 @@
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { LogOut } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { useSignOut } from '@/hooks/useSignOut';
+import { useClickSound } from '@/hooks/useClickSound';
 
 interface PageHeaderProps {
   subtitle: string;
@@ -15,6 +17,18 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   children,
 }) => {
   const { handleSignOut } = useSignOut();
+  const { playSound } = useClickSound();
+
+  const handleAvatarPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+  };
+
+  const handleLogoutPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+    handleSignOut();
+  };
 
   return (
     <View style={styles.chassis}>
@@ -29,11 +43,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {/* Right (Controls) */}
         <View style={styles.topBarControls}>
           {/* User Avatar */}
-          <Pressable style={styles.avatarButton}>
+          <Pressable style={styles.avatarButton} onPress={handleAvatarPress}>
             <Text style={styles.avatarText}>JD</Text>
           </Pressable>
           {/* Logout */}
-          <Pressable style={styles.logoutButton} onPress={handleSignOut}>
+          <Pressable style={styles.logoutButton} onPress={handleLogoutPress}>
             <LogOut size={20} color={Colors.charcoal} />
           </Pressable>
         </View>

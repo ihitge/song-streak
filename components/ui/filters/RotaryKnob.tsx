@@ -4,6 +4,7 @@ import { Canvas, Box, BoxShadow, rrect, rect } from '@shopify/react-native-skia'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, Keyframe } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { useClickSound } from '@/hooks/useClickSound';
 import type { RotaryKnobProps } from '@/types/filters';
 
 const KNOB_SIZE = 44; // Increased from 38px
@@ -54,7 +55,7 @@ export const RotaryKnob = <T extends string>({
 }: RotaryKnobProps<T>) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
-
+  const { playSound } = useClickSound();
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setReadoutWidth(event.nativeEvent.layout.width);
@@ -84,7 +85,7 @@ export const RotaryKnob = <T extends string>({
     transform: [{ rotate: `${animatedRotation.value}deg` }],
   }));
 
-  const cycle = (dir: number) => { // Renamed from 'direction' to 'dir' to avoid conflict with state
+  const cycle = async (dir: number) => { // Renamed from 'direction' to 'dir' to avoid conflict with state
     if (disabled) return;
 
     setDirection(dir); // Set direction before calling onChange
@@ -94,9 +95,10 @@ export const RotaryKnob = <T extends string>({
     if (nextIndex >= options.length) nextIndex = 0;
 
     if (hapticFeedback) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
+    await playSound();
     onChange(options[nextIndex].value);
   };
 

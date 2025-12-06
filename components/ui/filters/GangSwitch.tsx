@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-nati
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { useClickSound } from '@/hooks/useClickSound';
 import type { GangSwitchProps } from '@/types/filters';
 
 const BUTTON_HEIGHT = 32; // Increased from 28
@@ -21,6 +22,7 @@ export const GangSwitch = <T extends string>({
   allowDeselect = true,
 }: GangSwitchProps<T>) => {
   const [wellWidth, setWellWidth] = useState(200);
+  const { playSound } = useClickSound();
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setWellWidth(event.nativeEvent.layout.width);
@@ -29,10 +31,11 @@ export const GangSwitch = <T extends string>({
   // Calculate button width: (wellWidth - padding - gaps) / number of buttons
   const buttonWidth = (wellWidth - 12 - (options.length - 1) * 2) / options.length;
 
-  const handlePress = (optValue: T) => {
+  const handlePress = async (optValue: T) => {
     if (disabled) return;
 
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Add haptic feedback
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
 
     // Toggle behavior: if already active, deselect (null) only if allowed, otherwise select
     if (value === optValue) {

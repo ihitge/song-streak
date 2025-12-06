@@ -17,6 +17,7 @@ All visual reference images, mood boards, and detailed mockups are stored in the
 - Dark-first design (light mode inverted)
 - Hardware-inspired controls
 - Every interaction has haptic feedback
+- Every interaction has audio feedback (click sounds)
 
 1. The Visual Language
 
@@ -221,10 +222,51 @@ Phase 4: The Polish (Animation) (In Progress)
 
 [ ] LED Logic: Animate the little orange dots on your toggles with a "glow" (shadow opacity) when active.
 
-4. Technical "Gotchas" for React Native
+4. Audio Feedback (The "Click")
+
+**Philosophy:** Like a physical device, every interaction produces a satisfying click sound.
+
+**Sound Library:** `/assets/audio/` contains click sounds for UI interactions.
+- `sound-click-07.mp3` (9.2 KB) - Standard UI click (all interactive components)
+
+**Implementation:** Use the `useClickSound` hook from `@/hooks/useClickSound.ts`
+
+```typescript
+import { useClickSound } from '@/hooks/useClickSound';
+
+const { playSound } = useClickSound();
+
+const handlePress = async () => {
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  await playSound();
+  // Perform action
+};
+```
+
+**Components with Audio Feedback:**
+- **NavButton** - STREAK, SETLIST, METRONOME buttons
+- **FrequencyTuner** - Instrument selector (chevrons)
+- **GangSwitch** - Difficulty/Fluency selection
+- **RotaryKnob** - Genre control
+- **SearchSuggestions** - Song suggestions & "Show more" button
+- **PageHeader** - Avatar & logout buttons
+
+**Feedback Order (Always):**
+1. Haptic feedback (immediate)
+2. Sound playback (async, non-blocking)
+3. Action execution (navigation, state change, etc.)
+
+**Audio Configuration:**
+- Mode: `playsInSilentModeIOS: true` (plays even in silent mode)
+- Mixing: `shouldDuckAndroid: false` (doesn't lower music volume)
+- Lifecycle: Sound preloaded on component mount, unloaded on unmount
+
+5. Technical "Gotchas" for React Native
 
 Shadows on Android: shadowColor/Offset doesn't work well on Android. Use elevation for simple shadows, or react-native-skia / react-native-svg for complex soft shadows.
 
 Gradients: You will need expo-linear-gradient heavily for the button surfaces.
 
 Haptics: Don't overuse them. Use Selection for scrolling lists, Light for tapping plastic keys, and Medium for toggling power switches.
+
+Audio: All interactive components should have sound feedback. Use `useClickSound` hook for consistency. Avoid loading sounds multiple times—the hook handles preloading and reuse.

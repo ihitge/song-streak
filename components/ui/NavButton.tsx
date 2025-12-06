@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, Text, View, StyleSheet } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import * as Haptics from 'expo-haptics';
+import { useClickSound } from '@/hooks/useClickSound';
 
 interface NavButtonProps {
   iconName: React.ComponentProps<typeof FontAwesome>['name'];
@@ -10,8 +12,19 @@ interface NavButtonProps {
 }
 
 export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive, onPress }) => {
+  const { playSound } = useClickSound();
+
+  const handlePress = async () => {
+    // Haptic feedback
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Play click sound
+    await playSound();
+    // Navigate
+    onPress();
+  };
+
   return (
-    <Pressable onPress={onPress} style={styles.buttonContainer}>
+    <Pressable onPress={handlePress} style={styles.buttonContainer}>
       {/* The Well (Outer Recess) */}
       <View style={styles.well}>
         {/* The Cap (Physical Key) */}
