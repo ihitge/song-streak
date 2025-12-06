@@ -6,8 +6,8 @@ import { Colors } from '@/constants/Colors';
 import { useGangSwitchSound } from '@/hooks/useGangSwitchSound';
 import type { GangSwitchProps } from '@/types/filters';
 
-const BUTTON_HEIGHT = 32; // Increased from 28
-const WELL_HEIGHT = 44; // Increased from 38
+const BUTTON_HEIGHT = 56; // Increased to accommodate icon + label with padding
+const WELL_HEIGHT = 68; // Increased to match button height with padding
 const BORDER_RADIUS = 4;
 
 export const GangSwitch = <T extends string>({
