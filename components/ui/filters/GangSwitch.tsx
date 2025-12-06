@@ -106,17 +106,30 @@ export const GangSwitch = <T extends string>({
                     </Box>
                   </Canvas>
 
-                  {/* Button Label */}
-                  <Text style={[styles.buttonLabel, isActive && styles.buttonLabelActive]}>
-                    {opt.label}
-                  </Text>
+                  {/* Button Content - Icon + Label Stack */}
+                  <View style={styles.buttonContent}>
+                    {/* Icon */}
+                    {showIcons && opt.icon && (
+                      <View style={styles.iconContainer}>
+                        {React.createElement(opt.icon, {
+                          size: 18,
+                          color: isActive ? Colors.softWhite : Colors.charcoal,
+                        })}
+                      </View>
+                    )}
 
-                  {/* LED Indicator */}
-                  {isActive && (
-                    <View style={styles.ledContainer}>
-                      <View style={styles.ledDot} />
-                    </View>
-                  )}
+                    {/* Label */}
+                    <Text style={[styles.buttonLabel, isActive && styles.buttonLabelActive]}>
+                      {opt.label}
+                    </Text>
+
+                    {/* LED Indicator */}
+                    {isActive && (
+                      <View style={styles.ledContainer}>
+                        <View style={styles.ledDot} />
+                      </View>
+                    )}
+                  </View>
                 </View>
               </Pressable>
             );
@@ -189,5 +202,15 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: Colors.vermilion,
+  },
+  buttonContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    zIndex: 1,
+  },
+  iconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

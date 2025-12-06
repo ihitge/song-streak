@@ -35,6 +35,7 @@ export default function AddSongScreen() {
           onChange={setActiveTab}
           options={TAB_OPTIONS}
           allowDeselect={false}
+          showIcons={true}
         />
 
         <View style={styles.tabContent}>
