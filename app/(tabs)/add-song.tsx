@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { GangSwitch } from '@/components/ui/filters/GangSwitch';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -54,6 +55,20 @@ export default function AddSongScreen() {
                   onChangeText={setVideoUrl}
                 />
               </View>
+
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={styles.analyzeButtonContainer}
+              >
+                <LinearGradient
+                  colors={[Colors.vermilion, '#d04620']}
+                  style={styles.analyzeButton}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                >
+                  <Text style={styles.analyzeButtonText}>ANALYZE VIDEO</Text>
+                </LinearGradient>
+              </TouchableOpacity>
             </View>
           ) : (
             <Text style={styles.placeholderText}>Content for {activeTab}</Text>
@@ -122,5 +137,29 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaRegular',
     color: Colors.graphite,
     textAlign: 'center',
+  },
+  analyzeButtonContainer: {
+    shadowColor: Colors.ink,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  analyzeButton: {
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 2,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.3)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.2)',
+  },
+  analyzeButtonText: {
+    fontFamily: 'LexendDecaBold',
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 2,
   },
 });
