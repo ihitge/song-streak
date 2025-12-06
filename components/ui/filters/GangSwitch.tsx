@@ -207,6 +207,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
+    paddingVertical: 8,
     zIndex: 1,
   },
   iconContainer: {
