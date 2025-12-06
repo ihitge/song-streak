@@ -1,13 +1,32 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { GangSwitch } from '@/components/ui/filters/GangSwitch';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Mic, BookOpen, Target, StickyNote } from 'lucide-react-native';
+import { Mic, BookOpen, Target, StickyNote, Guitar, Music, Drum, Keyboard, Play } from 'lucide-react-native';
 import { FilterOption } from '@/types/filters';
+import { useClickSound } from '@/hooks/useClickSound';
+import * as Haptics from 'expo-haptics';
+import { ProcessingSignal } from '@/components/ui/ProcessingSignal';
+import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
 
 type AddSongTab = 'Basics' | 'Theory' | 'Practice' | 'Lyrics';
+type Instrument = 'Guitar' | 'Bass' | 'Drums' | 'Keys';
+
+interface InstrumentAnalysisData {
+  videoUrl: string;
+  theoryData: {
+    key: string;
+    tempo: string;
+    timeSignature: string;
+  };
+  practiceData: {
+    difficulty: string;
+    techniques: string[];
+  };
+  analyzed: boolean;
+}
 
 const TAB_OPTIONS: FilterOption<AddSongTab>[] = [
   { value: 'Basics', label: 'BASICS', icon: Mic },
@@ -16,15 +35,86 @@ const TAB_OPTIONS: FilterOption<AddSongTab>[] = [
   { value: 'Lyrics', label: 'LYRICS', icon: StickyNote },
 ];
 
+const INSTRUMENT_OPTIONS: FilterOption<Instrument>[] = [
+  { value: 'Guitar', label: 'GUITAR', icon: Guitar },
+  { value: 'Bass', label: 'BASS', icon: Music },
+  { value: 'Drums', label: 'DRUMS', icon: Drum },
+  { value: 'Keys', label: 'KEYS', icon: Keyboard },
+];
+
 export default function AddSongScreen() {
   const [activeTab, setActiveTab] = useState<AddSongTab>('Basics');
   const [videoUrl, setVideoUrl] = useState('');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentInstrument, setCurrentInstrument] = useState<Instrument>('Guitar');
+  const [instrumentData, setInstrumentData] = useState<Record<Instrument, InstrumentAnalysisData | null>>({
+    Guitar: null,
+    Bass: null,
+    Drums: null,
+    Keys: null,
+  });
+  const { playSound } = useClickSound();
+
+  const handleInstrumentChange = (instrument: Instrument) => {
+    setCurrentInstrument(instrument);
+    const data = instrumentData[instrument];
+    setVideoUrl(data?.videoUrl || '');
+  };
+
+  const handleAnalyze = async () => {
+    if (!videoUrl.trim()) {
+      Alert.alert('Error', 'Please enter a video URL');
+      return;
+    }
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+
+    setIsAnalyzing(true);
+
+    setTimeout(() => {
+      const mockData: InstrumentAnalysisData = {
+        videoUrl: videoUrl,
+        theoryData: {
+          key: 'E Minor',
+          tempo: '120 BPM',
+          timeSignature: '4/4',
+        },
+        practiceData: {
+          difficulty: 'Medium',
+          techniques: ['Fingerpicking', 'Barre Chords'],
+        },
+        analyzed: true,
+      };
+
+      setInstrumentData(prev => ({
+        ...prev,
+        [currentInstrument]: mockData,
+      }));
+
+      setIsAnalyzing(false);
+    }, 3000);
+  };
 
   // TODO: Implement save logic.
   // When saving:
   // 1. Get title and artist from inputs
   // 2. const artwork = await fetchAlbumArtwork(title, artist);
   // 3. Save song data with artwork.artworkUrl to Supabase
+
+  const tabLoadingStates: Record<AddSongTab, boolean> = {
+    Basics: false,
+    Theory: isAnalyzing,
+    Practice: isAnalyzing,
+    Lyrics: false,
+  };
+
+  const tabDataAvailable: Record<AddSongTab, boolean> = {
+    Basics: false,
+    Theory: instrumentData[currentInstrument]?.analyzed || false,
+    Practice: instrumentData[currentInstrument]?.analyzed || false,
+    Lyrics: false,
+  };
 
   return (
     <View style={styles.container}>
@@ -38,27 +128,48 @@ export default function AddSongScreen() {
           options={TAB_OPTIONS}
           allowDeselect={false}
           showIcons={true}
+          loadingStates={tabLoadingStates}
+          dataAvailable={tabDataAvailable}
         />
 
         <View style={styles.tabContent}>
           {activeTab === 'Basics' ? (
             <View style={styles.basicsContainer}>
+              <GangSwitch
+                label="INSTRUMENT"
+                value={currentInstrument}
+                onChange={handleInstrumentChange}
+                options={INSTRUMENT_OPTIONS}
+                allowDeselect={false}
+                showIcons={true}
+              />
+
               <Text style={styles.sectionTitle}>Source Input (Generate Data)</Text>
 
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Video URL</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Paste video URL to extract theory"
-                  placeholderTextColor={Colors.graphite}
-                  value={videoUrl}
-                  onChangeText={setVideoUrl}
-                />
-              </View>
+              {isAnalyzing ? (
+                <ProcessingSignal />
+              ) : instrumentData[currentInstrument]?.analyzed ? (
+                <View style={styles.inputGroup}>
+                  <VideoPlaceholder videoUrl={instrumentData[currentInstrument]!.videoUrl} />
+                </View>
+              ) : (
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>Video URL</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Paste video URL to extract theory"
+                    placeholderTextColor={Colors.graphite}
+                    value={videoUrl}
+                    onChangeText={setVideoUrl}
+                  />
+                </View>
+              )}
 
               <TouchableOpacity
                 activeOpacity={0.9}
                 style={styles.analyzeButtonContainer}
+                onPress={handleAnalyze}
+                disabled={isAnalyzing}
               >
                 <LinearGradient
                   colors={[Colors.vermilion, '#d04620']}
@@ -66,7 +177,13 @@ export default function AddSongScreen() {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0, y: 1 }}
                 >
-                  <Text style={styles.analyzeButtonText}>ANALYZE VIDEO</Text>
+                  {isAnalyzing ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.analyzeButtonText}>
+                      {instrumentData[currentInstrument]?.analyzed ? 'RE-ANALYZE VIDEO' : 'ANALYZE VIDEO'}
+                    </Text>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
             </View>

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
+import Animated, { Easing, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { useAnimatedStyle, interpolate, Extrapolate } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { useGangSwitchSound } from '@/hooks/useGangSwitchSound';
+import { RefreshCw } from 'lucide-react-native';
 import type { GangSwitchProps } from '@/types/filters';
 
 const BUTTON_HEIGHT = 56; // Increased to accommodate icon + label with padding
@@ -20,9 +23,41 @@ export const GangSwitch = <T extends string>({
   showIcons = false,
   equalWidth = true,
   allowDeselect = true,
+  loadingStates,
+  dataAvailable,
 }: GangSwitchProps<T>) => {
   const [wellWidth, setWellWidth] = useState(200);
   const { playSound } = useGangSwitchSound();
+  const spinValue = useSharedValue(0);
+
+  // Set up rotation animation for loading states
+  useEffect(() => {
+    const hasAnyLoading = options.some(opt => loadingStates?.[opt.value]);
+
+    if (hasAnyLoading) {
+      spinValue.value = withRepeat(
+        withTiming(1, {
+          duration: 1000,
+          easing: Easing.linear,
+        }),
+        -1
+      );
+    } else {
+      spinValue.value = 0;
+    }
+  }, [loadingStates]);
+
+  const animatedRotate = useAnimatedStyle(() => {
+    const rotation = interpolate(
+      spinValue.value,
+      [0, 1],
+      [0, 360],
+      Extrapolate.CLAMP
+    );
+    return {
+      transform: [{ rotate: `${rotation}deg` }],
+    };
+  });
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setWellWidth(event.nativeEvent.layout.width);
@@ -111,10 +146,19 @@ export const GangSwitch = <T extends string>({
                     {/* Icon */}
                     {showIcons && opt.icon && (
                       <View style={styles.iconContainer}>
-                        {React.createElement(opt.icon, {
-                          size: 18,
-                          color: isActive ? Colors.softWhite : Colors.charcoal,
-                        })}
+                        {loadingStates?.[opt.value] ? (
+                          <Animated.View style={animatedRotate}>
+                            <RefreshCw
+                              size={18}
+                              color={isActive ? Colors.softWhite : Colors.charcoal}
+                            />
+                          </Animated.View>
+                        ) : (
+                          React.createElement(opt.icon, {
+                            size: 18,
+                            color: isActive ? Colors.softWhite : Colors.charcoal,
+                          })
+                        )}
                       </View>
                     )}
 
@@ -123,8 +167,8 @@ export const GangSwitch = <T extends string>({
                       {opt.label}
                     </Text>
 
-                    {/* LED Indicator */}
-                    {isActive && (
+                    {/* LED Indicator - Show when data available OR when active */}
+                    {(dataAvailable?.[opt.value] || isActive) && (
                       <View style={styles.ledContainer}>
                         <View style={styles.ledDot} />
                       </View>

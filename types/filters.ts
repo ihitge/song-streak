@@ -28,6 +28,8 @@ export interface GangSwitchProps<T extends string = string> extends BaseFilterPr
   showIcons?: boolean;
   equalWidth?: boolean;
   allowDeselect?: boolean;
+  loadingStates?: Record<T, boolean>;
+  dataAvailable?: Record<T, boolean>;
 }
 
 // RotaryKnob-specific props
