@@ -1,7 +1,9 @@
 import { Audio } from 'expo-av';
 import { useEffect, useRef } from 'react';
+import { useSettingsContext } from '@/ctx/SettingsContext';
 
 export function useFABSound() {
+  const { settings } = useSettingsContext();
   const sound = useRef<Audio.Sound | null>(null);
   const isLoadingRef = useRef(false);
 
@@ -53,6 +55,9 @@ export function useFABSound() {
   }, []);
 
   const playSound = async () => {
+    // Respect sound settings
+    if (!settings.soundEnabled) return;
+
     if (!sound.current) {
       console.warn('Sound not loaded yet');
       return;

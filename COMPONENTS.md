@@ -16,12 +16,17 @@
 | `TactileNavbar` | Bottom navigation bar | `components/ui/TactileNavbar.tsx` |
 | `LibraryHeader` | Page header with search and filters (uses PageHeader) | `components/ui/LibraryHeader.tsx` |
 | `SearchSuggestions` | Dropdown for search results | `components/ui/SearchSuggestions.tsx` |
+| `ProfileTab` | User profile display in Account screen | `components/ui/account/ProfileTab.tsx` |
+| `SettingsTab` | App settings toggles (dark mode, sound) | `components/ui/account/SettingsTab.tsx` |
+| `BillingTab` | Billing/subscription placeholder | `components/ui/account/BillingTab.tsx` |
+| `SupportTab` | Help, about, and sign out | `components/ui/account/SupportTab.tsx` |
 
 ### Hooks
 
 | Hook | Purpose | Sound File | Location |
 |------|---------|------------|----------|
 | `useSignOut` | Centralized sign-out logic with error handling | N/A | `hooks/useSignOut.ts` |
+| `useSettings` | App settings (dark mode, sound enabled) | N/A | `hooks/useSettings.ts` |
 | `useNavButtonSound` | Audio feedback for NavButton (large nav) | sound-nav-button.wav | `hooks/useNavButtonSound.ts` |
 | `useGangSwitchSound` | Audio feedback for GangSwitch (small filters) | sound-gang-switch.wav | `hooks/useGangSwitchSound.ts` |
 | `useRotaryKnobSound` | Audio feedback for RotaryKnob (genre selector) | sound-rotary-knob.wav | `hooks/useRotaryKnobSound.ts` |
@@ -98,7 +103,7 @@ interface PageHeaderProps {
 **Visual Behavior**:
 - SongStreak logo (MomoTrustDisplay, deepSpaceBlue)
 - Page subtitle (uppercase, warmGray)
-- User avatar button with audio + haptic feedback
+- User avatar button - displays user initials from email, navigates to `/account` on tap
 - Logout button with audio + haptic feedback (uses `useSignOut` hook)
 
 **Audio Feedback**: Both avatar and logout buttons provide haptic + sound feedback on press (`useClickSound` hook)
@@ -228,6 +233,28 @@ interface LibraryHeaderProps {
 
 ---
 
+### AccountScreen
+
+**Purpose**: User account management screen with tabbed interface for Profile, Settings, Billing, and Support.
+
+**Location**: `app/(tabs)/account.tsx`
+
+**Features**:
+- **Header**: Uses `PageHeader` component with subtitle "ACCOUNT"
+- **Tabs**: Uses `GangSwitch` with `allowDeselect={false}` to switch between:
+  - **Profile**: User avatar, email, member since date
+  - **Settings**: Dark mode toggle, Sound on/off toggle (persisted via `useSettings`)
+  - **Billing**: Current plan display, premium plans coming soon placeholder
+  - **Support**: Help links, app version, Sign Out button
+- **Navigation**: Accessible by tapping the avatar button in `PageHeader`
+
+**Settings Persistence**:
+- Uses `SettingsContext` (`ctx/SettingsContext.tsx`) for app-wide settings
+- Settings persisted to AsyncStorage
+- Sound toggle integrates with all sound hooks (`soundEnabled` check)
+
+---
+
 ## Design Patterns
 
 ### "Recessed Well" Pattern
@@ -282,4 +309,4 @@ Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches).
 
 ---
 
-*Last updated: Dec 6, 2025 (Added audio feedback documentation)*
+*Last updated: Dec 6, 2025 (Added Account screen, Settings context, useSettings hook)*

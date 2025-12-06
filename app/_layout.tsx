@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from '@/components/useColorScheme';
 import { LightThemeColors, DarkThemeColors } from '@/constants/Colors'; // Import custom colors
 import { AuthProvider, useAuth } from '@/ctx/AuthContext';
+import { SettingsProvider } from '@/ctx/SettingsContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -56,9 +57,11 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <RootLayoutNav />
-      </AuthProvider>
+      <SettingsProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </SettingsProvider>
     </GestureHandlerRootView>
   );
 }

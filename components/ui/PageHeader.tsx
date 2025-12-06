@@ -2,15 +2,29 @@ import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { LogOut } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useRouter, usePathname } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { useSignOut } from '@/hooks/useSignOut';
 import { useClickSound } from '@/hooks/useClickSound';
+import { useAuth } from '@/ctx/AuthContext';
 
 interface PageHeaderProps {
   subtitle: string;
   children?: ReactNode;
 }
+
+/**
+ * Helper to extract initials from email
+ */
+const getInitials = (email?: string | null): string => {
+  if (!email) return '??';
+  const name = email.split('@')[0];
+  const parts = name.split(/[._-]/);
+  return parts.length >= 2
+    ? (parts[0][0] + parts[1][0]).toUpperCase()
+    : name.substring(0, 2).toUpperCase();
+};
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
   subtitle,
@@ -18,10 +32,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   const { handleSignOut } = useSignOut();
   const { playSound } = useClickSound();
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const initials = getInitials(user?.email);
+  const isOnAccountPage = pathname === '/account';
 
   const handleAvatarPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await playSound();
+    // Navigate to account page if not already there
+    if (!isOnAccountPage) {
+      router.push('/account');
+    }
   };
 
   const handleLogoutPress = async () => {
@@ -44,7 +68,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         <View style={styles.topBarControls}>
           {/* User Avatar */}
           <Pressable style={styles.avatarButton} onPress={handleAvatarPress}>
-            <Text style={styles.avatarText}>JD</Text>
+            <Text style={styles.avatarText}>{initials}</Text>
           </Pressable>
           {/* Logout */}
           <Pressable style={styles.logoutButton} onPress={handleLogoutPress}>
