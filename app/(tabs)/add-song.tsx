@@ -3,14 +3,15 @@ import { StyleSheet, View, Text } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { GangSwitch } from '@/components/ui/filters/GangSwitch';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Mic, BookOpen, StickyNote } from 'lucide-react-native';
+import { Mic, BookOpen, Target, StickyNote } from 'lucide-react-native';
 import { FilterOption } from '@/types/filters';
 
-type AddSongTab = 'Basics' | 'Theory' | 'Lyrics';
+type AddSongTab = 'Basics' | 'Theory' | 'Practice' | 'Lyrics';
 
 const TAB_OPTIONS: FilterOption<AddSongTab>[] = [
   { value: 'Basics', label: 'BASICS', icon: Mic },
   { value: 'Theory', label: 'THEORY', icon: BookOpen },
+  { value: 'Practice', label: 'PRACTICE', icon: Target },
   { value: 'Lyrics', label: 'LYRICS', icon: StickyNote },
 ];
 
