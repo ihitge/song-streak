@@ -29,7 +29,11 @@
 | Need | Use This Hook |
 |------|---------------|
 | Sign out functionality | `useSignOut` |
-| Audio feedback for interactive elements | `useClickSound` |
+| Audio feedback for NavButton | `useNavButtonSound` |
+| Audio feedback for GangSwitch | `useGangSwitchSound` |
+| Audio feedback for RotaryKnob | `useRotaryKnobSound` |
+| Audio feedback for FAB button | `useFABSound` |
+| Audio feedback for other components | `useClickSound` |
 
 ### Design Tokens
 
@@ -56,14 +60,14 @@ Colors.warmGray      // #847577 - Secondary Text (Warm Gray)
 
 ### Audio Feedback (All Interactive Components)
 
-**IMPORTANT**: All interactive components **must** have audio + haptic feedback.
+**IMPORTANT**: All interactive components **must** have audio + haptic feedback using component-specific sound hooks.
 
-**Pattern**:
+**Component-Specific Sound Pattern**:
 ```typescript
-import { useClickSound } from '@/hooks/useClickSound';
+import { useNavButtonSound } from '@/hooks/useNavButtonSound'; // Example: NavButton
 import * as Haptics from 'expo-haptics';
 
-const { playSound } = useClickSound();
+const { playSound } = useNavButtonSound();
 
 const handlePress = async () => {
   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -72,10 +76,16 @@ const handlePress = async () => {
 };
 ```
 
-**Sound File**: `sound-click-07.mp3` (located in `/assets/audio/`)
-- Used by: NavButton, FrequencyTuner, GangSwitch, RotaryKnob, SearchSuggestions, PageHeader
-- Size: 9.2 KB (optimized MP3)
-- Quality: 128 kbps, 48 kHz stereo
+**Sound Hierarchy** (Sound files located in `/assets/audio/`):
+
+| Component | Sound File | Size | Purpose |
+|-----------|-----------|------|---------|
+| NavButton | sound-click-01.wav | 12 KB | Large primary navigation buttons |
+| GangSwitch | sound-click-02.wav | 18 KB | Small filter selectors |
+| FAB Button | sound-click-03.wav | 3.7 KB | Call-to-action (+ Add Song) |
+| FrequencyTuner | sound-click-07.mp3 | 9.2 KB | Tuner control |
+| RotaryKnob | sound-click-08.wav | TBD | Rotary genre selector |
+| SearchSuggestions, PageHeader | sound-click-07.mp3 | 9.2 KB | Secondary UI interactions |
 
 **Feedback Order** (Always):
 1. Haptic feedback (immediate, synchronous)
@@ -83,15 +93,17 @@ const handlePress = async () => {
 3. Action execution (navigation, state change, etc.)
 
 **Components that Already Have Audio**:
-- ✅ NavButton (STREAK, SETLIST, METRONOME)
-- ✅ FrequencyTuner (instrument selector)
-- ✅ GangSwitch (difficulty/fluency)
-- ✅ RotaryKnob (genre control)
-- ✅ SearchSuggestions (suggestions + show more)
-- ✅ PageHeader (avatar + logout buttons)
+- ✅ NavButton (STREAK, SETLIST, METRONOME) - `useNavButtonSound`
+- ✅ GangSwitch (difficulty/fluency) - `useGangSwitchSound`
+- ✅ FAB Button (+ Add Song) - `useFABSound`
+- ✅ FrequencyTuner (instrument selector) - `useClickSound`
+- ✅ RotaryKnob (genre control) - `useRotaryKnobSound`
+- ✅ SearchSuggestions (suggestions + show more) - `useClickSound`
+- ✅ PageHeader (avatar + logout buttons) - `useClickSound`
 
 **When Adding New Interactive Components**:
-- Always import and use `useClickSound` hook
+- Choose the appropriate sound hook based on component purpose
+- If component type is unique, create a new component-specific hook
 - Always add haptic feedback with `Haptics.impactAsync(ImpactFeedbackStyle.Light)`
 - Ensure both execute in the correct order
 

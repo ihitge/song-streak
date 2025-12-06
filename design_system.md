@@ -224,12 +224,38 @@ Phase 4: The Polish (Animation) (In Progress)
 
 4. Audio Feedback (The "Click")
 
-**Philosophy:** Like a physical device, every interaction produces a satisfying click sound.
+**Philosophy:** Like a physical device, every interaction produces a satisfying click sound. Different component types have differentiated sounds reflecting their visual and functional hierarchy.
 
-**Sound Library:** `/assets/audio/` contains click sounds for UI interactions.
-- `sound-click-07.mp3` (9.2 KB) - Standard UI click (all interactive components)
+**Sound Library:** `/assets/audio/` contains component-specific click sounds for UI interactions.
 
-**Implementation:** Use the `useClickSound` hook from `@/hooks/useClickSound.ts`
+### Component-Specific Sound Mapping
+
+| Component Type | Sound File | Size | Hook | Purpose |
+|---|---|---|---|---|
+| **NavButton** (STREAK, SETLIST, METRONOME) | sound-click-01.wav | 12 KB | `useNavButtonSound` | Large primary navigation buttons |
+| **GangSwitch** (Easy, Med, Hard filters) | sound-click-02.wav | 18 KB | `useGangSwitchSound` | Small multi-option filter selector |
+| **FAB** (+ Add Song button) | sound-click-03.wav | 3.7 KB | `useFABSound` | Prominent call-to-action button |
+| **FrequencyTuner** (Instrument selector) | sound-click-07.mp3 | 9.2 KB | `useClickSound` | Tuner control with glass effect |
+| **RotaryKnob** (Genre selector) | sound-click-08.wav | TBD | `useRotaryKnobSound` | Rotary input control |
+| **SearchSuggestions** & **PageHeader** | sound-click-07.mp3 | 9.2 KB | `useClickSound` | Secondary UI interactions |
+
+### Implementation Pattern
+
+For component-specific sounds, create a dedicated hook:
+
+```typescript
+import { useNavButtonSound } from '@/hooks/useNavButtonSound';
+
+const { playSound } = useNavButtonSound();
+
+const handlePress = async () => {
+  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  await playSound();
+  // Perform action
+};
+```
+
+For shared sounds, use the generic hook:
 
 ```typescript
 import { useClickSound } from '@/hooks/useClickSound';
@@ -243,13 +269,11 @@ const handlePress = async () => {
 };
 ```
 
-**Components with Audio Feedback:**
-- **NavButton** - STREAK, SETLIST, METRONOME buttons
-- **FrequencyTuner** - Instrument selector (chevrons)
-- **GangSwitch** - Difficulty/Fluency selection
-- **RotaryKnob** - Genre control
-- **SearchSuggestions** - Song suggestions & "Show more" button
-- **PageHeader** - Avatar & logout buttons
+**Sound Hierarchy Strategy:**
+- **Large Primary Actions** (NavButton, FAB): Distinctive, prominent sounds
+- **Small Filters** (GangSwitch): Lighter, differentiated sounds
+- **Controls** (FrequencyTuner, RotaryKnob): Specialized sounds
+- **Secondary UI** (SearchSuggestions, PageHeader): Shared sound for consistency
 
 **Feedback Order (Always):**
 1. Haptic feedback (immediate)

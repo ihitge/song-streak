@@ -19,10 +19,14 @@
 
 ### Hooks
 
-| Hook | Purpose | Location |
-|------|---------|----------|
-| `useSignOut` | Centralized sign-out logic with error handling | `hooks/useSignOut.ts` |
-| `useClickSound` | Audio feedback for interactive components | `hooks/useClickSound.ts` |
+| Hook | Purpose | Sound File | Location |
+|------|---------|------------|----------|
+| `useSignOut` | Centralized sign-out logic with error handling | N/A | `hooks/useSignOut.ts` |
+| `useNavButtonSound` | Audio feedback for NavButton (large nav) | sound-click-01.wav | `hooks/useNavButtonSound.ts` |
+| `useGangSwitchSound` | Audio feedback for GangSwitch (small filters) | sound-click-02.wav | `hooks/useGangSwitchSound.ts` |
+| `useRotaryKnobSound` | Audio feedback for RotaryKnob (genre selector) | sound-click-08.wav | `hooks/useRotaryKnobSound.ts` |
+| `useFABSound` | Audio feedback for FAB (add song button) | sound-click-03.wav | `hooks/useFABSound.ts` |
+| `useClickSound` | Audio feedback for shared components | sound-click-07.mp3 | `hooks/useClickSound.ts` |
 
 ---
 
