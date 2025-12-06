@@ -4,7 +4,7 @@ import { Canvas, Box, BoxShadow, rrect, rect } from '@shopify/react-native-skia'
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, Keyframe } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
+import { useRotaryKnobSound } from '@/hooks/useRotaryKnobSound';
 import type { RotaryKnobProps } from '@/types/filters';
 
 const KNOB_SIZE = 44; // Increased from 38px
@@ -55,7 +55,7 @@ export const RotaryKnob = <T extends string>({
 }: RotaryKnobProps<T>) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
-  const { playSound } = useClickSound();
+  const { playSound } = useRotaryKnobSound();
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setReadoutWidth(event.nativeEvent.layout.width);
