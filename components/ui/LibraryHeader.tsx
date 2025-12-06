@@ -1,21 +1,19 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { Search } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { PageHeader } from './PageHeader';
 import { SearchSuggestions } from './SearchSuggestions';
-
-interface Song {
-  id: string;
-  title: string;
-  artist: string;
-}
+import type { SongSuggestion } from '@/types/song';
 
 interface LibraryHeaderProps {
   searchText: string;
   onSearchChange: (text: string) => void;
-  searchSuggestions: Song[];
-  onSuggestionSelect: (song: Song) => void;
+  searchSuggestions: SongSuggestion[];
+  onSuggestionSelect: (song: SongSuggestion) => void;
+  totalResults?: number;
+  isLoading?: boolean;
+  recentSuggestions?: SongSuggestion[];
   difficultyFilter?: ReactNode;
   instrumentFilter?: ReactNode;
   genreFilter?: ReactNode;
@@ -26,19 +24,44 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   onSearchChange,
   searchSuggestions,
   onSuggestionSelect,
+  totalResults = searchSuggestions.length,
+  isLoading = false,
+  recentSuggestions = [],
   difficultyFilter,
   instrumentFilter,
   genreFilter,
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const isPressingRef = useRef(false);
 
   const handleSearchFocus = () => {
+    setIsFocused(true);
     setShowSuggestions(true);
   };
 
   const handleSearchBlur = () => {
-    setTimeout(() => setShowSuggestions(false), 200);
+    setIsFocused(false);
+    // Only close if not actively pressing a suggestion
+    setTimeout(() => {
+      if (!isPressingRef.current) {
+        setShowSuggestions(false);
+      }
+    }, 150);
   };
+
+  // Determine which suggestions to show
+  const isEmptySearch = searchText.length === 0;
+  const showRecentOnEmptyFocus = isFocused && isEmptySearch && recentSuggestions.length > 0;
+  const displaySuggestions = showRecentOnEmptyFocus ? recentSuggestions : searchSuggestions;
+  const displayHeaderLabel = showRecentOnEmptyFocus ? 'RECENT' : undefined;
+
+  // Determine if we should show the dropdown
+  const shouldShowDropdown = showSuggestions && (
+    isLoading ||
+    displaySuggestions.length > 0 ||
+    (searchText.length >= 2 && searchSuggestions.length === 0)
+  );
 
   return (
     <PageHeader subtitle="LIBRARY">
@@ -57,14 +80,20 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
                   onChangeText={onSearchChange}
                   onFocus={handleSearchFocus}
                   onBlur={handleSearchBlur}
+                  placeholder="Search songs..."
+                  placeholderTextColor={Colors.graphite}
                 />
               </View>
             </View>
-            {showSuggestions && searchSuggestions.length > 0 && (
+            {shouldShowDropdown && (
               <SearchSuggestions
-                suggestions={searchSuggestions}
+                suggestions={displaySuggestions}
                 onSelect={onSuggestionSelect}
                 onClose={() => setShowSuggestions(false)}
+                searchQuery={searchText}
+                totalResults={showRecentOnEmptyFocus ? displaySuggestions.length : totalResults}
+                isLoading={isLoading && !showRecentOnEmptyFocus}
+                headerLabel={displayHeaderLabel}
               />
             )}
           </View>
@@ -147,7 +176,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 24,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'LexendDecaBold',
     color: Colors.charcoal,
   },
 });
