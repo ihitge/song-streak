@@ -1,27 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, View, Text, FlatList, Pressable, Image } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Plus, Music, Clock } from 'lucide-react-native';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { FrequencyTuner, GangSwitch, RotaryKnob } from '@/components/ui/filters';
 import { instrumentOptions, difficultyOptions, genreOptions } from '@/config/filterOptions';
+import { useSearch } from '@/hooks/useSearch';
+import { useFABSound } from '@/hooks/useFABSound';
 import type { Instrument, Difficulty, Fluency, Genre } from '@/types/filters';
+import type { Song } from '@/types/song';
 
 // Re-export types for backwards compatibility
 export type { Instrument, Difficulty, Fluency, Genre } from '@/types/filters';
-
-type Song = {
-  id: string;
-  title: string;
-  artist: string;
-  duration: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  lastPracticed: string;
-  instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
-  genres: Exclude<Genre, 'All'>[];
-  artwork?: string;
-};
 
 const MOCK_SONGS: Song[] = [
   { 
@@ -138,10 +130,20 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
 
 export default function SetListScreen() {
   const router = useRouter();
-  const [searchText, setSearchText] = useState('');
+  const { playSound } = useFABSound();
   const [instrument, setInstrument] = useState<Instrument>('All');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [genre, setGenre] = useState<Genre>('All');
+
+  // Use the search hook for debounced search with relevance scoring
+  const {
+    query: searchText,
+    setQuery: setSearchText,
+    suggestions: searchSuggestions,
+    totalResults,
+    isLoading: isSearchLoading,
+    getRecentSuggestions,
+  } = useSearch(MOCK_SONGS);
 
   const handleSearchChange = (text: string) => {
     setSearchText(text);
@@ -151,16 +153,8 @@ export default function SetListScreen() {
     setSearchText(song.title);
   };
 
-  const searchSuggestions = useMemo(() => {
-    if (searchText.length < 2) return [];
-    const query = searchText.toLowerCase();
-    return MOCK_SONGS
-      .filter(song =>
-        song.title.toLowerCase().includes(query) ||
-        song.artist.toLowerCase().includes(query)
-      )
-      .slice(0, 5);
-  }, [searchText]);
+  // Get recent suggestions for empty focus state
+  const recentSuggestions = getRecentSuggestions();
 
   const filteredSongs = useMemo(() => {
     return MOCK_SONGS.filter(song => {
@@ -181,6 +175,9 @@ export default function SetListScreen() {
         onSearchChange={handleSearchChange}
         searchSuggestions={searchSuggestions}
         onSuggestionSelect={handleSuggestionSelect}
+        totalResults={totalResults}
+        isLoading={isSearchLoading}
+        recentSuggestions={recentSuggestions}
         difficultyFilter={
           <GangSwitch
             label="DIFF"
@@ -217,7 +214,14 @@ export default function SetListScreen() {
       />
 
       {/* Hero Action Button */}
-      <Pressable style={styles.fab} onPress={() => router.push('/add-song')}>
+      <Pressable
+        style={styles.fab}
+        onPress={async () => {
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          await playSound();
+          router.push('/add-song');
+        }}
+      >
         <Plus size={32} color={Colors.softWhite} strokeWidth={3} />
       </Pressable>
     </View>
