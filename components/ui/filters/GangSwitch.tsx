@@ -3,7 +3,7 @@ import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-nati
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
+import { useGangSwitchSound } from '@/hooks/useGangSwitchSound';
 import type { GangSwitchProps } from '@/types/filters';
 
 const BUTTON_HEIGHT = 32; // Increased from 28
@@ -22,7 +22,7 @@ export const GangSwitch = <T extends string>({
   allowDeselect = true,
 }: GangSwitchProps<T>) => {
   const [wellWidth, setWellWidth] = useState(200);
-  const { playSound } = useClickSound();
+  const { playSound } = useGangSwitchSound();
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setWellWidth(event.nativeEvent.layout.width);
