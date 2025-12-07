@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
-import { GangSwitch } from '@/components/ui/filters/GangSwitch';
+import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Mic, BookOpen, Target, StickyNote, Guitar, Music, Drum, Keyboard, Play } from 'lucide-react-native';
-import { FilterOption } from '@/types/filters';
+import { Mic, BookOpen, Target, StickyNote, Play } from 'lucide-react-native';
+import { FilterOption, Instrument } from '@/types/filters';
 import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
 import { ProcessingSignal } from '@/components/ui/ProcessingSignal';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
+import { instrumentOptions } from '@/config/filterOptions';
 
 type AddSongTab = 'Basics' | 'Theory' | 'Practice' | 'Lyrics';
-type Instrument = 'Guitar' | 'Bass' | 'Drums' | 'Keys';
 
 interface InstrumentAnalysisData {
   videoUrl: string;
@@ -35,19 +35,15 @@ const TAB_OPTIONS: FilterOption<AddSongTab>[] = [
   { value: 'Lyrics', label: 'LYRICS', icon: StickyNote },
 ];
 
-const INSTRUMENT_OPTIONS: FilterOption<Instrument>[] = [
-  { value: 'Guitar', label: 'GUITAR', icon: Guitar },
-  { value: 'Bass', label: 'BASS', icon: Music },
-  { value: 'Drums', label: 'DRUMS', icon: Drum },
-  { value: 'Keys', label: 'KEYS', icon: Keyboard },
-];
+// Filter out 'All' option for creation context (only show specific instruments)
+const ADD_SONG_INSTRUMENT_OPTIONS = instrumentOptions.filter(opt => opt.value !== 'All');
 
 export default function AddSongScreen() {
   const [activeTab, setActiveTab] = useState<AddSongTab>('Basics');
   const [videoUrl, setVideoUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>('Guitar');
-  const [instrumentData, setInstrumentData] = useState<Record<Instrument, InstrumentAnalysisData | null>>({
+  const [instrumentData, setInstrumentData] = useState<Partial<Record<Instrument, InstrumentAnalysisData | null>>>({
     Guitar: null,
     Bass: null,
     Drums: null,
@@ -135,13 +131,11 @@ export default function AddSongScreen() {
         <View style={styles.tabContent}>
           {activeTab === 'Basics' ? (
             <View style={styles.basicsContainer}>
-              <GangSwitch
+              <FrequencyTuner
                 label="INSTRUMENT"
                 value={currentInstrument}
                 onChange={handleInstrumentChange}
-                options={INSTRUMENT_OPTIONS}
-                allowDeselect={false}
-                showIcons={true}
+                options={ADD_SONG_INSTRUMENT_OPTIONS}
               />
 
               <Text style={styles.sectionTitle}>Source Input (Generate Data)</Text>
