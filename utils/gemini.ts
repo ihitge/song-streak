@@ -150,6 +150,8 @@ IMPORTANT: Return ONLY the JSON object, nothing else.`;
       throw new Error('Invalid Gemini API response structure');
     }
 
+    console.log('Gemini API response:', textContent);
+
     // Parse JSON from response (handle markdown code blocks)
     let jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     let jsonString = jsonMatch ? jsonMatch[1] : textContent;
@@ -157,13 +159,17 @@ IMPORTANT: Return ONLY the JSON object, nothing else.`;
     // Clean up the JSON string
     jsonString = jsonString.trim();
 
+    console.log('Attempting to parse JSON:', jsonString);
+
     const result = JSON.parse(jsonString);
 
     // Validate required fields
     if (!result.title || !result.artist || !result.instrument || !result.theoryData || !result.practiceData) {
+      console.error('Gemini response missing required fields:', result);
       throw new Error('Gemini response missing required fields');
     }
 
+    console.log('Successfully parsed Gemini response:', result);
     return result as GeminiAnalysisResponse;
   } catch (error) {
     console.error('Gemini API Error:', error);

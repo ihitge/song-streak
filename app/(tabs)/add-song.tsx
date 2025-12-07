@@ -83,70 +83,66 @@ export default function AddSongScreen() {
 
       try {
         analysisResult = await analyzeVideoWithGemini(videoUrl);
+        console.log('✅ Analysis successful:', analysisResult);
       } catch (geminiError) {
         console.error('Gemini API Error:', geminiError);
 
         const errorMessage = geminiError instanceof Error ? geminiError.message : 'Unknown error';
 
-        // Show appropriate error alert based on error type
-        if (errorMessage.includes('QUOTA_EXCEEDED')) {
-          Alert.alert(
-            'API Quota Exceeded',
-            'The Gemini API quota has been exhausted for now.\n\nOptions:\n• Wait for quota reset (daily/monthly)\n• Upgrade to paid tier\n• Use sample data to continue testing',
-            [
-              {
-                text: 'Use Sample Data',
-                onPress: () => {
-                  // Continue with mock data
-                },
-              },
-              {
-                text: 'Cancel',
-                style: 'cancel',
-                onPress: () => {
-                  setIsAnalyzing(false);
-                  return;
-                },
-              },
-            ]
-          );
-        } else if (errorMessage.includes('MODEL_NOT_FOUND')) {
-          Alert.alert(
-            'Configuration Error',
-            'The Gemini model is not available. Please check your API configuration.\n\nUsing sample data for testing.',
-            [{ text: 'OK' }]
-          );
-        } else if (errorMessage.includes('AUTH_ERROR')) {
-          Alert.alert(
-            'Authentication Error',
-            'Invalid API key or insufficient permissions. Please check your credentials.\n\nUsing sample data for testing.',
-            [{ text: 'OK' }]
-          );
-        } else if (errorMessage.includes('VALIDATION_ERROR')) {
+        // Handle validation/config errors that should stop processing
+        if (errorMessage.includes('VALIDATION_ERROR')) {
           Alert.alert(
             'Input Error',
             errorMessage.replace('VALIDATION_ERROR: ', ''),
             [{ text: 'OK' }]
           );
+          setIsAnalyzing(false);
+          return;
         } else if (errorMessage.includes('CONFIG_ERROR')) {
           Alert.alert(
             'Configuration Error',
             errorMessage.replace('CONFIG_ERROR: ', ''),
             [{ text: 'OK' }]
           );
+          setIsAnalyzing(false);
+          return;
+        }
+
+        // For other errors, show alert and continue with mock data
+        if (errorMessage.includes('QUOTA_EXCEEDED')) {
+          Alert.alert(
+            'API Quota Exceeded',
+            'The Gemini API quota has been exhausted for now.\n\nOptions:\n• Wait for quota reset (daily/monthly)\n• Upgrade to paid tier\n• Continuing with sample data for testing'
+          );
+        } else if (errorMessage.includes('MODEL_NOT_FOUND')) {
+          Alert.alert(
+            'Configuration Error',
+            'The Gemini model is not available. Please check your API configuration.\n\nUsing sample data for testing.'
+          );
+        } else if (errorMessage.includes('AUTH_ERROR')) {
+          Alert.alert(
+            'Authentication Error',
+            'Invalid API key or insufficient permissions. Please check your credentials.\n\nUsing sample data for testing.'
+          );
         } else {
           Alert.alert(
             'Analysis Error',
-            'Unable to analyze video with Gemini API. Using sample data for testing.\n\nError: ' + errorMessage,
-            [{ text: 'OK' }]
+            'Unable to analyze video with Gemini API.\n\nUsing sample data for testing.\n\nError: ' + errorMessage
           );
         }
 
-        // Fall back to mock data after showing error (unless user cancelled)
+        // Fall back to mock data
+        console.log('⚠️ Using mock data as fallback');
         analysisResult = getMockGeminiResponse();
       }
 
-      // Auto-fill form fields with Gemini's analysis (or mock data)
+      // Auto-fill form fields with analysis result (real or mock)
+      console.log('Setting form fields:', {
+        title: analysisResult.title,
+        artist: analysisResult.artist,
+        instrument: analysisResult.instrument,
+      });
+
       setSongTitle(analysisResult.title);
       setArtist(analysisResult.artist);
       setCurrentInstrument(analysisResult.instrument);
