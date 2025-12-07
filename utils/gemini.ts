@@ -1,6 +1,6 @@
 /**
  * Gemini API Integration for Video Analysis
- * Analyzes YouTube/video URLs to extract song metadata
+ * Analyzes YouTube/video URLs to extract song metadata using multimodal AI
  */
 
 export interface GeminiAnalysisResponse {
@@ -11,12 +11,108 @@ export interface GeminiAnalysisResponse {
     key: string;
     tempo: string;
     timeSignature: string;
+    chords: string[];
+    scales: string[];
   };
   practiceData: {
     difficulty: string;
     techniques: string[];
+    strummingPattern?: string;
   };
 }
+
+/**
+ * Detect video platform from URL
+ */
+type VideoPlatform = 'youtube' | 'instagram' | 'tiktok' | 'other';
+
+function detectVideoPlatform(url: string): VideoPlatform {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return 'youtube';
+    if (hostname.includes('instagram.com')) return 'instagram';
+    if (hostname.includes('tiktok.com')) return 'tiktok';
+    return 'other';
+  } catch {
+    return 'other';
+  }
+}
+
+/**
+ * Function declaration schema for structured output
+ * This forces Gemini to return data in a predictable JSON format
+ */
+const extractSongTheoryFunction = {
+  name: 'extract_song_theory',
+  description: 'Extract song metadata and music theory from a video tutorial. Analyze the video content including title, description, audio, and visual elements to identify the song being taught.',
+  parameters: {
+    type: 'object',
+    properties: {
+      title: {
+        type: 'string',
+        description: 'The actual song title being taught (not the video title)',
+      },
+      artist: {
+        type: 'string',
+        description: 'The original artist who performs the song (not the tutorial creator)',
+      },
+      instrument: {
+        type: 'string',
+        enum: ['Guitar', 'Bass', 'Drums', 'Keys'],
+        description: 'The primary instrument being taught in the tutorial',
+      },
+      theoryData: {
+        type: 'object',
+        properties: {
+          key: {
+            type: 'string',
+            description: 'The musical key of the song (e.g., "A Minor", "G Major")',
+          },
+          tempo: {
+            type: 'string',
+            description: 'The tempo in BPM (e.g., "120 BPM")',
+          },
+          timeSignature: {
+            type: 'string',
+            description: 'The time signature (e.g., "4/4", "3/4", "6/8")',
+          },
+          chords: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'List of chords used in the song (e.g., ["Am", "G", "C", "F"])',
+          },
+          scales: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Scales used in the song (e.g., ["A Minor Pentatonic", "A Natural Minor"])',
+          },
+        },
+        required: ['key', 'tempo', 'timeSignature', 'chords', 'scales'],
+      },
+      practiceData: {
+        type: 'object',
+        properties: {
+          difficulty: {
+            type: 'string',
+            enum: ['Easy', 'Medium', 'Hard'],
+            description: 'Difficulty level based on techniques required',
+          },
+          techniques: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Techniques used (e.g., ["Fingerpicking", "Barre Chords", "Hammer-ons"])',
+          },
+          strummingPattern: {
+            type: 'string',
+            description: 'The strumming or picking pattern if applicable (e.g., "D DU UDU")',
+          },
+        },
+        required: ['difficulty', 'techniques'],
+      },
+    },
+    required: ['title', 'artist', 'instrument', 'theoryData', 'practiceData'],
+  },
+};
 
 /**
  * Retry a function with exponential backoff
@@ -53,12 +149,12 @@ async function retryWithBackoff<T>(
 }
 
 /**
- * Analyze a video URL using Gemini API
- * Extracts: title, artist, instrument, key, tempo, time signature, difficulty, techniques
+ * Analyze a video URL using Gemini API with multimodal processing
+ * Uses tool calling for reliable structured output
  *
  * @param videoUrl - YouTube or video URL to analyze
  * @returns Promise with analyzed song data
- * @throws Error if API call fails with error code prefix (e.g., "MODEL_NOT_FOUND:", "QUOTA_EXCEEDED:")
+ * @throws Error if API call fails with error code prefix
  */
 export async function analyzeVideoWithGemini(
   videoUrl: string
@@ -83,27 +179,75 @@ export async function analyzeVideoWithGemini(
       throw new Error('VALIDATION_ERROR: Invalid video URL format. Please provide a valid URL.');
     }
 
-    const prompt = `Analyze this music video URL and extract the following information:
+    // Detect platform to determine the best approach
+    const platform = detectVideoPlatform(videoUrl);
+    console.log(`Detected platform: ${platform} for URL: ${videoUrl}`);
 
-Video URL: ${videoUrl}
+    const prompt = `Watch and analyze this music tutorial video. Extract the song being taught, including:
+- The actual song title and original artist
+- The instrument being taught
+- Music theory: key, tempo, time signature, chords used, scales used
+- Practice info: difficulty level, techniques required, strumming/picking pattern
 
-Extract and return ONLY a JSON object (no markdown, no extra text) with this exact structure:
-{
-  "title": "song title",
-  "artist": "artist name",
-  "instrument": "Guitar|Bass|Drums|Keys",
-  "theoryData": {
-    "key": "musical key (e.g., 'A Minor')",
-    "tempo": "tempo in BPM (e.g., '120 BPM')",
-    "timeSignature": "time signature (e.g., '4/4')"
-  },
-  "practiceData": {
-    "difficulty": "Easy|Medium|Hard",
-    "techniques": ["technique1", "technique2"]
-  }
-}
+Analyze the video title, description, audio content, and any visible chord diagrams or tablature.`;
 
-IMPORTANT: Return ONLY the JSON object, nothing else.`;
+    // Build request body based on platform
+    let requestBody: object;
+
+    if (platform === 'youtube') {
+      // YouTube: Use file_data with file_uri (snake_case per Gemini API spec)
+      // Note: YouTube URLs do NOT need mimeType - only uploaded files need it
+      console.log('Using YouTube multimodal approach with file_data');
+      requestBody = {
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                file_data: {
+                  file_uri: videoUrl,
+                },
+              },
+            ],
+          },
+        ],
+        tools: [
+          {
+            functionDeclarations: [extractSongTheoryFunction],
+          },
+        ],
+        toolConfig: {
+          functionCallingConfig: {
+            mode: 'ANY',
+            allowedFunctionNames: ['extract_song_theory'],
+          },
+        },
+      };
+    } else {
+      // Other platforms: Use url_context tool to fetch page content
+      console.log('Using url_context tool approach for:', platform);
+      requestBody = {
+        contents: [
+          {
+            parts: [
+              { text: `${prompt}\n\nVideo URL to analyze: ${videoUrl}` },
+            ],
+          },
+        ],
+        tools: [
+          { urlContext: {} },
+          { functionDeclarations: [extractSongTheoryFunction] },
+        ],
+        toolConfig: {
+          functionCallingConfig: {
+            mode: 'ANY',
+            allowedFunctionNames: ['extract_song_theory'],
+          },
+        },
+      };
+    }
+
+    console.log('Sending request to Gemini API...');
 
     // Wrap API call in retry logic for quota handling
     const response = await retryWithBackoff(async () => {
@@ -112,22 +256,13 @@ IMPORTANT: Return ONLY the JSON object, nothing else.`;
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
-            },
-          ],
-        }),
+        body: JSON.stringify(requestBody),
       });
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
+      console.error('Gemini API error response:', errorData);
 
       if (response.status === 404) {
         throw new Error('MODEL_NOT_FOUND: The Gemini model is not available. Please verify your API URL configuration is correct.');
@@ -143,34 +278,79 @@ IMPORTANT: Return ONLY the JSON object, nothing else.`;
     }
 
     const data = await response.json();
+    console.log('Gemini API raw response:', JSON.stringify(data, null, 2));
 
-    // Extract the text response from Gemini
-    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!textContent) {
-      throw new Error('Invalid Gemini API response structure');
+    // Try to extract function call response (preferred - structured output)
+    const parts = data.candidates?.[0]?.content?.parts || [];
+
+    for (const part of parts) {
+      if (part.functionCall?.name === 'extract_song_theory') {
+        const args = part.functionCall.args;
+        console.log('Extracted via function call:', args);
+
+        // Ensure arrays exist even if empty
+        const result: GeminiAnalysisResponse = {
+          title: args.title || 'Unknown',
+          artist: args.artist || 'Unknown',
+          instrument: args.instrument || 'Guitar',
+          theoryData: {
+            key: args.theoryData?.key || 'Unknown',
+            tempo: args.theoryData?.tempo || 'Unknown',
+            timeSignature: args.theoryData?.timeSignature || '4/4',
+            chords: args.theoryData?.chords || [],
+            scales: args.theoryData?.scales || [],
+          },
+          practiceData: {
+            difficulty: args.practiceData?.difficulty || 'Medium',
+            techniques: args.practiceData?.techniques || [],
+            strummingPattern: args.practiceData?.strummingPattern,
+          },
+        };
+
+        return result;
+      }
     }
 
-    console.log('Gemini API response:', textContent);
+    // Fallback: Try to parse text response as JSON (legacy behavior)
+    const textContent = parts.find((p: { text?: string }) => p.text)?.text;
+    if (textContent) {
+      console.log('Falling back to text parsing:', textContent);
 
-    // Parse JSON from response (handle markdown code blocks)
-    let jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-    let jsonString = jsonMatch ? jsonMatch[1] : textContent;
+      // Parse JSON from response (handle markdown code blocks)
+      let jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      let jsonString = jsonMatch ? jsonMatch[1] : textContent;
+      jsonString = jsonString.trim();
 
-    // Clean up the JSON string
-    jsonString = jsonString.trim();
+      try {
+        const parsed = JSON.parse(jsonString);
 
-    console.log('Attempting to parse JSON:', jsonString);
+        // Normalize to our expected format
+        const result: GeminiAnalysisResponse = {
+          title: parsed.title || 'Unknown',
+          artist: parsed.artist || 'Unknown',
+          instrument: parsed.instrument || 'Guitar',
+          theoryData: {
+            key: parsed.theoryData?.key || parsed.key || 'Unknown',
+            tempo: parsed.theoryData?.tempo || parsed.tempo || 'Unknown',
+            timeSignature: parsed.theoryData?.timeSignature || parsed.timeSignature || '4/4',
+            chords: parsed.theoryData?.chords || parsed.chords || [],
+            scales: parsed.theoryData?.scales || parsed.scales || [],
+          },
+          practiceData: {
+            difficulty: parsed.practiceData?.difficulty || parsed.difficulty || 'Medium',
+            techniques: parsed.practiceData?.techniques || parsed.techniques || [],
+            strummingPattern: parsed.practiceData?.strummingPattern || parsed.strummingPattern,
+          },
+        };
 
-    const result = JSON.parse(jsonString);
-
-    // Validate required fields
-    if (!result.title || !result.artist || !result.instrument || !result.theoryData || !result.practiceData) {
-      console.error('Gemini response missing required fields:', result);
-      throw new Error('Gemini response missing required fields');
+        console.log('Parsed from text response:', result);
+        return result;
+      } catch (parseError) {
+        console.error('Failed to parse text response as JSON:', parseError);
+      }
     }
 
-    console.log('Successfully parsed Gemini response:', result);
-    return result as GeminiAnalysisResponse;
+    throw new Error('PARSE_ERROR: Could not extract song data from Gemini response');
   } catch (error) {
     console.error('Gemini API Error:', error);
     throw error;
@@ -183,17 +363,20 @@ IMPORTANT: Return ONLY the JSON object, nothing else.`;
  */
 export function getMockGeminiResponse(): GeminiAnalysisResponse {
   return {
-    title: 'Stairway to Heaven',
-    artist: 'Led Zeppelin',
+    title: 'Sample Song',
+    artist: 'Sample Artist',
     instrument: 'Guitar',
     theoryData: {
       key: 'A Minor',
-      tempo: '76 BPM',
+      tempo: '120 BPM',
       timeSignature: '4/4',
+      chords: ['Am', 'G', 'C', 'F'],
+      scales: ['A Minor Pentatonic'],
     },
     practiceData: {
-      difficulty: 'Hard',
-      techniques: ['Fingerpicking', 'Hammer-ons', 'Pull-offs', 'Barre Chords'],
+      difficulty: 'Medium',
+      techniques: ['Fingerpicking', 'Hammer-ons', 'Pull-offs'],
+      strummingPattern: 'D DU UDU',
     },
   };
 }
