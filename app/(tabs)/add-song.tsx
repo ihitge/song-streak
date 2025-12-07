@@ -16,6 +16,8 @@ type AddSongTab = 'Basics' | 'Theory' | 'Practice' | 'Lyrics';
 
 interface InstrumentAnalysisData {
   videoUrl: string;
+  title: string;
+  artist: string;
   theoryData: {
     key: string;
     tempo: string;
@@ -49,12 +51,16 @@ export default function AddSongScreen() {
     Drums: null,
     Keys: null,
   });
+  const [songTitle, setSongTitle] = useState('');
+  const [artist, setArtist] = useState('');
   const { playSound } = useClickSound();
 
   const handleInstrumentChange = (instrument: Instrument) => {
     setCurrentInstrument(instrument);
     const data = instrumentData[instrument];
     setVideoUrl(data?.videoUrl || '');
+    setSongTitle(data?.title || '');
+    setArtist(data?.artist || '');
   };
 
   const handleAnalyze = async () => {
@@ -71,6 +77,8 @@ export default function AddSongScreen() {
     setTimeout(() => {
       const mockData: InstrumentAnalysisData = {
         videoUrl: videoUrl,
+        title: songTitle,
+        artist: artist,
         theoryData: {
           key: 'E Minor',
           tempo: '120 BPM',
@@ -131,13 +139,6 @@ export default function AddSongScreen() {
         <View style={styles.tabContent}>
           {activeTab === 'Basics' ? (
             <View style={styles.basicsContainer}>
-              <FrequencyTuner
-                label="INSTRUMENT"
-                value={currentInstrument}
-                onChange={handleInstrumentChange}
-                options={ADD_SONG_INSTRUMENT_OPTIONS}
-              />
-
               <Text style={styles.sectionTitle}>Source Input (Generate Data)</Text>
 
               {isAnalyzing ? (
@@ -180,6 +181,35 @@ export default function AddSongScreen() {
                   )}
                 </LinearGradient>
               </TouchableOpacity>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Song Title</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter song title"
+                  placeholderTextColor={Colors.graphite}
+                  value={songTitle}
+                  onChangeText={setSongTitle}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Artist</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter artist name"
+                  placeholderTextColor={Colors.graphite}
+                  value={artist}
+                  onChangeText={setArtist}
+                />
+              </View>
+
+              <FrequencyTuner
+                label="INSTRUMENT"
+                value={currentInstrument}
+                onChange={handleInstrumentChange}
+                options={ADD_SONG_INSTRUMENT_OPTIONS}
+              />
             </View>
           ) : (
             <Text style={styles.placeholderText}>Content for {activeTab}</Text>
