@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Mic, BookOpen, Target, StickyNote, Play, Search, Save } from 'lucide-react-native';
+import { Mic, BookOpen, Target, StickyNote, Play, Search, Save, Music, Clock, Hash, ExternalLink } from 'lucide-react-native';
 import { FilterOption, Instrument } from '@/types/filters';
 import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
@@ -25,10 +25,13 @@ interface InstrumentAnalysisData {
     key: string;
     tempo: string;
     timeSignature: string;
+    chords: string[];
+    scales: string[];
   };
   practiceData: {
     difficulty: string;
     techniques: string[];
+    strummingPattern?: string;
   };
   analyzed: boolean;
 }
@@ -59,7 +62,24 @@ export default function AddSongScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [showDebug, setShowDebug] = useState(false);
+  const [formKey, setFormKey] = useState(0); // Force re-render key
   const { playSound } = useClickSound();
+
+  const handleOpenVideo = async (url: string) => {
+    try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      await playSound();
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'Cannot open this URL');
+      }
+    } catch (error) {
+      console.error('Error opening URL:', error);
+      Alert.alert('Error', 'Failed to open video');
+    }
+  };
 
   const handleInstrumentChange = (instrument: Instrument) => {
     setCurrentInstrument(instrument);
@@ -168,6 +188,10 @@ export default function AddSongScreen() {
         [analysisResult.instrument]: analyzedData,
       }));
 
+      // Force form re-render to ensure TextInputs update on iOS
+      setFormKey(prev => prev + 1);
+      console.log('Form state updated, formKey incremented');
+
       setIsAnalyzing(false);
     } catch (error) {
       console.error('Analysis error:', error);
@@ -223,16 +247,21 @@ export default function AddSongScreen() {
       };
 
       // 3. Save to Supabase
+      console.log('📝 Attempting to save song data:', JSON.stringify(songData, null, 2));
+
       const { data, error } = await supabase
         .from('songs')
         .insert([songData])
         .select();
 
+      console.log('💾 Supabase save result:', { data, error });
+
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('❌ Supabase error:', error);
         throw new Error(error.message || 'Failed to save to database');
       }
 
+      console.log('✅ Song saved successfully:', data);
       Alert.alert('Success', 'Song saved successfully!');
 
       // TODO: Navigate to Library or reset form
@@ -288,7 +317,7 @@ export default function AddSongScreen() {
 
         <View style={styles.tabContent}>
           {activeTab === 'Basics' ? (
-            <View style={styles.basicsContainer}>
+            <ScrollView style={styles.basicsContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.basicsScrollContent}>
               <Text style={styles.sectionTitle}>Source Input (Generate Data)</Text>
 
               {showDebug && (
@@ -303,9 +332,17 @@ export default function AddSongScreen() {
               {isAnalyzing ? (
                 <ProcessingSignal />
               ) : instrumentData[currentInstrument]?.analyzed ? (
-                <View style={styles.inputGroup}>
+                <TouchableOpacity
+                  style={styles.inputGroup}
+                  onPress={() => handleOpenVideo(instrumentData[currentInstrument]!.videoUrl)}
+                  activeOpacity={0.8}
+                >
                   <VideoPlaceholder videoUrl={instrumentData[currentInstrument]!.videoUrl} />
-                </View>
+                  <View style={styles.tapToPlayHint}>
+                    <ExternalLink size={12} color={Colors.graphite} />
+                    <Text style={styles.tapToPlayText}>Tap to open in YouTube</Text>
+                  </View>
+                </TouchableOpacity>
               ) : (
                 <View style={styles.inputGroup}>
                   <Text style={styles.inputLabel}>Video URL</Text>
@@ -385,22 +422,26 @@ export default function AddSongScreen() {
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Song Title</Text>
                 <TextInput
+                  key={`title-${formKey}`}
                   style={styles.textInput}
                   placeholder="Enter song title"
                   placeholderTextColor={Colors.graphite}
                   value={songTitle}
                   onChangeText={setSongTitle}
+                  defaultValue={songTitle}
                 />
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Artist</Text>
                 <TextInput
+                  key={`artist-${formKey}`}
                   style={styles.textInput}
                   placeholder="Enter artist name"
                   placeholderTextColor={Colors.graphite}
                   value={artist}
                   onChangeText={setArtist}
+                  defaultValue={artist}
                 />
               </View>
 
@@ -410,9 +451,151 @@ export default function AddSongScreen() {
                 onChange={handleInstrumentChange}
                 options={ADD_SONG_INSTRUMENT_OPTIONS}
               />
-            </View>
+            </ScrollView>
+          ) : activeTab === 'Theory' ? (
+            <ScrollView style={styles.theoryContainer} showsVerticalScrollIndicator={false}>
+              {instrumentData[currentInstrument]?.analyzed ? (
+                <>
+                  {/* Key, Tempo, Time Signature Row */}
+                  <View style={styles.theoryRow}>
+                    <View style={styles.theoryCard}>
+                      <View style={styles.theoryCardHeader}>
+                        <Music size={14} color={Colors.vermilion} />
+                        <Text style={styles.theoryCardLabel}>KEY</Text>
+                      </View>
+                      <Text style={styles.theoryCardValue}>
+                        {instrumentData[currentInstrument]?.theoryData.key || 'Unknown'}
+                      </Text>
+                    </View>
+                    <View style={styles.theoryCard}>
+                      <View style={styles.theoryCardHeader}>
+                        <Clock size={14} color={Colors.vermilion} />
+                        <Text style={styles.theoryCardLabel}>TEMPO</Text>
+                      </View>
+                      <Text style={styles.theoryCardValue}>
+                        {instrumentData[currentInstrument]?.theoryData.tempo || 'Unknown'}
+                      </Text>
+                    </View>
+                    <View style={styles.theoryCard}>
+                      <View style={styles.theoryCardHeader}>
+                        <Hash size={14} color={Colors.vermilion} />
+                        <Text style={styles.theoryCardLabel}>TIME</Text>
+                      </View>
+                      <Text style={styles.theoryCardValue}>
+                        {instrumentData[currentInstrument]?.theoryData.timeSignature || '4/4'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Chords Section */}
+                  <View style={styles.theorySection}>
+                    <Text style={styles.theorySectionTitle}>CHORDS</Text>
+                    <View style={styles.chipContainer}>
+                      {instrumentData[currentInstrument]?.theoryData.chords?.length > 0 ? (
+                        instrumentData[currentInstrument]?.theoryData.chords.map((chord, index) => (
+                          <View key={index} style={styles.chip}>
+                            <Text style={styles.chipText}>{chord}</Text>
+                          </View>
+                        ))
+                      ) : (
+                        <Text style={styles.noDataText}>No chords detected</Text>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Scales Section */}
+                  <View style={styles.theorySection}>
+                    <Text style={styles.theorySectionTitle}>SCALES</Text>
+                    <View style={styles.chipContainer}>
+                      {instrumentData[currentInstrument]?.theoryData.scales?.length > 0 ? (
+                        instrumentData[currentInstrument]?.theoryData.scales.map((scale, index) => (
+                          <View key={index} style={[styles.chip, styles.chipScale]}>
+                            <Text style={styles.chipText}>{scale}</Text>
+                          </View>
+                        ))
+                      ) : (
+                        <Text style={styles.noDataText}>No scales detected</Text>
+                      )}
+                    </View>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.noAnalysisContainer}>
+                  <Text style={styles.noAnalysisText}>
+                    Analyze a video first to see music theory data
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          ) : activeTab === 'Practice' ? (
+            <ScrollView style={styles.practiceContainer} showsVerticalScrollIndicator={false}>
+              {instrumentData[currentInstrument]?.analyzed ? (
+                <>
+                  {/* Difficulty Badge */}
+                  <View style={styles.difficultyContainer}>
+                    <Text style={styles.theorySectionTitle}>DIFFICULTY</Text>
+                    <View style={[
+                      styles.difficultyBadge,
+                      instrumentData[currentInstrument]?.practiceData.difficulty === 'Easy' && styles.difficultyEasy,
+                      instrumentData[currentInstrument]?.practiceData.difficulty === 'Medium' && styles.difficultyMedium,
+                      instrumentData[currentInstrument]?.practiceData.difficulty === 'Hard' && styles.difficultyHard,
+                    ]}>
+                      <Text style={styles.difficultyText}>
+                        {instrumentData[currentInstrument]?.practiceData.difficulty || 'Medium'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Techniques Section */}
+                  <View style={styles.theorySection}>
+                    <Text style={styles.theorySectionTitle}>TECHNIQUES</Text>
+                    <View style={styles.chipContainer}>
+                      {instrumentData[currentInstrument]?.practiceData.techniques?.length > 0 ? (
+                        instrumentData[currentInstrument]?.practiceData.techniques.map((technique, index) => (
+                          <View key={index} style={[styles.chip, styles.chipTechnique]}>
+                            <Text style={styles.chipText}>{technique}</Text>
+                          </View>
+                        ))
+                      ) : (
+                        <Text style={styles.noDataText}>No techniques detected</Text>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Strumming Pattern */}
+                  {instrumentData[currentInstrument]?.practiceData.strummingPattern && (
+                    <View style={styles.theorySection}>
+                      <Text style={styles.theorySectionTitle}>STRUMMING PATTERN</Text>
+                      <View style={styles.strummingContainer}>
+                        <Text style={styles.strummingText}>
+                          {instrumentData[currentInstrument]?.practiceData.strummingPattern}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Video Link */}
+                  {instrumentData[currentInstrument]?.videoUrl && (
+                    <TouchableOpacity
+                      style={styles.watchVideoButton}
+                      onPress={() => handleOpenVideo(instrumentData[currentInstrument]!.videoUrl)}
+                      activeOpacity={0.8}
+                    >
+                      <ExternalLink size={16} color={Colors.vermilion} />
+                      <Text style={styles.watchVideoText}>Watch Tutorial Video</Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              ) : (
+                <View style={styles.noAnalysisContainer}>
+                  <Text style={styles.noAnalysisText}>
+                    Analyze a video first to see practice data
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
           ) : (
-            <Text style={styles.placeholderText}>Content for {activeTab}</Text>
+            <Text style={styles.placeholderText}>Lyrics feature coming soon</Text>
           )}
         </View>
       </View>
@@ -426,19 +609,24 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.matteFog,
   },
   content: {
+    flex: 1,
     padding: 24,
     gap: 24,
   },
   tabContent: {
+    flex: 1,
     backgroundColor: Colors.softWhite,
     borderRadius: 12,
     padding: 24,
-    minHeight: 200,
     borderWidth: 1,
     borderColor: '#ccc',
   },
   basicsContainer: {
+    // No flex: 1 - let ScrollView content determine height
+  },
+  basicsScrollContent: {
     gap: 20,
+    paddingBottom: 20,
   },
   sectionTitle: {
     fontSize: 14,
@@ -534,5 +722,163 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.charcoal,
     paddingLeft: 12,
+  },
+  // Theory Tab Styles
+  theoryContainer: {
+    flex: 1,
+  },
+  theoryRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  theoryCard: {
+    flex: 1,
+    backgroundColor: Colors.alloy,
+    borderRadius: 8,
+    padding: 12,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: '#d0d0d0',
+  },
+  theoryCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  theoryCardLabel: {
+    fontSize: 10,
+    fontFamily: 'LexendDecaSemiBold',
+    color: Colors.warmGray,
+    letterSpacing: 1,
+  },
+  theoryCardValue: {
+    fontSize: 16,
+    fontFamily: 'LexendDecaBold',
+    color: Colors.charcoal,
+  },
+  theorySection: {
+    marginBottom: 20,
+  },
+  theorySectionTitle: {
+    fontSize: 10,
+    fontFamily: 'LexendDecaSemiBold',
+    color: Colors.warmGray,
+    letterSpacing: 2,
+    marginBottom: 10,
+  },
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chip: {
+    backgroundColor: Colors.vermilion,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  chipScale: {
+    backgroundColor: Colors.deepSpaceBlue,
+  },
+  chipTechnique: {
+    backgroundColor: Colors.moss,
+  },
+  chipText: {
+    fontSize: 12,
+    fontFamily: 'LexendDecaSemiBold',
+    color: '#FFFFFF',
+  },
+  noDataText: {
+    fontSize: 12,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.graphite,
+    fontStyle: 'italic',
+  },
+  noAnalysisContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noAnalysisText: {
+    fontSize: 14,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.graphite,
+    textAlign: 'center',
+  },
+  // Practice Tab Styles
+  practiceContainer: {
+    flex: 1,
+  },
+  difficultyContainer: {
+    marginBottom: 20,
+  },
+  difficultyBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.graphite,
+  },
+  difficultyEasy: {
+    backgroundColor: Colors.moss,
+  },
+  difficultyMedium: {
+    backgroundColor: '#D4A017',
+  },
+  difficultyHard: {
+    backgroundColor: Colors.lobsterPink,
+  },
+  difficultyText: {
+    fontSize: 14,
+    fontFamily: 'LexendDecaBold',
+    color: '#FFFFFF',
+    letterSpacing: 1,
+  },
+  strummingContainer: {
+    backgroundColor: Colors.alloy,
+    borderRadius: 8,
+    padding: 16,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: '#d0d0d0',
+  },
+  strummingText: {
+    fontSize: 20,
+    fontFamily: 'LexendDecaBold',
+    color: Colors.charcoal,
+    letterSpacing: 4,
+    textAlign: 'center',
+  },
+  watchVideoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: Colors.vermilion,
+    marginTop: 20,
+  },
+  watchVideoText: {
+    fontSize: 14,
+    fontFamily: 'LexendDecaSemiBold',
+    color: Colors.vermilion,
+  },
+  tapToPlayHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  tapToPlayText: {
+    fontSize: 11,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.graphite,
   },
 });

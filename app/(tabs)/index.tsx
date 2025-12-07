@@ -1,14 +1,17 @@
-import React, { useState, useMemo } from 'react';
-import { StyleSheet, View, Text, FlatList, Pressable, Image } from 'react-native';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { StyleSheet, View, Text, FlatList, Pressable, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock } from 'lucide-react-native';
+import { Plus, Music, Clock, Trash2 } from 'lucide-react-native';
+import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { FrequencyTuner, GangSwitch, RotaryKnob } from '@/components/ui/filters';
 import { instrumentOptions, difficultyOptions, genreOptions } from '@/config/filterOptions';
 import { useSearch } from '@/hooks/useSearch';
 import { useFABSound } from '@/hooks/useFABSound';
+import { supabase } from '@/utils/supabase/client';
 import type { Instrument, Difficulty, Fluency, Genre } from '@/types/filters';
 import type { Song } from '@/types/song';
 
@@ -76,7 +79,7 @@ const MOCK_SONGS: Song[] = [
 // --- Components ---
 
 // Song Card (Data Cassette)
-const SongCard = ({ song }: { song: Song }) => {
+const SongCard = ({ song, onDelete }: { song: Song; onDelete?: (id: string) => void }) => {
   return (
     <View style={styles.cardChassis}>
       <View style={styles.cardBody}>
@@ -85,7 +88,7 @@ const SongCard = ({ song }: { song: Song }) => {
             {song.artwork ? (
               <Image source={{ uri: song.artwork }} style={styles.thumbnailImage} />
             ) : (
-              <Music size={24} color={Colors.graphite} /> // Increased from 20
+              <Music size={24} color={Colors.graphite} />
             )}
         </View>
 
@@ -106,12 +109,16 @@ const SongCard = ({ song }: { song: Song }) => {
           </View>
         </View>
 
-        {/* Decorative "Grip" Lines */}
-        <View style={styles.gripLines}>
-            <View style={styles.gripLine} />
-            <View style={styles.gripLine} />
-            <View style={styles.gripLine} />
-        </View>
+        {/* Delete Button (temporary for testing) */}
+        {onDelete && (
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => onDelete(song.id)}
+            activeOpacity={0.7}
+          >
+            <Trash2 size={18} color={Colors.vermilion} />
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -131,9 +138,67 @@ const getDifficultyColor = (diff: Song['difficulty']) => {
 export default function SetListScreen() {
   const router = useRouter();
   const { playSound } = useFABSound();
+  const { playSound: playClickSound } = useClickSound();
   const [instrument, setInstrument] = useState<Instrument>('All');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [genre, setGenre] = useState<Genre>('All');
+  const [songs, setSongs] = useState<Song[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch songs from Supabase
+  const fetchSongs = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        console.log('No user logged in, showing mock songs');
+        setSongs(MOCK_SONGS);
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Fetching songs for user:', user.id);
+      const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching songs:', error);
+        setSongs(MOCK_SONGS); // Fallback to mock data
+      } else {
+        console.log('Fetched songs:', data?.length || 0);
+        // Map Supabase data to Song type, merge with MOCK_SONGS for demo
+        const dbSongs: Song[] = (data || []).map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          artist: row.artist,
+          duration: row.duration || '0:00',
+          difficulty: row.difficulty || 'Medium',
+          lastPracticed: row.last_practiced || 'Never',
+          instrument: row.instrument || 'Guitar',
+          genres: row.genres || [],
+          artwork: row.artwork_url,
+        }));
+        // Show DB songs first, then mock songs for demo
+        setSongs([...dbSongs, ...MOCK_SONGS]);
+      }
+    } catch (err) {
+      console.error('Fetch songs error:', err);
+      setSongs(MOCK_SONGS);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Fetch songs when screen comes into focus (e.g., after adding a new song)
+  useFocusEffect(
+    useCallback(() => {
+      fetchSongs();
+    }, [fetchSongs])
+  );
 
   // Use the search hook for debounced search with relevance scoring
   const {
@@ -143,7 +208,7 @@ export default function SetListScreen() {
     totalResults,
     isLoading: isSearchLoading,
     getRecentSuggestions,
-  } = useSearch(MOCK_SONGS);
+  } = useSearch(songs);
 
   const handleSearchChange = (text: string) => {
     setSearchText(text);
@@ -156,17 +221,63 @@ export default function SetListScreen() {
   // Get recent suggestions for empty focus state
   const recentSuggestions = getRecentSuggestions();
 
+  // Delete song handler (temporary for testing)
+  const handleDeleteSong = useCallback(async (songId: string) => {
+    // Check if it's a mock song (IDs 1-5 are mock)
+    const mockIds = ['1', '2', '3', '4', '5'];
+    if (mockIds.includes(songId)) {
+      Alert.alert('Info', 'Cannot delete demo songs. Only songs you added can be deleted.');
+      return;
+    }
+
+    Alert.alert(
+      'Delete Song',
+      'Are you sure you want to delete this song?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            await playClickSound();
+
+            try {
+              const { error } = await supabase
+                .from('songs')
+                .delete()
+                .eq('id', songId);
+
+              if (error) {
+                console.error('Delete error:', error);
+                Alert.alert('Error', 'Failed to delete song');
+                return;
+              }
+
+              console.log('Song deleted:', songId);
+              // Refresh the list
+              fetchSongs();
+            } catch (err) {
+              console.error('Delete error:', err);
+              Alert.alert('Error', 'Failed to delete song');
+            }
+          },
+        },
+      ]
+    );
+  }, [fetchSongs, playClickSound]);
+
   const filteredSongs = useMemo(() => {
-    return MOCK_SONGS.filter(song => {
+    return songs.filter(song => {
       const matchesSearch = searchText === '' ||
         song.title.toLowerCase().includes(searchText.toLowerCase()) ||
         song.artist.toLowerCase().includes(searchText.toLowerCase());
       const matchesInstrument = instrument === 'All' || song.instrument === instrument;
       const matchesDifficulty = difficulty === null || song.difficulty === difficulty;
-      const matchesGenre = genre === 'All' || song.genres.includes(genre as Exclude<Genre, 'All'>);
+      const matchesGenre = genre === 'All' || (song.genres && song.genres.includes(genre as Exclude<Genre, 'All'>));
       return matchesSearch && matchesInstrument && matchesDifficulty && matchesGenre;
     });
-  }, [searchText, instrument, difficulty, genre]);
+  }, [songs, searchText, instrument, difficulty, genre]);
 
   return (
     <View style={styles.container}>
@@ -205,13 +316,27 @@ export default function SetListScreen() {
       />
 
       {/* Song List */}
-      <FlatList
-        data={filteredSongs}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <SongCard song={item} />}
-        contentContainerStyle={styles.songListContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.vermilion} />
+          <Text style={styles.loadingText}>Loading songs...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredSongs}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <SongCard song={item} onDelete={handleDeleteSong} />}
+          contentContainerStyle={styles.songListContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Music size={48} color={Colors.graphite} />
+              <Text style={styles.emptyText}>No songs yet</Text>
+              <Text style={styles.emptySubtext}>Tap + to add your first song</Text>
+            </View>
+          }
+        />
+      )}
 
       {/* Hero Action Button */}
       <Pressable
@@ -335,6 +460,12 @@ const styles = StyleSheet.create({
       backgroundColor: '#d0d0d0',
       borderRadius: 1.5,
   },
+  deleteButton: {
+      padding: 8,
+      marginLeft: 8,
+      borderRadius: 6,
+      backgroundColor: 'rgba(238, 108, 77, 0.1)', // Vermilion with low opacity
+  },
 
   // --- FAB ---
   fab: {
@@ -355,5 +486,37 @@ const styles = StyleSheet.create({
     elevation: 8,
     borderWidth: 2,
     borderColor: '#fff', // Ring effect
+  },
+
+  // --- Loading & Empty States ---
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 14,
+    color: Colors.graphite,
+    marginTop: 12,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 18,
+    color: Colors.ink,
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 14,
+    color: Colors.graphite,
+    marginTop: 4,
   },
 });
