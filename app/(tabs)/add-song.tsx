@@ -79,18 +79,74 @@ export default function AddSongScreen() {
     setIsAnalyzing(true);
 
     try {
-      // Call Gemini API to analyze video
-      // TODO: Switch to real Gemini API once configured
       let analysisResult;
 
       try {
         analysisResult = await analyzeVideoWithGemini(videoUrl);
       } catch (geminiError) {
-        console.warn('Gemini API unavailable, using mock data:', geminiError);
+        console.error('Gemini API Error:', geminiError);
+
+        const errorMessage = geminiError instanceof Error ? geminiError.message : 'Unknown error';
+
+        // Show appropriate error alert based on error type
+        if (errorMessage.includes('QUOTA_EXCEEDED')) {
+          Alert.alert(
+            'API Quota Exceeded',
+            'The Gemini API quota has been exhausted for now.\n\nOptions:\n• Wait for quota reset (daily/monthly)\n• Upgrade to paid tier\n• Use sample data to continue testing',
+            [
+              {
+                text: 'Use Sample Data',
+                onPress: () => {
+                  // Continue with mock data
+                },
+              },
+              {
+                text: 'Cancel',
+                style: 'cancel',
+                onPress: () => {
+                  setIsAnalyzing(false);
+                  return;
+                },
+              },
+            ]
+          );
+        } else if (errorMessage.includes('MODEL_NOT_FOUND')) {
+          Alert.alert(
+            'Configuration Error',
+            'The Gemini model is not available. Please check your API configuration.\n\nUsing sample data for testing.',
+            [{ text: 'OK' }]
+          );
+        } else if (errorMessage.includes('AUTH_ERROR')) {
+          Alert.alert(
+            'Authentication Error',
+            'Invalid API key or insufficient permissions. Please check your credentials.\n\nUsing sample data for testing.',
+            [{ text: 'OK' }]
+          );
+        } else if (errorMessage.includes('VALIDATION_ERROR')) {
+          Alert.alert(
+            'Input Error',
+            errorMessage.replace('VALIDATION_ERROR: ', ''),
+            [{ text: 'OK' }]
+          );
+        } else if (errorMessage.includes('CONFIG_ERROR')) {
+          Alert.alert(
+            'Configuration Error',
+            errorMessage.replace('CONFIG_ERROR: ', ''),
+            [{ text: 'OK' }]
+          );
+        } else {
+          Alert.alert(
+            'Analysis Error',
+            'Unable to analyze video with Gemini API. Using sample data for testing.\n\nError: ' + errorMessage,
+            [{ text: 'OK' }]
+          );
+        }
+
+        // Fall back to mock data after showing error (unless user cancelled)
         analysisResult = getMockGeminiResponse();
       }
 
-      // Auto-fill form fields with Gemini's analysis
+      // Auto-fill form fields with Gemini's analysis (or mock data)
       setSongTitle(analysisResult.title);
       setArtist(analysisResult.artist);
       setCurrentInstrument(analysisResult.instrument);

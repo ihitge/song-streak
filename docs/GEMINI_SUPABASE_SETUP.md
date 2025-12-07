@@ -79,8 +79,10 @@ In your `.env.local` file (or Expo app config):
 
 ```
 EXPO_PUBLIC_GEMINI_API_KEY=your_api_key_here
-EXPO_PUBLIC_GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+EXPO_PUBLIC_GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
 ```
+
+**Important:** Make sure to use `gemini-2.5-flash` (or `gemini-2.0-flash`) as the model. Older models like `gemini-1.5-flash` are deprecated and will not work.
 
 ### 2.3 Implement Gemini Integration
 
@@ -237,16 +239,105 @@ export async function fetchAlbumArtwork(
 - Check song title and artist spelling
 - App uses placeholder image if not found
 
+### Problem: "API Quota Exceeded" error
+**Solution:** See **Part 6: API Quotas** below for details and solutions
+
 ---
 
-## Part 6: Next Steps
+## Part 6: Gemini API Quotas & Rate Limiting
 
-1. **Implement real Gemini integration** in `utils/gemini.ts`
-2. **Test with sample videos** (YouTube music videos work best)
-3. **Add error handling** for edge cases
-4. **Display saved songs** in Set List tab
-5. **Add editing/deletion** of saved songs
-6. **Implement theory/practice tabs** with saved data
+### Free Tier Limits (as of December 2025)
+
+The Gemini API free tier has the following limits:
+
+| Limit | Value |
+|-------|-------|
+| **Requests per minute (RPM)** | 15 |
+| **Requests per day (RPD)** | 1,500 |
+| **Input tokens per minute** | 1,000,000 |
+| **Output tokens per minute** | 30,000 |
+
+### What Happens When Quota Exceeded
+
+1. **API returns 429 error** with message: "You exceeded your current quota"
+2. **App shows error alert** explaining the quota issue
+3. **User can choose** to use sample data to continue testing
+4. **Automatic retry logic** attempts to retry 2 times with exponential backoff
+
+### Solutions for Quota Exhaustion
+
+#### Option 1: Wait for Quota Reset (Free)
+- **Daily quota resets:** At midnight UTC
+- **Monthly quota resets:** On the 1st of each month
+- **Best for:** Testing in batches during development
+- **Drawback:** Can't test continuously
+
+#### Option 2: Upgrade to Paid Tier (Recommended)
+- **Pricing:** $5+ per month depending on usage
+- **Benefits:** Much higher quotas (100+ RPM, 1M+ RPD)
+- **Setup:** Visit [Google AI Studio](https://aistudio.google.com/app/apikey) and enable paid billing
+- **Best for:** Production apps and heavy testing
+
+#### Option 3: Implement Client-Side Rate Limiting (Advanced)
+- **Approach:** Limit requests to stay within free tier quotas
+- **Example:** Max 1 analyze request per 4 seconds = 15 RPM
+- **Best for:** Development when upgrading isn't an option
+- **Note:** App already has exponential backoff for 429 errors
+
+### Monitoring Quota Usage
+
+1. **Check Google AI Studio Dashboard**
+   - Go to [aistudio.google.com](https://aistudio.google.com)
+   - Look at your project's API usage dashboard
+   - Shows requests, tokens, and quota remaining
+
+2. **Check App Console Logs**
+   - When quota exceeded: "Quota exceeded. Retrying in Xms..."
+   - Browser/device console will show detailed error messages
+   - Look for error codes: `QUOTA_EXCEEDED`, `RESOURCE_EXHAUSTED`
+
+3. **Monitor During Testing**
+   - Count API calls: Each "ANALYZE" button click = 1 API call
+   - Remember 15 RPM = ~1 call per 4 seconds
+   - Daily limit = 1,500 calls = ~1 analyze per minute all day
+
+### Tips to Avoid Quota Exhaustion
+
+1. **Use sample data during development** (when real API not needed)
+   - Kill Gemini API key to force fallback to mock data
+   - Test UI/UX without consuming quota
+
+2. **Batch your testing**
+   - Plan test cases before running
+   - Don't repeatedly test same video URL
+   - Test different scenarios, not the same one
+
+3. **Restart quota-heavy features**
+   - Each app restart might reset some in-memory counts
+   - Quota is tracked server-side, not client-side
+
+4. **Test with mock data first**
+   - The app automatically falls back to "Stairway to Heaven" when Gemini fails
+   - Perfect for UI/UX testing without quota costs
+
+---
+
+## Part 7: Next Steps
+
+1. **Test the workflow** with real video URLs
+   - Go to "Add Song" tab
+   - Paste a music video URL
+   - Click "ANALYZE VIDEO"
+   - Verify form auto-fills (or shows error if quota exceeded)
+   - Click "SAVE" to persist to Supabase
+
+2. **Monitor quota usage** using Google AI Studio dashboard
+
+3. **Display saved songs** in Set List tab (Phase 3)
+
+4. **Add editing/deletion** of saved songs (Phase 4)
+
+5. **Implement theory/practice tabs** with saved data (Phase 5)
 
 ---
 
