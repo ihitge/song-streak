@@ -1,213 +1,213 @@
-# 🚨 IMMEDIATE ACTION REQUIRED - Shell Environment Fix
+# 🔴 HYPOTHESIS INVALIDATED: Shell Environment Variables NOT The Root Cause
 
 ## Status
-✅ Root cause identified and documented
-❌ Shell environment STILL HAS STALE VARIABLES (need your action)
+✅ Investigated: Shell environment variables overriding .env
+❌ **FIX APPLIED BUT FAILED**: User cleared shell variables and restarted Expo
+❌ **Hypothesis INVALID**: Issue PERSISTS - Different root cause exists
+⚠️ **Next Action Required**: Investigate alternative causes
 
 ---
 
-## What You Need to Do RIGHT NOW
+## What Happened
 
-### The Problem
-Shell environment STILL contains OLD API credentials that override your `.env` file:
+### Hypothesis (Theory)
+Shell environment variables with OLD/stale API key values were overriding the `.env` file, causing Expo to bundle the app with incorrect credentials.
 
+### Evidence Supporting Hypothesis
 ```
-Shell (CURRENT):
+Shell Environment (Found):
 EXPO_PUBLIC_GEMINI_API_KEY=AIzaSyDJMZGszieQXmPmNENpYJtfMLeFcyrlX60  ❌ OLD (leaked)
 EXPO_PUBLIC_GEMINI_API_URL=...gemini-1.5-flash:generateContent        ❌ OLD (deprecated)
 
-.env File (CORRECT):
+.env File (Expected):
 EXPO_PUBLIC_GEMINI_API_KEY=AIzaSyDvv1hBb1ga1lydKXHJ2_Z3BZpnUg05GEg  ✅ NEW (valid)
 EXPO_PUBLIC_GEMINI_API_URL=...gemini-2.5-flash:generateContent        ✅ NEW (current)
 ```
 
-### Solution (Choose ONE)
-
-#### Option 1: Quick Fix in Current Terminal
-**In your terminal, run:**
+### Fix Applied
+User executed:
 ```bash
 unset EXPO_PUBLIC_GEMINI_API_KEY
 unset EXPO_PUBLIC_GEMINI_API_URL
 npx expo start
 ```
 
-#### Option 2: Restart Terminal (Recommended)
-1. **Close your terminal completely** (all tabs/windows)
-2. **Open a NEW terminal**
-3. **Navigate to project:**
-   ```bash
-   cd /Users/adriaanhitge/Dropbox/ai-apps/song-streak
-   ```
-4. **Start Expo:**
-   ```bash
-   npx expo start
-   ```
-
-#### Option 3: Force Fresh Shell
+Verified shell was clean:
 ```bash
-env -i bash --norc --noprofile
-cd /Users/adriaanhitge/Dropbox/ai-apps/song-streak
-npx expo start
+printenv | grep EXPO_PUBLIC_GEMINI
+# Output: (empty - successfully cleared)
 ```
 
----
-
-## Verify the Fix Works
-
-After restarting Expo dev server:
-
-1. **Open app on device/emulator**
-2. **Go to "Add Song" tab**
-3. **Paste a music video URL:**
-   ```
-   https://www.youtube.com/watch?v=x9VN57t2IXs
-   ```
-4. **Click "ANALYZE VIDEO"**
-5. **Look for the debug message:**
-   - ✅ **"✅ SUCCESS: Real data from Gemini API"** = WORKING!
-   - ❌ **"❌ ERROR: ..."** = Still has issues
-
-6. **Verify data changes:**
-   - Try different video URLs
-   - Each should return DIFFERENT song data
-   - NOT "Stairway to Heaven" every time
+### Result
+❌ **App still returns mock data ("Stairway to Heaven")**
+- Fix did NOT resolve the issue
+- Hypothesis was WRONG - this is NOT the root cause
+- Different mechanism is at play
 
 ---
 
-## Why This Works
+## What We Know (Facts)
 
-### Before Fix (Current State)
-```
-User: Paste URL + Click ANALYZE
-     ↓
-Expo uses OLD API key from shell
-     ↓
-API rejects: "Key is invalid/expired"
-     ↓
-App falls back to mock data ("Stairway to Heaven")
-     ↓
-Result: ❌ Wrong data every time
-```
+### ✅ Confirmed Working
+1. **API Key is Valid**
+   - Test script (`test-gemini.js`) with hardcoded key = HTTP 200 OK
+   - Real data returned: "Never Gonna Give You Up" for Rick Roll video
+   - API calls succeed when key is used directly
 
-### After Fix (Once You Clear Shell)
-```
-User: Paste URL #1 + Click ANALYZE
-     ↓
-Expo uses NEW API key from .env
-     ↓
-API accepts and returns real data
-     ↓
-App displays correct song info
-     ↓
-Result: ✅ Real data ("Never Gonna Give You Up" for Rick Roll video)
+2. **Code Implementation is Correct**
+   - `utils/gemini.ts` properly reads `process.env.EXPO_PUBLIC_GEMINI_API_KEY`
+   - Error handling works correctly
+   - Mock data fallback works as designed
 
-User: Paste URL #2 + Click ANALYZE
-     ↓
-Same NEW API key
-     ↓
-API returns DIFFERENT real data
-     ↓
-App displays DIFFERENT song info
-     ↓
-Result: ✅ Different real data for different videos
+3. **Configuration Files are Correct**
+   - `.env` has NEW, valid API key
+   - `.env` has correct API URL (gemini-2.5-flash model)
+   - `.env` is properly gitignored
+   - `.env.example` exists for documentation
+
+4. **Debug Infrastructure Works**
+   - On-screen debug display in app shows messages
+   - Console logging is functioning
+   - Can see error messages when they occur
+
+### ❌ Still Broken
+1. **App returns mock data** despite valid key in `.env`
+2. **Shell environment fix** did not help
+3. **Root cause is unknown** - requires new investigation
+
+---
+
+## Why the Shell Hypothesis Failed
+
+### What Should Have Worked (If hypothesis was correct)
+```
+BEFORE:
+1. Shell had OLD key
+2. App bundled with OLD key
+3. API rejected requests
+4. App fell back to mock data
+
+AFTER CLEARING SHELL:
+1. Shell cleaned (variables unset)
+2. Dev server restarted
+3. App should bundle with NEW key from .env
+4. API should accept requests
+5. App should return REAL data
 ```
 
----
+### What Actually Happened
+```
+Shell was cleared ✅
+Expo dev server restarted ✅
+App still returns "Stairway to Heaven" ❌
+```
 
-## Understanding the Issue
-
-### How Expo Loads Environment Variables
-
-1. **When you run `npx expo start`:**
-   - Expo CLI starts Metro bundler
-   - Metro reads environment from current shell
-   - Values are **inlined into JavaScript bundle at build time**
-   - Not loaded at runtime - they're compiled in!
-
-2. **Precedence (what wins):**
-   - Shell environment variables (highest priority)
-   - `.env` file values
-   - Default/fallback values (lowest priority)
-
-3. **Why `unset` in my shell didn't work:**
-   - I can only affect subprocesses
-   - Your main terminal still has the old values
-   - You need to `unset` in YOUR terminal
-
-### Why Test Script Worked But App Doesn't
-
-- **Test script** (`test-gemini.js`) with hardcoded values = bypasses shell env completely
-- **Expo app** = inherits shell environment when dev server starts
-- **Conclusion** = API key is valid, app code is correct, only shell env is wrong
+This means the issue is **NOT** shell environment variable override.
 
 ---
 
-## Files Already Updated
+## Possible Alternative Root Causes
 
-✅ **Documentation:**
-- `SHELL_ENVIRONMENT_FIX.md` - Full technical explanation
-- `IMMEDIATE_ACTION_REQUIRED.md` - This file
+### Need Investigation
+1. **Metro Bundler Cache**
+   - Stale values cached from previous bundle
+   - Solution: `npx expo start --clear`
 
-✅ **Code (All Correct):**
-- `utils/gemini.ts` - Proper environment variable usage
-- `app/(tabs)/add-song.tsx` - Error handling + debug display
-- `.env` - Has correct NEW key
-- `.gitignore` - Properly excludes `.env`
+2. **Build Artifacts**
+   - Old compiled values in build output
+   - Solution: Clean build, clear caches, rebuild
 
-✅ **No Code Changes Needed** - Everything works once you clear shell vars
+3. **Expo SDK Behavior**
+   - Different environment loading mechanism than documented
+   - Solution: Investigate Expo SDK source code
 
----
+4. **IDE/Editor Environment Injection**
+   - VS Code or another tool injecting env vars
+   - Solution: Check IDE environment settings
 
-## Troubleshooting If Still Broken
+5. **Different Configuration File**
+   - Different `.env` file being loaded
+   - Solution: Verify which `.env` file Expo actually reads
 
-**After clearing shell and restarting Expo:**
+6. **Runtime Environment Variable Substitution**
+   - Values not being inlined, loaded at runtime instead
+   - Solution: Check Metro bundler configuration
 
-### Still Seeing "Stairway to Heaven"?
-
-1. **Verify shell is clean:**
-   ```bash
-   printenv | grep EXPO_PUBLIC_GEMINI
-   # Should show NOTHING
-   ```
-
-2. **Kill and restart Expo:**
-   ```bash
-   # Press Ctrl+C in your Expo terminal
-   npx expo start --clear
-   ```
-
-3. **Check debug message in app:**
-   - Should show error type if not working
-   - "❌ ERROR: AUTH_ERROR" = Still using old key (repeat step 1)
-   - "❌ ERROR: QUOTA_EXCEEDED" = Using new key but hit API limit (wait or upgrade)
-   - "✅ SUCCESS: Real data from Gemini API" = WORKING!
-
-4. **Last resort:**
-   - Close terminal completely
-   - Open new terminal
-   - Navigate to project
-   - Run: `npx expo start`
+7. **Fallback Logic Error**
+   - Mock data fallback triggering when it shouldn't
+   - Solution: Review error handling in `add-song.tsx` and `gemini.ts`
 
 ---
 
-## Summary
+## Next Steps
 
-### What I Found
-- ✅ API key is valid (test script proves it)
-- ✅ Code is correct (proper error handling)
-- ✅ `.env` file is correct (has NEW key)
-- ❌ Shell environment is WRONG (has OLD key)
+### Before Next Investigation
+1. ✅ Document that shell environment hypothesis was tested and failed
+2. ✅ Note that fix was applied and did not resolve the issue
+3. ✅ Record current state: mock data still being returned
 
-### The Fix
-- Clear shell environment variables
-- Restart Expo dev server
-- App will use NEW key from `.env`
-
-### One Sentence
-**Shell variables override `.env` in Expo - you need to `unset EXPO_PUBLIC_GEMINI_API_KEY` in your terminal then restart Expo.**
+### For New Investigation
+New debugging approach needed. Recommend:
+1. Investigate Metro bundler caching
+2. Try: `npx expo start --clear` or clean build
+3. Verify which `.env` file is being loaded
+4. Check for hardcoded fallback logic triggering unexpectedly
+5. Review Expo SDK version-specific behavior
 
 ---
 
-**ACTION REQUIRED:** Clear shell environment and restart Expo dev server
+## Files Status
 
-Once you do, the app will work correctly! 🚀
+### ✅ Already Correct (Not the problem)
+- `.env` - Has correct NEW API key
+- `utils/gemini.ts` - Code is correct
+- `app/(tabs)/add-song.tsx` - Error handling correct, debug display works
+- `.gitignore` - Properly configured
+- `test-gemini.js` - Proves API key works
+
+### ❌ Unknown Issue
+- Something is causing app to use wrong credentials or trigger fallback
+- Not the shell environment (already tested)
+- Requires different investigation approach
+
+---
+
+## Summary of Investigation
+
+### Hypothesis Testing
+1. ✅ **Theory Formed**: Shell environment variables override `.env` in Expo
+2. ✅ **Evidence Found**: Old API key and URL in shell, new values in `.env`
+3. ✅ **Fix Implemented**: User cleared shell variables and restarted Expo
+4. ❌ **Result**: App STILL returns mock data
+5. ❌ **Conclusion**: Hypothesis is INVALID
+
+### Key Finding
+**The shell environment variable override theory is WRONG.** This means the actual root cause is something else entirely.
+
+### What This Tells Us
+- The issue exists at a different level
+- Need to investigate: bundler caching, build artifacts, fallback logic, or other mechanism
+- Current debug setup shows us the app IS falling back to mock data, but we don't know WHY
+
+---
+
+## Documentation Status
+
+### ✅ Updated
+- `IMMEDIATE_ACTION_REQUIRED.md` - Now reflects hypothesis invalidation
+- This document records the failed investigation
+
+### ⚠️ Needs Update
+- `SHELL_ENVIRONMENT_FIX.md` - Still claims fix was successful; needs revision to note failed attempt
+
+### ✅ Still Valid (Unaffected)
+- Test script proves API key works
+- Debug infrastructure works
+- Code implementation is correct
+- Configuration files are correct
+
+---
+
+**STATUS: Shell environment hypothesis INVALIDATED**
+
+New approach required to identify actual root cause.
