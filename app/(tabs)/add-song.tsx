@@ -57,6 +57,8 @@ export default function AddSongScreen() {
   const [songTitle, setSongTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>('');
+  const [showDebug, setShowDebug] = useState(false);
   const { playSound } = useClickSound();
 
   const handleInstrumentChange = (instrument: Instrument) => {
@@ -84,10 +86,14 @@ export default function AddSongScreen() {
       try {
         analysisResult = await analyzeVideoWithGemini(videoUrl);
         console.log('✅ Analysis successful:', analysisResult);
+        setDebugInfo('✅ SUCCESS: Real data from Gemini API');
+        setShowDebug(true);
       } catch (geminiError) {
         console.error('Gemini API Error:', geminiError);
 
         const errorMessage = geminiError instanceof Error ? geminiError.message : 'Unknown error';
+        setDebugInfo(`❌ ERROR: ${errorMessage}`);
+        setShowDebug(true);
 
         // Handle validation/config errors that should stop processing
         if (errorMessage.includes('VALIDATION_ERROR')) {
@@ -284,6 +290,15 @@ export default function AddSongScreen() {
           {activeTab === 'Basics' ? (
             <View style={styles.basicsContainer}>
               <Text style={styles.sectionTitle}>Source Input (Generate Data)</Text>
+
+              {showDebug && (
+                <View style={styles.debugBox}>
+                  <Text style={styles.debugText}>{debugInfo}</Text>
+                  <TouchableOpacity onPress={() => setShowDebug(false)}>
+                    <Text style={styles.debugClose}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
               {isAnalyzing ? (
                 <ProcessingSignal />
@@ -497,5 +512,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     letterSpacing: 2,
+  },
+  debugBox: {
+    backgroundColor: '#f0f0f0',
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.lobsterPink,
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  debugText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 12,
+    color: Colors.charcoal,
+    flex: 1,
+  },
+  debugClose: {
+    fontSize: 18,
+    color: Colors.charcoal,
+    paddingLeft: 12,
   },
 });
