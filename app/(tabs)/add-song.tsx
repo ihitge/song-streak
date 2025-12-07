@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaSemiBold',
     color: Colors.warmGray,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
   textInput: {
     backgroundColor: Colors.alloy,

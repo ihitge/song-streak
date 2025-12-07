@@ -2,6 +2,7 @@ import React, { useState, ReactNode, useRef } from 'react';
 import { View, Text, StyleSheet, TextInput } from 'react-native';
 import { Search } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Styles';
 import { PageHeader } from './PageHeader';
 import { SearchSuggestions } from './SearchSuggestions';
 import type { SongSuggestion } from '@/types/song';
@@ -146,13 +147,7 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 6,
   },
-  label: {
-    fontSize: 9,
-    fontFamily: 'LexendDecaSemiBold',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    color: Colors.warmGray,
-  },
+  label: Typography.label,
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',

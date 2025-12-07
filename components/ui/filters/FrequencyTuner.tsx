@@ -5,6 +5,7 @@ import Animated, { Keyframe } from 'react-native-reanimated';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Styles';
 import { useClickSound } from '@/hooks/useClickSound';
 import type { FrequencyTunerProps } from '@/types/filters';
 
@@ -181,13 +182,7 @@ const styles = StyleSheet.create({
     gap: 6,
     width: '100%',
   },
-  label: {
-    fontSize: 9,
-    fontFamily: 'LexendDecaSemiBold',
-    textTransform: 'uppercase',
-    letterSpacing: 2,
-    color: Colors.warmGray,
-  },
+  label: Typography.label,
   tunerWindow: {
     borderRadius: 6,
     overflow: 'hidden',
