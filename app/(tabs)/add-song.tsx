@@ -4,13 +4,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Mic, BookOpen, Target, StickyNote, Play } from 'lucide-react-native';
+import { Mic, BookOpen, Target, StickyNote, Play, Search, Save } from 'lucide-react-native';
 import { FilterOption, Instrument } from '@/types/filters';
 import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
 import { ProcessingSignal } from '@/components/ui/ProcessingSignal';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
 import { instrumentOptions } from '@/config/filterOptions';
+import { analyzeVideoWithGemini, getMockGeminiResponse } from '@/utils/gemini';
+import { fetchAlbumArtwork } from '@/utils/artwork';
+import { supabase } from '@/utils/supabase/client';
 
 type AddSongTab = 'Basics' | 'Theory' | 'Practice' | 'Lyrics';
 
@@ -53,6 +56,7 @@ export default function AddSongScreen() {
   });
   const [songTitle, setSongTitle] = useState('');
   const [artist, setArtist] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const { playSound } = useClickSound();
 
   const handleInstrumentChange = (instrument: Instrument) => {
@@ -74,37 +78,125 @@ export default function AddSongScreen() {
 
     setIsAnalyzing(true);
 
-    setTimeout(() => {
-      const mockData: InstrumentAnalysisData = {
+    try {
+      // Call Gemini API to analyze video
+      // TODO: Switch to real Gemini API once configured
+      let analysisResult;
+
+      try {
+        analysisResult = await analyzeVideoWithGemini(videoUrl);
+      } catch (geminiError) {
+        console.warn('Gemini API unavailable, using mock data:', geminiError);
+        analysisResult = getMockGeminiResponse();
+      }
+
+      // Auto-fill form fields with Gemini's analysis
+      setSongTitle(analysisResult.title);
+      setArtist(analysisResult.artist);
+      setCurrentInstrument(analysisResult.instrument);
+
+      // Save analyzed data to instrument state
+      const analyzedData: InstrumentAnalysisData = {
         videoUrl: videoUrl,
-        title: songTitle,
-        artist: artist,
-        theoryData: {
-          key: 'E Minor',
-          tempo: '120 BPM',
-          timeSignature: '4/4',
-        },
-        practiceData: {
-          difficulty: 'Medium',
-          techniques: ['Fingerpicking', 'Barre Chords'],
-        },
+        title: analysisResult.title,
+        artist: analysisResult.artist,
+        theoryData: analysisResult.theoryData,
+        practiceData: analysisResult.practiceData,
         analyzed: true,
       };
 
       setInstrumentData(prev => ({
         ...prev,
-        [currentInstrument]: mockData,
+        [analysisResult.instrument]: analyzedData,
       }));
 
       setIsAnalyzing(false);
-    }, 3000);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      Alert.alert('Error', 'Failed to analyze video. Please try again.');
+      setIsAnalyzing(false);
+    }
   };
 
-  // TODO: Implement save logic.
-  // When saving:
-  // 1. Get title and artist from inputs
-  // 2. const artwork = await fetchAlbumArtwork(title, artist);
-  // 3. Save song data with artwork.artworkUrl to Supabase
+  const handleSave = async () => {
+    // Validation (double-check)
+    if (!songTitle.trim() || !artist.trim()) {
+      Alert.alert('Validation Error', 'Please enter both song title and artist');
+      return;
+    }
+
+    const currentData = instrumentData[currentInstrument];
+    if (!currentData?.analyzed) {
+      Alert.alert('Validation Error', 'Please analyze the video first');
+      return;
+    }
+
+    // Haptic + Audio feedback
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+
+    setIsSaving(true);
+
+    try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        Alert.alert('Error', 'You must be logged in to save songs');
+        setIsSaving(false);
+        return;
+      }
+
+      // 1. Fetch album artwork
+      const artwork = await fetchAlbumArtwork(songTitle, artist);
+
+      // 2. Prepare song data for Supabase
+      const songData = {
+        user_id: user.id,
+        title: songTitle,
+        artist: artist,
+        instrument: currentInstrument,
+        video_url: currentData.videoUrl,
+        artwork_url: artwork.artworkUrl || null,
+        key: currentData.theoryData.key,
+        tempo: currentData.theoryData.tempo,
+        time_signature: currentData.theoryData.timeSignature,
+        difficulty: currentData.practiceData.difficulty,
+        techniques: currentData.practiceData.techniques,
+      };
+
+      // 3. Save to Supabase
+      const { data, error } = await supabase
+        .from('songs')
+        .insert([songData])
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw new Error(error.message || 'Failed to save to database');
+      }
+
+      Alert.alert('Success', 'Song saved successfully!');
+
+      // TODO: Navigate to Library or reset form
+      // Reset form fields
+      setVideoUrl('');
+      setSongTitle('');
+      setArtist('');
+      setInstrumentData({
+        Guitar: null,
+        Bass: null,
+        Drums: null,
+        Keys: null,
+      });
+
+    } catch (error) {
+      console.error('Save error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save song. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const tabLoadingStates: Record<AddSongTab, boolean> = {
     Basics: false,
@@ -160,27 +252,68 @@ export default function AddSongScreen() {
                 </View>
               )}
 
-              <TouchableOpacity
-                activeOpacity={0.9}
-                style={styles.analyzeButtonContainer}
-                onPress={handleAnalyze}
-                disabled={isAnalyzing}
-              >
-                <LinearGradient
-                  colors={[Colors.vermilion, '#d04620']}
-                  style={styles.analyzeButton}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
-                >
-                  {isAnalyzing ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={styles.analyzeButtonText}>
-                      {instrumentData[currentInstrument]?.analyzed ? 'RE-ANALYZE VIDEO' : 'ANALYZE VIDEO'}
-                    </Text>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
+              {/* Button Group - Analyze and Save */}
+              {(() => {
+                const canSave = !!(
+                  songTitle.trim() &&
+                  artist.trim() &&
+                  instrumentData[currentInstrument]?.analyzed
+                );
+
+                return (
+                  <View style={styles.buttonGroup}>
+                    {/* Analyze Video Button - 70% width */}
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      style={[styles.buttonContainer, { flex: 0.7 }]}
+                      onPress={handleAnalyze}
+                      disabled={isAnalyzing || isSaving}
+                    >
+                      <LinearGradient
+                        colors={[Colors.vermilion, '#d04620']}
+                        style={styles.actionButton}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                      >
+                        {isAnalyzing ? (
+                          <ActivityIndicator color="#fff" />
+                        ) : (
+                          <View style={styles.buttonContent}>
+                            <Search size={16} color="#fff" />
+                            <Text style={styles.buttonText}>
+                              {instrumentData[currentInstrument]?.analyzed ? 'RE-ANALYZE' : 'ANALYZE'}
+                            </Text>
+                          </View>
+                        )}
+                      </LinearGradient>
+                    </TouchableOpacity>
+
+                    {/* Save Button */}
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      style={[styles.buttonContainer, { flex: 0.3 }]}
+                      onPress={handleSave}
+                      disabled={!canSave || isAnalyzing || isSaving}
+                    >
+                      <LinearGradient
+                        colors={canSave ? [Colors.moss, '#356B47'] : [Colors.graphite, '#6a6a6a']}
+                        style={styles.actionButton}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0, y: 1 }}
+                      >
+                        {isSaving ? (
+                          <ActivityIndicator color="#fff" />
+                        ) : (
+                          <View style={styles.buttonContent}>
+                            <Save size={16} color="#fff" />
+                            <Text style={styles.buttonText}>SAVE</Text>
+                          </View>
+                        )}
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })()}
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Song Title</Text>
@@ -279,14 +412,19 @@ const styles = StyleSheet.create({
     color: Colors.graphite,
     textAlign: 'center',
   },
-  analyzeButtonContainer: {
+  buttonGroup: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  buttonContainer: {
     shadowColor: Colors.ink,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
   },
-  analyzeButton: {
+  actionButton: {
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',
@@ -296,7 +434,12 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.2)',
   },
-  analyzeButtonText: {
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  buttonText: {
     fontFamily: 'LexendDecaBold',
     color: '#FFFFFF',
     fontSize: 14,
