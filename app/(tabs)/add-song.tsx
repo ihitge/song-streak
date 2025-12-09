@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, Linking, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Mic, BookOpen, Target, StickyNote, Play, Search, Save, Music, Clock, Hash, ExternalLink } from 'lucide-react-native';
+import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Edit2 } from 'lucide-react-native';
 import { FilterOption, Instrument } from '@/types/filters';
 import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
 import { ProcessingSignal } from '@/components/ui/ProcessingSignal';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
+import { VideoPlayerModal } from '@/components/ui/VideoPlayerModal';
 import { instrumentOptions } from '@/config/filterOptions';
 import { analyzeVideoWithGemini, getMockGeminiResponse } from '@/utils/gemini';
 import { fetchAlbumArtwork } from '@/utils/artwork';
@@ -47,9 +49,16 @@ const TAB_OPTIONS: FilterOption<AddSongTab>[] = [
 const ADD_SONG_INSTRUMENT_OPTIONS = instrumentOptions.filter(opt => opt.value !== 'All');
 
 export default function AddSongScreen() {
+  // Get songId from query params (for viewing existing songs)
+  const { songId } = useLocalSearchParams<{ songId?: string }>();
+  const isEditMode = !!songId;
+  const router = useRouter();
+
   const [activeTab, setActiveTab] = useState<AddSongTab>('Basics');
+  const [isEditing, setIsEditing] = useState(false); // Toggle for view/edit mode
   const [videoUrl, setVideoUrl] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLoadingSong, setIsLoadingSong] = useState(false);
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>('Guitar');
   const [instrumentData, setInstrumentData] = useState<Partial<Record<Instrument, InstrumentAnalysisData | null>>>({
     Guitar: null,
@@ -63,22 +72,71 @@ export default function AddSongScreen() {
   const [debugInfo, setDebugInfo] = useState<string>('');
   const [showDebug, setShowDebug] = useState(false);
   const [formKey, setFormKey] = useState(0); // Force re-render key
+  const [isVideoModalVisible, setIsVideoModalVisible] = useState(false); // Video player modal
   const { playSound } = useClickSound();
 
-  const handleOpenVideo = async (url: string) => {
-    try {
-      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      await playSound();
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert('Error', 'Cannot open this URL');
-      }
-    } catch (error) {
-      console.error('Error opening URL:', error);
-      Alert.alert('Error', 'Failed to open video');
+  // Load existing song data when songId is provided
+  useEffect(() => {
+    if (songId) {
+      loadExistingSong(songId);
     }
+  }, [songId]);
+
+  const loadExistingSong = async (id: string) => {
+    setIsLoadingSong(true);
+    try {
+      const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      // Pre-populate form fields
+      setSongTitle(data.title);
+      setArtist(data.artist);
+      setVideoUrl(data.video_url);
+      setCurrentInstrument(data.instrument);
+
+      // Build InstrumentAnalysisData from DB fields
+      const loadedData: InstrumentAnalysisData = {
+        videoUrl: data.video_url,
+        title: data.title,
+        artist: data.artist,
+        theoryData: {
+          key: data.key || 'Unknown',
+          tempo: data.tempo || 'Unknown',
+          timeSignature: data.time_signature || '4/4',
+          chords: data.chords || [],
+          scales: data.scales || [],
+        },
+        practiceData: {
+          difficulty: data.difficulty || 'Medium',
+          techniques: data.techniques || [],
+        },
+        analyzed: true,
+      };
+
+      setInstrumentData(prev => ({
+        ...prev,
+        [data.instrument]: loadedData,
+      }));
+
+      // Force form re-render
+      setFormKey(prev => prev + 1);
+    } catch (err) {
+      console.error('Error loading song:', err);
+      Alert.alert('Error', 'Failed to load song data');
+    } finally {
+      setIsLoadingSong(false);
+    }
+  };
+
+  const handleOpenVideo = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+    setIsVideoModalVisible(true);
   };
 
   const handleInstrumentChange = (instrument: Instrument) => {
@@ -242,6 +300,8 @@ export default function AddSongScreen() {
         key: currentData.theoryData.key,
         tempo: currentData.theoryData.tempo,
         time_signature: currentData.theoryData.timeSignature,
+        chords: currentData.theoryData.chords,
+        scales: currentData.theoryData.scales,
         difficulty: currentData.practiceData.difficulty,
         techniques: currentData.practiceData.techniques,
       };
@@ -285,6 +345,50 @@ export default function AddSongScreen() {
     }
   };
 
+  const handleUpdate = async () => {
+    if (!songTitle.trim() || !artist.trim()) {
+      Alert.alert('Validation Error', 'Please enter both song title and artist');
+      return;
+    }
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+    setIsSaving(true);
+
+    try {
+      const currentData = instrumentData[currentInstrument];
+
+      const updateData = {
+        title: songTitle,
+        artist: artist,
+        instrument: currentInstrument,
+        video_url: currentData?.videoUrl || videoUrl,
+        key: currentData?.theoryData?.key,
+        tempo: currentData?.theoryData?.tempo,
+        time_signature: currentData?.theoryData?.timeSignature,
+        chords: currentData?.theoryData?.chords,
+        scales: currentData?.theoryData?.scales,
+        difficulty: currentData?.practiceData?.difficulty,
+        techniques: currentData?.practiceData?.techniques,
+      };
+
+      const { error } = await supabase
+        .from('songs')
+        .update(updateData)
+        .eq('id', songId);
+
+      if (error) throw error;
+
+      Alert.alert('Success', 'Song updated successfully!');
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Update error:', error);
+      Alert.alert('Error', 'Failed to update song. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const tabLoadingStates: Record<AddSongTab, boolean> = {
     Basics: false,
     Theory: isAnalyzing,
@@ -301,21 +405,42 @@ export default function AddSongScreen() {
 
   return (
     <View style={styles.container}>
-      <PageHeader subtitle="ADD SONG" />
+      <PageHeader subtitle={isEditMode ? (isEditing ? "EDIT SONG" : "VIEW SONG") : "ADD SONG"} />
 
-      <View style={styles.content}>
-        <GangSwitch
-          label="SECTIONS"
-          value={activeTab}
-          onChange={setActiveTab}
-          options={TAB_OPTIONS}
-          allowDeselect={false}
-          showIcons={true}
-          loadingStates={tabLoadingStates}
-          dataAvailable={tabDataAvailable}
-        />
+      {/* Edit button for view mode */}
+      {isEditMode && !isEditing && !isLoadingSong && (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            await playSound();
+            setIsEditing(true);
+          }}
+        >
+          <Edit2 size={16} color={Colors.vermilion} />
+          <Text style={styles.editButtonText}>Edit Song</Text>
+        </TouchableOpacity>
+      )}
 
-        <View style={styles.tabContent}>
+      {isLoadingSong ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.vermilion} />
+          <Text style={styles.loadingText}>Loading song...</Text>
+        </View>
+      ) : (
+        <View style={styles.content}>
+          <GangSwitch
+            label="SECTIONS"
+            value={activeTab}
+            onChange={setActiveTab}
+            options={TAB_OPTIONS}
+            allowDeselect={false}
+            showIcons={true}
+            loadingStates={tabLoadingStates}
+            dataAvailable={tabDataAvailable}
+          />
+
+          <View style={styles.tabContent}>
           {activeTab === 'Basics' ? (
             <ScrollView style={styles.basicsContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.basicsScrollContent}>
               <Text style={styles.sectionTitle}>Source Input (Generate Data)</Text>
@@ -334,7 +459,7 @@ export default function AddSongScreen() {
               ) : instrumentData[currentInstrument]?.analyzed ? (
                 <TouchableOpacity
                   style={styles.inputGroup}
-                  onPress={() => handleOpenVideo(instrumentData[currentInstrument]!.videoUrl)}
+                  onPress={handleOpenVideo}
                   activeOpacity={0.8}
                 >
                   <VideoPlaceholder videoUrl={instrumentData[currentInstrument]!.videoUrl} />
@@ -356,8 +481,8 @@ export default function AddSongScreen() {
                 </View>
               )}
 
-              {/* Button Group - Analyze and Save */}
-              {(() => {
+              {/* Button Group - Analyze and Save/Update (only show when adding new song or editing existing) */}
+              {(!isEditMode || isEditing) && (() => {
                 const canSave = !!(
                   songTitle.trim() &&
                   artist.trim() &&
@@ -365,57 +490,76 @@ export default function AddSongScreen() {
                 );
 
                 return (
-                  <View style={styles.buttonGroup}>
-                    {/* Analyze Video Button - 70% width */}
-                    <TouchableOpacity
-                      activeOpacity={0.9}
-                      style={[styles.buttonContainer, { flex: 0.7 }]}
-                      onPress={handleAnalyze}
-                      disabled={isAnalyzing || isSaving}
-                    >
-                      <LinearGradient
-                        colors={[Colors.vermilion, '#d04620']}
-                        style={styles.actionButton}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 0, y: 1 }}
+                  <>
+                    <View style={styles.buttonGroup}>
+                      {/* Analyze Video Button - 70% width */}
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        style={[styles.buttonContainer, { flex: 0.7 }]}
+                        onPress={handleAnalyze}
+                        disabled={isAnalyzing || isSaving}
                       >
-                        {isAnalyzing ? (
-                          <ActivityIndicator color="#fff" />
-                        ) : (
-                          <View style={styles.buttonContent}>
-                            <Search size={16} color="#fff" />
-                            <Text style={styles.buttonText}>
-                              {instrumentData[currentInstrument]?.analyzed ? 'RE-ANALYZE' : 'ANALYZE'}
-                            </Text>
-                          </View>
-                        )}
-                      </LinearGradient>
-                    </TouchableOpacity>
+                        <LinearGradient
+                          colors={[Colors.vermilion, '#d04620']}
+                          style={styles.actionButton}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                        >
+                          {isAnalyzing ? (
+                            <ActivityIndicator color="#fff" />
+                          ) : (
+                            <View style={styles.buttonContent}>
+                              <Search size={16} color="#fff" />
+                              <Text style={styles.buttonText}>
+                                {instrumentData[currentInstrument]?.analyzed ? 'RE-ANALYZE' : 'ANALYZE'}
+                              </Text>
+                            </View>
+                          )}
+                        </LinearGradient>
+                      </TouchableOpacity>
 
-                    {/* Save Button */}
-                    <TouchableOpacity
-                      activeOpacity={0.9}
-                      style={[styles.buttonContainer, { flex: 0.3 }]}
-                      onPress={handleSave}
-                      disabled={!canSave || isAnalyzing || isSaving}
-                    >
-                      <LinearGradient
-                        colors={canSave ? [Colors.moss, '#356B47'] : [Colors.graphite, '#6a6a6a']}
-                        style={styles.actionButton}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 0, y: 1 }}
+                      {/* Save/Update Button */}
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        style={[styles.buttonContainer, { flex: 0.3 }]}
+                        onPress={isEditMode ? handleUpdate : handleSave}
+                        disabled={!canSave || isAnalyzing || isSaving}
                       >
-                        {isSaving ? (
-                          <ActivityIndicator color="#fff" />
-                        ) : (
-                          <View style={styles.buttonContent}>
-                            <Save size={16} color="#fff" />
-                            <Text style={styles.buttonText}>SAVE</Text>
-                          </View>
-                        )}
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
+                        <LinearGradient
+                          colors={canSave ? [Colors.moss, '#356B47'] : [Colors.graphite, '#6a6a6a']}
+                          style={styles.actionButton}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 0, y: 1 }}
+                        >
+                          {isSaving ? (
+                            <ActivityIndicator color="#fff" />
+                          ) : (
+                            <View style={styles.buttonContent}>
+                              <Save size={16} color="#fff" />
+                              <Text style={styles.buttonText}>{isEditMode ? 'UPDATE' : 'SAVE'}</Text>
+                            </View>
+                          )}
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Cancel button when editing existing song */}
+                    {isEditMode && isEditing && (
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={async () => {
+                          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          await playSound();
+                          setIsEditing(false);
+                          if (songId) {
+                            loadExistingSong(songId); // Reload original data
+                          }
+                        }}
+                      >
+                        <Text style={styles.cancelButtonText}>Cancel</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
                 );
               })()}
 
@@ -423,12 +567,12 @@ export default function AddSongScreen() {
                 <Text style={styles.inputLabel}>Song Title</Text>
                 <TextInput
                   key={`title-${formKey}`}
-                  style={styles.textInput}
+                  style={[styles.textInput, (isEditMode && !isEditing) && styles.textInputDisabled]}
                   placeholder="Enter song title"
                   placeholderTextColor={Colors.graphite}
                   value={songTitle}
                   onChangeText={setSongTitle}
-                  defaultValue={songTitle}
+                  editable={!isEditMode || isEditing}
                 />
               </View>
 
@@ -436,12 +580,12 @@ export default function AddSongScreen() {
                 <Text style={styles.inputLabel}>Artist</Text>
                 <TextInput
                   key={`artist-${formKey}`}
-                  style={styles.textInput}
+                  style={[styles.textInput, (isEditMode && !isEditing) && styles.textInputDisabled]}
                   placeholder="Enter artist name"
                   placeholderTextColor={Colors.graphite}
                   value={artist}
                   onChangeText={setArtist}
-                  defaultValue={artist}
+                  editable={!isEditMode || isEditing}
                 />
               </View>
 
@@ -450,10 +594,11 @@ export default function AddSongScreen() {
                 value={currentInstrument}
                 onChange={handleInstrumentChange}
                 options={ADD_SONG_INSTRUMENT_OPTIONS}
+                disabled={isEditMode && !isEditing}
               />
             </ScrollView>
           ) : activeTab === 'Theory' ? (
-            <ScrollView style={styles.theoryContainer} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.theoryContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.theoryScrollContent}>
               {instrumentData[currentInstrument]?.analyzed ? (
                 <>
                   {/* Key, Tempo, Time Signature Row */}
@@ -528,7 +673,7 @@ export default function AddSongScreen() {
               )}
             </ScrollView>
           ) : activeTab === 'Practice' ? (
-            <ScrollView style={styles.practiceContainer} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.practiceContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.practiceScrollContent}>
               {instrumentData[currentInstrument]?.analyzed ? (
                 <>
                   {/* Difficulty Badge */}
@@ -578,7 +723,7 @@ export default function AddSongScreen() {
                   {instrumentData[currentInstrument]?.videoUrl && (
                     <TouchableOpacity
                       style={styles.watchVideoButton}
-                      onPress={() => handleOpenVideo(instrumentData[currentInstrument]!.videoUrl)}
+                      onPress={handleOpenVideo}
                       activeOpacity={0.8}
                     >
                       <ExternalLink size={16} color={Colors.vermilion} />
@@ -597,8 +742,18 @@ export default function AddSongScreen() {
           ) : (
             <Text style={styles.placeholderText}>Lyrics feature coming soon</Text>
           )}
+          </View>
         </View>
-      </View>
+      )}
+
+      {/* Video Player Modal */}
+      <VideoPlayerModal
+        visible={isVideoModalVisible}
+        videoUrl={instrumentData[currentInstrument]?.videoUrl || ''}
+        title={songTitle}
+        artist={artist}
+        onClose={() => setIsVideoModalVisible(false)}
+      />
     </View>
   );
 }
@@ -613,16 +768,28 @@ const styles = StyleSheet.create({
     padding: 24,
     gap: 24,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 14,
+    color: Colors.graphite,
+    marginTop: 12,
+  },
   tabContent: {
     flex: 1,
     backgroundColor: Colors.softWhite,
     borderRadius: 12,
-    padding: 24,
+    padding: 20,
     borderWidth: 1,
     borderColor: '#ccc',
+    minHeight: 0, // Important: allows flex to calculate correctly
   },
   basicsContainer: {
-    // No flex: 1 - let ScrollView content determine height
+    flex: 1,
   },
   basicsScrollContent: {
     gap: 20,
@@ -661,6 +828,41 @@ const styles = StyleSheet.create({
     borderLeftColor: 'rgba(255,255,255,0.5)',
     borderBottomColor: 'rgba(0,0,0,0.15)',
     borderRightColor: 'rgba(0,0,0,0.15)',
+  },
+  textInputDisabled: {
+    opacity: 0.7,
+    backgroundColor: Colors.softWhite,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginHorizontal: 24,
+    marginTop: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: Colors.vermilion,
+    backgroundColor: 'transparent',
+  },
+  editButtonText: {
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 12,
+    color: Colors.vermilion,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 14,
+    color: Colors.vermilion,
+    letterSpacing: 1,
   },
   placeholderText: {
     fontFamily: 'LexendDecaRegular',
@@ -726,6 +928,12 @@ const styles = StyleSheet.create({
   // Theory Tab Styles
   theoryContainer: {
     flex: 1,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  theoryScrollContent: {
+    gap: 20,
+    paddingBottom: 20,
   },
   theoryRow: {
     flexDirection: 'row',
@@ -811,6 +1019,10 @@ const styles = StyleSheet.create({
   // Practice Tab Styles
   practiceContainer: {
     flex: 1,
+  },
+  practiceScrollContent: {
+    gap: 20,
+    paddingBottom: 20,
   },
   difficultyContainer: {
     marginBottom: 20,

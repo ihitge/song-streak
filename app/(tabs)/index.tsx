@@ -79,9 +79,13 @@ const MOCK_SONGS: Song[] = [
 // --- Components ---
 
 // Song Card (Data Cassette)
-const SongCard = ({ song, onDelete }: { song: Song; onDelete?: (id: string) => void }) => {
+const SongCard = ({ song, onDelete, onPress }: {
+  song: Song;
+  onDelete?: (id: string) => void;
+  onPress?: () => void;
+}) => {
   return (
-    <View style={styles.cardChassis}>
+    <Pressable onPress={onPress} style={styles.cardChassis}>
       <View style={styles.cardBody}>
         {/* Recessed Thumbnail */}
         <View style={styles.thumbnailContainer}>
@@ -120,7 +124,7 @@ const SongCard = ({ song, onDelete }: { song: Song; onDelete?: (id: string) => v
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 };
 
@@ -267,6 +271,13 @@ export default function SetListScreen() {
     );
   }, [fetchSongs, playClickSound]);
 
+  // Handle song card press - navigate to edit song
+  const handleSongPress = useCallback(async (song: Song) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playClickSound();
+    router.push(`/add-song?songId=${song.id}`);
+  }, [playClickSound, router]);
+
   const filteredSongs = useMemo(() => {
     return songs.filter(song => {
       const matchesSearch = searchText === '' ||
@@ -325,7 +336,13 @@ export default function SetListScreen() {
         <FlatList
           data={filteredSongs}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <SongCard song={item} onDelete={handleDeleteSong} />}
+          renderItem={({ item }) => (
+            <SongCard
+              song={item}
+              onDelete={handleDeleteSong}
+              onPress={() => handleSongPress(item)}
+            />
+          )}
           contentContainerStyle={styles.songListContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
