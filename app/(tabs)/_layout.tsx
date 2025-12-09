@@ -23,7 +23,7 @@ export default function TabLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.matteFog,
   },
   safeArea: {
     flex: 1, // Ensure SafeAreaView takes up all available space
