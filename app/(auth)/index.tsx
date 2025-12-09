@@ -18,6 +18,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
 import { supabase } from '@/utils/supabase/client';
+import { AppleSignInButton } from '@/components/auth/AppleSignInButton';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +29,31 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
+  async function resetPassword() {
+    if (!email.trim()) {
+      Alert.alert('Email Required', 'Please enter your email address first, then tap "Forgot Security Key?"');
+      return;
+    }
+
+    setResetLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'songstreak://reset-password',
+    });
+
+    setResetLoading(false);
+
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      Alert.alert(
+        'Check Your Email',
+        'If an account exists with this email, you will receive a password reset link shortly.',
+        [{ text: 'OK' }]
+      );
+    }
+  }
 
   async function signInWithEmail() {
     setLoading(true);
@@ -88,6 +115,19 @@ export default function AuthScreen() {
               <Text style={styles.title}>SongStreak</Text>
               <View style={styles.accentLine} />
               <Text style={styles.subtitle}>ACCESS CONTROL</Text>
+            </View>
+
+            {/* Social Login Buttons */}
+            <View style={styles.socialContainer}>
+              <AppleSignInButton />
+              <GoogleSignInButton />
+            </View>
+
+            {/* OR Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
             </View>
 
             {/* Mode Switcher */}
@@ -178,10 +218,18 @@ export default function AuthScreen() {
             </TouchableOpacity>
 
             {/* Footer */}
-            <TouchableOpacity style={styles.footerLink}>
-              <Text style={styles.footerLinkText}>
-                {isRegistering ? 'NEED ASSISTANCE?' : 'FORGOT SECURITY KEY?'}
-              </Text>
+            <TouchableOpacity
+              style={styles.footerLink}
+              onPress={!isRegistering ? resetPassword : undefined}
+              disabled={resetLoading}
+            >
+              {resetLoading && !isRegistering ? (
+                <ActivityIndicator size="small" color={Colors.graphite} />
+              ) : (
+                <Text style={styles.footerLinkText}>
+                  {isRegistering ? 'NEED ASSISTANCE?' : 'FORGOT SECURITY KEY?'}
+                </Text>
+              )}
             </TouchableOpacity>
 
             <Text style={styles.sysVersion}>SYS. VER 2.4.0</Text>
@@ -268,6 +316,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.warmGray,
     letterSpacing: 3,
+  },
+  socialContainer: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.alloy,
+  },
+  dividerText: {
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 12,
+    color: Colors.graphite,
+    paddingHorizontal: 16,
+    letterSpacing: 2,
   },
   modeSwitcherWell: {
     flexDirection: 'row',
