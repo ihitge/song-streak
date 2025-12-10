@@ -480,29 +480,37 @@ export default function AddSongScreen() {
 
               {isAnalyzing ? (
                 <ProcessingSignal />
-              ) : instrumentData[currentInstrument]?.analyzed ? (
-                <TouchableOpacity
-                  style={styles.inputGroup}
-                  onPress={handleOpenVideo}
-                  activeOpacity={0.8}
-                >
-                  <VideoPlaceholder videoUrl={instrumentData[currentInstrument]!.videoUrl} />
-                  <View style={styles.tapToPlayHint}>
-                    <ExternalLink size={12} color={Colors.graphite} />
-                    <Text style={styles.tapToPlayText}>Tap to open in YouTube</Text>
-                  </View>
-                </TouchableOpacity>
               ) : (
-                <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>Video URL</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Paste video URL to extract theory"
-                    placeholderTextColor={Colors.graphite}
-                    value={videoUrl}
-                    onChangeText={setVideoUrl}
-                  />
-                </View>
+                <>
+                  {/* Show URL input in edit mode or when not analyzed */}
+                  {((isEditMode && isEditing) || !instrumentData[currentInstrument]?.analyzed) && (
+                    <View style={styles.inputGroup}>
+                      <Text style={styles.inputLabel}>Video URL</Text>
+                      <TextInput
+                        style={styles.textInput}
+                        placeholder="Paste video URL to extract theory"
+                        placeholderTextColor={Colors.graphite}
+                        value={videoUrl}
+                        onChangeText={setVideoUrl}
+                      />
+                    </View>
+                  )}
+
+                  {/* Show thumbnail in view mode when analyzed */}
+                  {instrumentData[currentInstrument]?.analyzed && !(isEditMode && isEditing) && (
+                    <TouchableOpacity
+                      style={styles.inputGroup}
+                      onPress={handleOpenVideo}
+                      activeOpacity={0.8}
+                    >
+                      <VideoPlaceholder videoUrl={instrumentData[currentInstrument]!.videoUrl} />
+                      <View style={styles.tapToPlayHint}>
+                        <ExternalLink size={12} color={Colors.graphite} />
+                        <Text style={styles.tapToPlayText}>Tap to open in YouTube</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </>
               )}
 
               {/* Button Group - Analyze and Save/Update (only show when adding new song or editing existing) */}
@@ -535,7 +543,7 @@ export default function AddSongScreen() {
                             <View style={styles.buttonContent}>
                               <Search size={16} color="#fff" />
                               <Text style={styles.buttonText}>
-                                {instrumentData[currentInstrument]?.analyzed ? 'RE-ANALYZE' : 'ANALYZE'}
+                                {instrumentData[currentInstrument]?.analyzed && !isEditing ? 'RE-ANALYZE' : 'ANALYZE'}
                               </Text>
                             </View>
                           )}
