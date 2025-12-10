@@ -127,6 +127,11 @@ export default function AddSongScreen() {
         [data.instrument]: loadedData,
       }));
 
+      // Load lyrics if available
+      if (data.lyrics) {
+        setLyrics(data.lyrics);
+      }
+
       // Force form re-render
       setFormKey(prev => prev + 1);
     } catch (err) {
@@ -321,6 +326,7 @@ export default function AddSongScreen() {
         scales: currentData.theoryData.scales,
         difficulty: currentData.practiceData.difficulty,
         techniques: currentData.practiceData.techniques,
+        lyrics: lyrics || null,
       };
 
       // 3. Save to Supabase
@@ -387,6 +393,7 @@ export default function AddSongScreen() {
         scales: currentData?.theoryData?.scales,
         difficulty: currentData?.practiceData?.difficulty,
         techniques: currentData?.practiceData?.techniques,
+        lyrics: lyrics || null,
       };
 
       const { error } = await supabase
