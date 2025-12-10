@@ -5,13 +5,17 @@ import { Colors } from '@/constants/Colors';
 
 interface RamsTapeCounterDisplayProps {
   seconds: number;
+  compact?: boolean;
 }
 
 /**
  * Skeuomorphic mechanical tape counter display
  * Inspired by vintage VU meters and tape deck counters
  */
-export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({ seconds }) => {
+export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
+  seconds,
+  compact = false,
+}) => {
   // Format seconds into MM:SS
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -26,24 +30,24 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({ 
   ];
 
   return (
-    <View style={styles.housing}>
+    <View style={[styles.housing, compact && styles.housingCompact]}>
       {/* Inner recessed well */}
-      <View style={styles.recessedWell}>
+      <View style={[styles.recessedWell, compact && styles.recessedWellCompact]}>
         {/* Digit wheels container */}
         <View style={styles.digitsContainer}>
           {/* Minutes digits */}
-          <DigitWheel digit={digits[0]} />
-          <DigitWheel digit={digits[1]} />
+          <DigitWheel digit={digits[0]} compact={compact} />
+          <DigitWheel digit={digits[1]} compact={compact} />
 
           {/* Mechanical spacer between MM and SS */}
-          <View style={styles.spacer}>
-            <View style={styles.spacerDot} />
-            <View style={styles.spacerDot} />
+          <View style={[styles.spacer, compact && styles.spacerCompact]}>
+            <View style={[styles.spacerDot, compact && styles.spacerDotCompact]} />
+            <View style={[styles.spacerDot, compact && styles.spacerDotCompact]} />
           </View>
 
           {/* Seconds digits */}
-          <DigitWheel digit={digits[2]} />
-          <DigitWheel digit={digits[3]} />
+          <DigitWheel digit={digits[2]} compact={compact} />
+          <DigitWheel digit={digits[3]} compact={compact} />
         </View>
 
         {/* Cylinder reflection overlay */}
@@ -61,7 +65,7 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({ 
       </View>
 
       {/* Label */}
-      <Text style={styles.label}>ELAPSED</Text>
+      <Text style={[styles.label, compact && styles.labelCompact]}>ELAPSED</Text>
     </View>
   );
 };
@@ -69,11 +73,11 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({ 
 /**
  * Individual digit wheel with 3D mechanical appearance
  */
-const DigitWheel: React.FC<{ digit: string }> = ({ digit }) => {
+const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, compact = false }) => {
   return (
     <View style={styles.digitWheelContainer}>
-      <View style={styles.digitWheel}>
-        <Text style={styles.digitText}>{digit}</Text>
+      <View style={[styles.digitWheel, compact && styles.digitWheelCompact]}>
+        <Text style={[styles.digitText, compact && styles.digitTextCompact]}>{digit}</Text>
       </View>
       {/* Inner shadow for depth */}
       <LinearGradient
@@ -109,6 +113,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  housingCompact: {
+    borderRadius: 8,
+    padding: 10,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 4,
+    elevation: 4,
+  },
   recessedWell: {
     backgroundColor: '#1a1a1a',
     borderRadius: 8,
@@ -123,6 +134,10 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: 'rgba(255,255,255,0.05)',
     overflow: 'hidden',
+  },
+  recessedWellCompact: {
+    borderRadius: 6,
+    padding: 8,
   },
   digitsContainer: {
     flexDirection: 'row',
@@ -147,11 +162,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.15)',
   },
+  digitWheelCompact: {
+    width: 32,
+    height: 44,
+    borderRadius: 3,
+  },
   digitText: {
     fontFamily: 'LexendDecaBold',
     fontSize: 36,
     color: Colors.charcoal,
     letterSpacing: -1,
+  },
+  digitTextCompact: {
+    fontSize: 24,
   },
   digitInnerShadow: {
     ...StyleSheet.absoluteFillObject,
@@ -164,6 +187,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  spacerCompact: {
+    width: 12,
+    height: 44,
+    gap: 6,
+  },
   spacerDot: {
     width: 6,
     height: 6,
@@ -175,6 +203,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 4,
   },
+  spacerDotCompact: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
   cylinderOverlay: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 8,
@@ -185,5 +218,10 @@ const styles = StyleSheet.create({
     color: Colors.graphite,
     letterSpacing: 3,
     marginTop: 12,
+  },
+  labelCompact: {
+    fontSize: 8,
+    letterSpacing: 2,
+    marginTop: 8,
   },
 });

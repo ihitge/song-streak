@@ -10,6 +10,7 @@ import { useClickSound } from '@/hooks/useClickSound';
 interface PracticeTimerProps {
   songTitle?: string;
   onComplete?: (seconds: number) => void;
+  compact?: boolean; // For embedded contexts (smaller layout)
 }
 
 /**
@@ -19,6 +20,7 @@ interface PracticeTimerProps {
 export const PracticeTimer: React.FC<PracticeTimerProps> = ({
   songTitle,
   onComplete,
+  compact = false,
 }) => {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -66,9 +68,9 @@ export const PracticeTimer: React.FC<PracticeTimerProps> = ({
   }, [playSound, onComplete, seconds]);
 
   return (
-    <View style={styles.container}>
-      {/* Song title (if provided) */}
-      {songTitle && (
+    <View style={[styles.container, compact && styles.containerCompact]}>
+      {/* Song title (if provided and not compact) */}
+      {songTitle && !compact && (
         <View style={styles.songHeader}>
           <Text style={styles.nowPracticing}>NOW PRACTICING</Text>
           <Text style={styles.songTitle} numberOfLines={2}>
@@ -78,18 +80,18 @@ export const PracticeTimer: React.FC<PracticeTimerProps> = ({
       )}
 
       {/* Tape counter display */}
-      <RamsTapeCounterDisplay seconds={seconds} />
+      <RamsTapeCounterDisplay seconds={seconds} compact={compact} />
 
       {/* Control buttons */}
-      <View style={styles.controls}>
+      <View style={[styles.controls, compact && styles.controlsCompact]}>
         {/* Reset button */}
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={handleReset}
           activeOpacity={0.8}
         >
-          <View style={styles.secondaryButtonInner}>
-            <RotateCcw size={20} color={Colors.graphite} />
+          <View style={[styles.secondaryButtonInner, compact && styles.secondaryButtonInnerCompact]}>
+            <RotateCcw size={compact ? 16 : 20} color={Colors.graphite} />
           </View>
         </TouchableOpacity>
 
@@ -101,35 +103,37 @@ export const PracticeTimer: React.FC<PracticeTimerProps> = ({
         >
           <LinearGradient
             colors={isRunning ? ['#666', '#444'] : [Colors.vermilion, '#d04620']}
-            style={styles.primaryButton}
+            style={[styles.primaryButton, compact && styles.primaryButtonCompact]}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
           >
             {isRunning ? (
-              <Pause size={32} color={Colors.softWhite} />
+              <Pause size={compact ? 24 : 32} color={Colors.softWhite} />
             ) : (
-              <Play size={32} color={Colors.softWhite} style={{ marginLeft: 4 }} />
+              <Play size={compact ? 24 : 32} color={Colors.softWhite} style={{ marginLeft: compact ? 2 : 4 }} />
             )}
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Complete button */}
-        <TouchableOpacity
-          style={[styles.secondaryButton, seconds === 0 && styles.buttonDisabled]}
-          onPress={handleComplete}
-          activeOpacity={0.8}
-          disabled={seconds === 0}
-        >
-          <View style={[styles.secondaryButtonInner, seconds > 0 && styles.completeButtonActive]}>
-            <Check size={20} color={seconds > 0 ? Colors.moss : Colors.graphite} />
-          </View>
-        </TouchableOpacity>
+        {/* Complete button - only show if onComplete provided or not compact */}
+        {!compact && (
+          <TouchableOpacity
+            style={[styles.secondaryButton, seconds === 0 && styles.buttonDisabled]}
+            onPress={handleComplete}
+            activeOpacity={0.8}
+            disabled={seconds === 0}
+          >
+            <View style={[styles.secondaryButtonInner, seconds > 0 && styles.completeButtonActive]}>
+              <Check size={20} color={seconds > 0 ? Colors.moss : Colors.graphite} />
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Status indicator */}
-      <View style={styles.statusContainer}>
+      <View style={[styles.statusContainer, compact && styles.statusContainerCompact]}>
         <View style={[styles.statusLed, isRunning && styles.statusLedActive]} />
-        <Text style={styles.statusText}>
+        <Text style={[styles.statusText, compact && styles.statusTextCompact]}>
           {isRunning ? 'RECORDING' : seconds > 0 ? 'PAUSED' : 'READY'}
         </Text>
       </View>
@@ -142,6 +146,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 32,
     paddingVertical: 24,
+  },
+  containerCompact: {
+    gap: 16,
+    paddingVertical: 8,
   },
   songHeader: {
     alignItems: 'center',
@@ -165,6 +173,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 24,
   },
+  controlsCompact: {
+    gap: 16,
+  },
   primaryButtonContainer: {
     shadowColor: Colors.vermilion,
     shadowOffset: { width: 0, height: 4 },
@@ -182,6 +193,11 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.3)',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(0,0,0,0.2)',
+  },
+  primaryButtonCompact: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
   },
   secondaryButton: {
     shadowColor: Colors.ink,
@@ -201,6 +217,11 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.5)',
     borderBottomWidth: 2,
     borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  secondaryButtonInnerCompact: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   completeButtonActive: {
     borderColor: Colors.moss,
@@ -223,6 +244,11 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderLeftColor: 'rgba(0,0,0,0.05)',
   },
+  statusContainerCompact: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
   statusLed: {
     width: 8,
     height: 8,
@@ -241,5 +267,9 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.graphite,
     letterSpacing: 2,
+  },
+  statusTextCompact: {
+    fontSize: 9,
+    letterSpacing: 1.5,
   },
 });

@@ -718,7 +718,7 @@ export default function AddSongScreen() {
             </ScrollView>
           ) : activeTab === 'Practice' ? (
             <View style={styles.practiceTimerContainer}>
-              <PracticeTimer songTitle={songTitle} />
+              <PracticeTimer compact />
 
               {/* Video Link */}
               {instrumentData[currentInstrument]?.videoUrl && (
