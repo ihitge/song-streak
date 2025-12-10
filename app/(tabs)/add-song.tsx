@@ -416,8 +416,8 @@ export default function AddSongScreen() {
   const tabLoadingStates: Record<AddSongTab, boolean> = {
     Basics: false,
     Theory: isAnalyzing,
-    Practice: isAnalyzing,
-    Lyrics: false,
+    Practice: false,
+    Lyrics: isLoadingLyrics,
   };
 
   const tabDataAvailable: Record<AddSongTab, boolean> = {
