@@ -719,18 +719,6 @@ export default function AddSongScreen() {
           ) : activeTab === 'Practice' ? (
             <View style={styles.practiceTimerContainer}>
               <PracticeTimer compact />
-
-              {/* Video Link */}
-              {instrumentData[currentInstrument]?.videoUrl && (
-                <TouchableOpacity
-                  style={styles.watchVideoButton}
-                  onPress={handleOpenVideo}
-                  activeOpacity={0.8}
-                >
-                  <ExternalLink size={16} color={Colors.vermilion} />
-                  <Text style={styles.watchVideoText}>Watch Tutorial Video</Text>
-                </TouchableOpacity>
-              )}
             </View>
           ) : (
             <Text style={styles.placeholderText}>Lyrics feature coming soon</Text>
