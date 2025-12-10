@@ -12,6 +12,7 @@ import * as Haptics from 'expo-haptics';
 import { ProcessingSignal } from '@/components/ui/ProcessingSignal';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
 import { VideoPlayerModal } from '@/components/ui/VideoPlayerModal';
+import { PracticeTimer } from '@/components/ui/practice/PracticeTimer';
 import { instrumentOptions } from '@/config/filterOptions';
 import { analyzeVideoWithGemini, getMockGeminiResponse } from '@/utils/gemini';
 import { fetchAlbumArtwork } from '@/utils/artwork';
@@ -663,20 +664,8 @@ export default function AddSongScreen() {
                       )}
                     </View>
                   </View>
-                </>
-              ) : (
-                <View style={styles.noAnalysisContainer}>
-                  <Text style={styles.noAnalysisText}>
-                    Analyze a video first to see music theory data
-                  </Text>
-                </View>
-              )}
-            </ScrollView>
-          ) : activeTab === 'Practice' ? (
-            <ScrollView style={styles.practiceContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.practiceScrollContent}>
-              {instrumentData[currentInstrument]?.analyzed ? (
-                <>
-                  {/* Difficulty Badge */}
+
+                  {/* Difficulty Badge (moved from Practice) */}
                   <View style={styles.difficultyContainer}>
                     <Text style={styles.theorySectionTitle}>DIFFICULTY</Text>
                     <View style={[
@@ -691,7 +680,7 @@ export default function AddSongScreen() {
                     </View>
                   </View>
 
-                  {/* Techniques Section */}
+                  {/* Techniques Section (moved from Practice) */}
                   <View style={styles.theorySection}>
                     <Text style={styles.theorySectionTitle}>TECHNIQUES</Text>
                     <View style={styles.chipContainer}>
@@ -707,7 +696,7 @@ export default function AddSongScreen() {
                     </View>
                   </View>
 
-                  {/* Strumming Pattern */}
+                  {/* Strumming Pattern (moved from Practice) */}
                   {instrumentData[currentInstrument]?.practiceData.strummingPattern && (
                     <View style={styles.theorySection}>
                       <Text style={styles.theorySectionTitle}>STRUMMING PATTERN</Text>
@@ -718,27 +707,31 @@ export default function AddSongScreen() {
                       </View>
                     </View>
                   )}
-
-                  {/* Video Link */}
-                  {instrumentData[currentInstrument]?.videoUrl && (
-                    <TouchableOpacity
-                      style={styles.watchVideoButton}
-                      onPress={handleOpenVideo}
-                      activeOpacity={0.8}
-                    >
-                      <ExternalLink size={16} color={Colors.vermilion} />
-                      <Text style={styles.watchVideoText}>Watch Tutorial Video</Text>
-                    </TouchableOpacity>
-                  )}
                 </>
               ) : (
                 <View style={styles.noAnalysisContainer}>
                   <Text style={styles.noAnalysisText}>
-                    Analyze a video first to see practice data
+                    Analyze a video first to see music theory data
                   </Text>
                 </View>
               )}
             </ScrollView>
+          ) : activeTab === 'Practice' ? (
+            <View style={styles.practiceTimerContainer}>
+              <PracticeTimer songTitle={songTitle} />
+
+              {/* Video Link */}
+              {instrumentData[currentInstrument]?.videoUrl && (
+                <TouchableOpacity
+                  style={styles.watchVideoButton}
+                  onPress={handleOpenVideo}
+                  activeOpacity={0.8}
+                >
+                  <ExternalLink size={16} color={Colors.vermilion} />
+                  <Text style={styles.watchVideoText}>Watch Tutorial Video</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           ) : (
             <Text style={styles.placeholderText}>Lyrics feature coming soon</Text>
           )}
@@ -1017,12 +1010,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   // Practice Tab Styles
-  practiceContainer: {
+  practiceTimerContainer: {
     flex: 1,
-  },
-  practiceScrollContent: {
-    gap: 20,
-    paddingBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 24,
   },
   difficultyContainer: {
     marginBottom: 20,
