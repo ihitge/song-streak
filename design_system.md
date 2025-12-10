@@ -285,7 +285,62 @@ const handlePress = async () => {
 - Mixing: `shouldDuckAndroid: false` (doesn't lower music volume)
 - Lifecycle: Sound preloaded on component mount, unloaded on unmount
 
-5. Technical "Gotchas" for React Native
+5. Modal Design Patterns
+
+**Philosophy:** Modals should feel like physical overlays - a dark scrim behind a raised "panel" that slides or springs into view.
+
+### Alert/Dialog Modals (StyledAlertModal)
+
+**NEVER use native `Alert.alert()`.** Always use `useStyledAlert` hook.
+
+**Visual Structure:**
+- **Overlay:** Dark scrim (`rgba(0, 0, 0, 0.85)`) - feels like dimming the lights
+- **Panel:** `Colors.matteFog` background, rounded corners (16px)
+- **Bevel Effect:** Top border lighter (`rgba(255,255,255,0.5)`), bottom border darker (`rgba(0,0,0,0.15)`)
+- **Shadow:** Deep shadow (`shadowOpacity: 0.3`, `shadowRadius: 16`)
+- **Animation:** Spring animation on entry (tension: 100, friction: 10)
+
+**Icon Circle (Type Indicator):**
+- Recessed well effect (inverted bevel)
+- Color-coded background at 15% opacity
+- Icons: AlertCircle (error), CheckCircle (success), Info (info), AlertTriangle (warning)
+
+**Buttons:**
+- Primary: LinearGradient (vermilion → #d04620)
+- Cancel: Recessed well style with graphite text
+- Bevel effect on both button types
+
+**Haptic Feedback by Type:**
+- Error: `NotificationFeedbackType.Error`
+- Success: `NotificationFeedbackType.Success`
+- Warning: `NotificationFeedbackType.Warning`
+- Info: `ImpactFeedbackStyle.Light`
+
+### Form Modals (CreateBandModal, JoinBandModal)
+
+**Visual Structure:**
+- Same overlay and panel as alerts
+- Header with close button (X) and title
+- Input fields with recessed well styling
+- Primary action button with gradient
+- KeyboardAvoidingView for input modals
+
+**Input Field Styling:**
+- Background: `Colors.alloy`
+- Inverted bevel (dark top-left, light bottom-right)
+- Error state: vermilion border
+
+### Celebration Modals (AchievementModal, PracticeCompleteModal)
+
+**Visual Structure:**
+- Same panel styling
+- Icon/badge at top
+- Larger, centered content
+- Single "AWESOME" or similar call-to-action button
+
+---
+
+6. Technical "Gotchas" for React Native
 
 Shadows on Android: shadowColor/Offset doesn't work well on Android. Use elevation for simple shadows, or react-native-skia / react-native-svg for complex soft shadows.
 
@@ -294,3 +349,5 @@ Gradients: You will need expo-linear-gradient heavily for the button surfaces.
 Haptics: Don't overuse them. Use Selection for scrolling lists, Light for tapping plastic keys, and Medium for toggling power switches.
 
 Audio: All interactive components should have sound feedback. Use `useClickSound` hook for consistency. Avoid loading sounds multiple times—the hook handles preloading and reuse.
+
+Alerts: NEVER use native `Alert.alert()`. Always use `useStyledAlert` hook which provides styled modals consistent with the Industrial Play aesthetic.

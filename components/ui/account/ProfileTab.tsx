@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { Camera } from 'lucide-react-native';
@@ -7,6 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/ctx/AuthContext';
 import { supabase } from '@/utils/supabase/client';
 import { useClickSound } from '@/hooks/useClickSound';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 /**
  * Helper to extract initials from email
@@ -23,6 +24,7 @@ const getInitials = (email?: string | null): string => {
 export const ProfileTab: React.FC = () => {
   const { user } = useAuth();
   const { playSound } = useClickSound();
+  const { showInfo, showError } = useStyledAlert();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,7 @@ export const ProfileTab: React.FC = () => {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permissionResult.granted) {
-        Alert.alert('Permission Required', 'Please allow access to your photo library to upload an avatar.');
+        showInfo('Permission Required', 'Please allow access to your photo library to upload an avatar.');
         return;
       }
 
@@ -141,7 +143,7 @@ export const ProfileTab: React.FC = () => {
 
     } catch (error: any) {
       console.error('Error uploading avatar:', error);
-      Alert.alert('Upload Failed', error.message || 'Unable to upload avatar. Please try again.');
+      showError('Upload Failed', error.message || 'Unable to upload avatar. Please try again.');
     } finally {
       setUploading(false);
     }

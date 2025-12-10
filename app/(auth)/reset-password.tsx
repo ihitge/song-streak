@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -15,26 +14,28 @@ import { Lock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { supabase } from '@/utils/supabase/client';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { showError, showSuccess } = useStyledAlert();
 
   async function updatePassword() {
     if (!newPassword.trim()) {
-      Alert.alert('Error', 'Please enter a new password');
+      showError('Error', 'Please enter a new password');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      showError('Error', 'Passwords do not match');
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
+      showError('Error', 'Password must be at least 6 characters');
       return;
     }
 
@@ -46,17 +47,12 @@ export default function ResetPasswordScreen() {
     setLoading(false);
 
     if (error) {
-      Alert.alert('Error', error.message);
+      showError('Error', error.message);
     } else {
-      Alert.alert(
+      showSuccess(
         'Password Updated',
         'Your password has been successfully updated. You can now sign in with your new password.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.replace('/(auth)'),
-          },
-        ]
+        () => router.replace('/(auth)')
       );
     }
   }

@@ -15,7 +15,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'streak', icon: 'bolt', label: 'Streak', route: '/practice' },
-  { name: 'set-list', icon: 'list', label: 'Set List', route: '/' },
+  { name: 'library', icon: 'list', label: 'Library', route: '/' },
   { name: 'metronome', icon: 'play', label: 'Metronome', route: '/timing' },
 ];
 
@@ -31,7 +31,7 @@ export const TactileNavbar: React.FC = () => {
           iconName={item.icon}
           label={item.label}
           isActive={pathname === item.route || (item.route === '/' && pathname === '/')}
-          onPress={() => router.push(item.route)}
+          onPress={() => router.push(item.route as any)}
         />
       ))}
     </View>

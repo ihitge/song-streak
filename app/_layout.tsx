@@ -12,6 +12,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { LightThemeColors, DarkThemeColors } from '@/constants/Colors'; // Import custom colors
 import { AuthProvider, useAuth } from '@/ctx/AuthContext';
 import { SettingsProvider } from '@/ctx/SettingsContext';
+import { StyledAlertProvider } from '@/hooks/useStyledAlert';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -59,7 +60,9 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SettingsProvider>
         <AuthProvider>
-          <RootLayoutNav />
+          <StyledAlertProvider>
+            <RootLayoutNav />
+          </StyledAlertProvider>
         </AuthProvider>
       </SettingsProvider>
     </GestureHandlerRootView>

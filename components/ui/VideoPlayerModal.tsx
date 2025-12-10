@@ -1,11 +1,12 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Linking, Alert } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Linking } from 'react-native';
 import { X, ExternalLink } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { YouTubePlayer } from './YouTubePlayer';
 import { extractYouTubeVideoId } from '@/utils/youtube';
 import { useClickSound } from '@/hooks/useClickSound';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 interface VideoPlayerModalProps {
   visible: boolean;
@@ -23,6 +24,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   artist,
 }) => {
   const { playSound } = useClickSound();
+  const { showError } = useStyledAlert();
   const videoId = extractYouTubeVideoId(videoUrl);
 
   const handleClose = async () => {
@@ -37,7 +39,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
     try {
       await Linking.openURL(videoUrl);
     } catch {
-      Alert.alert('Error', 'Cannot open this URL');
+      showError('Error', 'Cannot open this URL');
     }
   };
 

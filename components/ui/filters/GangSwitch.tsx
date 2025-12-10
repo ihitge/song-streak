@@ -76,7 +76,7 @@ export const GangSwitch = <T extends string>({
     // Toggle behavior: if already active, deselect (null) only if allowed, otherwise select
     if (value === optValue) {
       if (allowDeselect) {
-        onChange(null as unknown as T);
+        onChange(null);
       }
     } else {
       onChange(optValue);

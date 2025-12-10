@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Alert, TouchableOpacity, Text, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '@/utils/supabase/client';
 import { Colors } from '@/constants/Colors';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 // Lazy load Google Sign-In to prevent crash in Expo Go
 let GoogleSignin: any = null;
@@ -23,6 +24,7 @@ try {
 
 export function GoogleSignInButton() {
   const [isConfigured, setIsConfigured] = useState(false);
+  const { showInfo, showError } = useStyledAlert();
 
   useEffect(() => {
     if (isNativeModuleAvailable && GoogleSignin) {
@@ -44,10 +46,9 @@ export function GoogleSignInButton() {
       <TouchableOpacity
         style={styles.placeholderButton}
         onPress={() => {
-          Alert.alert(
+          showInfo(
             'Development Build Required',
-            'Google Sign-In requires a development build. It is not available in Expo Go.',
-            [{ text: 'OK' }]
+            'Google Sign-In requires a development build. It is not available in Expo Go.'
           );
         }}
         activeOpacity={0.8}
@@ -83,13 +84,12 @@ export function GoogleSignInButton() {
           if (error.message?.toLowerCase().includes('already registered') ||
               error.message?.toLowerCase().includes('already exists') ||
               error.message?.toLowerCase().includes('user already exists')) {
-            Alert.alert(
+            showError(
               'Account Already Exists',
-              'An account with this email already exists. Please sign in with your email and password instead.',
-              [{ text: 'OK' }]
+              'An account with this email already exists. Please sign in with your email and password instead.'
             );
           } else {
-            Alert.alert('Sign In Failed', error.message);
+            showError('Sign In Failed', error.message);
           }
         }
       } else {
@@ -104,10 +104,10 @@ export function GoogleSignInButton() {
         // Sign-in already in progress
         return;
       } else if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        Alert.alert('Error', 'Google Play Services is not available on this device');
+        showError('Error', 'Google Play Services is not available on this device');
       } else {
         console.error('Google Sign-In error:', e);
-        Alert.alert('Sign In Failed', 'Unable to sign in with Google. Please try again.');
+        showError('Sign In Failed', 'Unable to sign in with Google. Please try again.');
       }
     }
   };

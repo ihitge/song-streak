@@ -45,7 +45,7 @@ export default function AccountScreen() {
         <GangSwitch
           label="SECTIONS"
           value={activeTab}
-          onChange={setActiveTab}
+          onChange={(val) => val && setActiveTab(val)}
           options={TAB_OPTIONS}
           allowDeselect={false}
         />

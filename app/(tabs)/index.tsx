@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, FlatList, Pressable, Image, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, FlatList, Pressable, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Trash2 } from 'lucide-react-native';
+import { Plus, Music, Clock, Trash2, Users, Link2 } from 'lucide-react-native';
 import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { FrequencyTuner, GangSwitch, RotaryKnob } from '@/components/ui/filters';
@@ -12,8 +12,13 @@ import { instrumentOptions, difficultyOptions, genreOptions } from '@/config/fil
 import { useSearch } from '@/hooks/useSearch';
 import { useFABSound } from '@/hooks/useFABSound';
 import { supabase } from '@/utils/supabase/client';
+import { useBands } from '@/hooks/useBands';
+import { useSetlists } from '@/hooks/useSetlists';
+import { BandCard, SetlistCard, CreateBandModal, JoinBandModal } from '@/components/ui/bands';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 import type { Instrument, Difficulty, Fluency, Genre } from '@/types/filters';
 import type { Song } from '@/types/song';
+import type { BandWithMemberCount } from '@/types/band';
 
 // Re-export types for backwards compatibility
 export type { Instrument, Difficulty, Fluency, Genre } from '@/types/filters';
@@ -74,6 +79,14 @@ const MOCK_SONGS: Song[] = [
     genres: ['Prog', 'Rock'],
     artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3e/17/ec/3e17ec6d-f980-c64f-19e0-a6fd8bbf0c10/886445635850.jpg/600x600bb.jpg'
   },
+];
+
+// Library view options
+type LibraryView = 'songs' | 'setlists';
+
+const viewOptions = [
+  { value: 'songs' as LibraryView, label: 'MY SONGS' },
+  { value: 'setlists' as LibraryView, label: 'SETLISTS' },
 ];
 
 // --- Components ---
@@ -143,11 +156,24 @@ export default function SetListScreen() {
   const router = useRouter();
   const { playSound } = useFABSound();
   const { playSound: playClickSound } = useClickSound();
+  const { showInfo, showError, showSuccess, showConfirm } = useStyledAlert();
   const [instrument, setInstrument] = useState<Instrument>('All');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [genre, setGenre] = useState<Genre>('All');
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // View toggle state
+  const [libraryView, setLibraryView] = useState<LibraryView>('songs');
+  const [expandedBandId, setExpandedBandId] = useState<string | null>(null);
+
+  // Modal visibility
+  const [showCreateBandModal, setShowCreateBandModal] = useState(false);
+  const [showJoinBandModal, setShowJoinBandModal] = useState(false);
+
+  // Bands data
+  const { bands, isLoading: isBandsLoading, refresh: refreshBands, createBand, joinBandByCode } = useBands();
+  const { setlists, isLoading: isSetlistsLoading, refresh: refreshSetlists } = useSetlists(expandedBandId || undefined);
 
   // Fetch songs from Supabase
   const fetchSongs = useCallback(async () => {
@@ -230,46 +256,42 @@ export default function SetListScreen() {
     // Check if it's a mock song (IDs 1-5 are mock)
     const mockIds = ['1', '2', '3', '4', '5'];
     if (mockIds.includes(songId)) {
-      Alert.alert('Info', 'Cannot delete demo songs. Only songs you added can be deleted.');
+      showInfo('Info', 'Cannot delete demo songs. Only songs you added can be deleted.');
       return;
     }
 
-    Alert.alert(
+    showConfirm(
       'Delete Song',
       'Are you sure you want to delete this song?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            await playClickSound();
+      async () => {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await playClickSound();
 
-            try {
-              const { error } = await supabase
-                .from('songs')
-                .delete()
-                .eq('id', songId);
+        try {
+          const { error } = await supabase
+            .from('songs')
+            .delete()
+            .eq('id', songId);
 
-              if (error) {
-                console.error('Delete error:', error);
-                Alert.alert('Error', 'Failed to delete song');
-                return;
-              }
+          if (error) {
+            console.error('Delete error:', error);
+            showError('Error', 'Failed to delete song');
+            return;
+          }
 
-              console.log('Song deleted:', songId);
-              // Refresh the list
-              fetchSongs();
-            } catch (err) {
-              console.error('Delete error:', err);
-              Alert.alert('Error', 'Failed to delete song');
-            }
-          },
-        },
-      ]
+          console.log('Song deleted:', songId);
+          // Refresh the list
+          fetchSongs();
+        } catch (err) {
+          console.error('Delete error:', err);
+          showError('Error', 'Failed to delete song');
+        }
+      },
+      'Delete',
+      'Cancel',
+      'error'
     );
-  }, [fetchSongs, playClickSound]);
+  }, [fetchSongs, playClickSound, showInfo, showConfirm, showError]);
 
   // Handle song card press - navigate to edit song
   const handleSongPress = useCallback(async (song: Song) => {
@@ -277,6 +299,51 @@ export default function SetListScreen() {
     await playClickSound();
     router.push(`/add-song?songId=${song.id}`);
   }, [playClickSound, router]);
+
+  // Handle band card press - toggle expansion
+  const handleBandPress = useCallback((bandId: string) => {
+    setExpandedBandId(prev => prev === bandId ? null : bandId);
+  }, []);
+
+  // Handle setlist press - navigate to setlist detail (placeholder)
+  const handleSetlistPress = useCallback(async (setlistId: string) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playClickSound();
+    // TODO: Navigate to setlist detail screen
+    showInfo('Coming Soon', 'Setlist management will be available soon!');
+  }, [playClickSound, showInfo]);
+
+  // Handle create band - open modal
+  const handleCreateBand = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+    setShowCreateBandModal(true);
+  }, [playSound]);
+
+  // Handle create band submit
+  const handleCreateBandSubmit = useCallback(async (name: string) => {
+    const band = await createBand(name);
+    if (band) {
+      showSuccess('Success', `Band "${band.name}" created!\n\nJoin code: ${band.join_code}\n\nShare this code with your bandmates.`);
+    }
+  }, [createBand, showSuccess]);
+
+  // Handle join band - open modal
+  const handleJoinBand = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+    setShowJoinBandModal(true);
+  }, [playSound]);
+
+  // Handle join band submit
+  const handleJoinBandSubmit = useCallback(async (code: string): Promise<boolean> => {
+    const band = await joinBandByCode(code);
+    if (band) {
+      showSuccess('Success', `You joined "${band.name}"!`);
+      return true;
+    }
+    return false;
+  }, [joinBandByCode, showSuccess]);
 
   const filteredSongs = useMemo(() => {
     return songs.filter(song => {
@@ -301,71 +368,173 @@ export default function SetListScreen() {
         isLoading={isSearchLoading}
         recentSuggestions={recentSuggestions}
         difficultyFilter={
-          <GangSwitch
-            label="DIFF"
-            value={difficulty}
-            onChange={setDifficulty}
-            options={difficultyOptions}
-          />
+          libraryView === 'songs' ? (
+            <GangSwitch
+              label="DIFF"
+              value={difficulty}
+              onChange={setDifficulty}
+              options={difficultyOptions}
+            />
+          ) : null
         }
         instrumentFilter={
-          <FrequencyTuner
-            label="INST"
-            value={instrument}
-            onChange={setInstrument}
-            options={instrumentOptions}
-          />
+          libraryView === 'songs' ? (
+            <FrequencyTuner
+              label="INST"
+              value={instrument}
+              onChange={setInstrument}
+              options={instrumentOptions}
+            />
+          ) : null
         }
         genreFilter={
-          <RotaryKnob
-            label="GENRE"
-            value={genre}
-            onChange={setGenre}
-            options={genreOptions}
-          />
+          libraryView === 'songs' ? (
+            <RotaryKnob
+              label="GENRE"
+              value={genre}
+              onChange={setGenre}
+              options={genreOptions}
+            />
+          ) : null
         }
       />
 
-      {/* Song List */}
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.vermilion} />
-          <Text style={styles.loadingText}>Loading songs...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredSongs}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <SongCard
-              song={item}
-              onDelete={handleDeleteSong}
-              onPress={() => handleSongPress(item)}
+      {/* View Toggle */}
+      <View style={styles.viewToggleContainer}>
+        <GangSwitch
+          label=""
+          value={libraryView}
+          onChange={(val) => val && setLibraryView(val)}
+          options={viewOptions}
+          allowDeselect={false}
+        />
+      </View>
+
+      {/* MY SONGS View */}
+      {libraryView === 'songs' && (
+        <>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.vermilion} />
+              <Text style={styles.loadingText}>Loading songs...</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredSongs}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <SongCard
+                  song={item}
+                  onDelete={handleDeleteSong}
+                  onPress={() => handleSongPress(item)}
+                />
+              )}
+              contentContainerStyle={styles.songListContent}
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Music size={48} color={Colors.graphite} />
+                  <Text style={styles.emptyText}>No songs yet</Text>
+                  <Text style={styles.emptySubtext}>Tap + to add your first song</Text>
+                </View>
+              }
             />
           )}
-          contentContainerStyle={styles.songListContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Music size={48} color={Colors.graphite} />
-              <Text style={styles.emptyText}>No songs yet</Text>
-              <Text style={styles.emptySubtext}>Tap + to add your first song</Text>
-            </View>
-          }
-        />
+        </>
       )}
 
-      {/* Hero Action Button */}
-      <Pressable
-        style={styles.fab}
-        onPress={async () => {
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          await playSound();
-          router.push('/add-song');
-        }}
-      >
-        <Plus size={32} color={Colors.softWhite} strokeWidth={3} />
-      </Pressable>
+      {/* SETLISTS View */}
+      {libraryView === 'setlists' && (
+        <>
+          {isBandsLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.vermilion} />
+              <Text style={styles.loadingText}>Loading bands...</Text>
+            </View>
+          ) : (
+            <ScrollView
+              contentContainerStyle={styles.bandsListContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {bands.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                  <Users size={48} color={Colors.graphite} />
+                  <Text style={styles.emptyText}>No bands yet</Text>
+                  <Text style={styles.emptySubtext}>Create or join a band to share setlists</Text>
+                </View>
+              ) : (
+                bands.map((band) => (
+                  <BandCard
+                    key={band.id}
+                    band={band}
+                    onPress={() => handleBandPress(band.id)}
+                    expanded={expandedBandId === band.id}
+                  >
+                    {expandedBandId === band.id && (
+                      <>
+                        {isSetlistsLoading ? (
+                          <View style={styles.setlistLoading}>
+                            <ActivityIndicator size="small" color={Colors.vermilion} />
+                          </View>
+                        ) : setlists.length === 0 ? (
+                          <Text style={styles.noSetlistsText}>No setlists yet</Text>
+                        ) : (
+                          setlists.map((setlist) => (
+                            <SetlistCard
+                              key={setlist.id}
+                              setlist={setlist}
+                              onPress={() => handleSetlistPress(setlist.id)}
+                              compact
+                            />
+                          ))
+                        )}
+                      </>
+                    )}
+                  </BandCard>
+                ))
+              )}
+
+              {/* Band Action Buttons */}
+              <View style={styles.bandActions}>
+                <Pressable style={styles.bandActionButton} onPress={handleCreateBand}>
+                  <Plus size={18} color={Colors.vermilion} />
+                  <Text style={styles.bandActionText}>Create Band</Text>
+                </Pressable>
+                <Pressable style={styles.bandActionButton} onPress={handleJoinBand}>
+                  <Link2 size={18} color={Colors.vermilion} />
+                  <Text style={styles.bandActionText}>Join Band</Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+          )}
+        </>
+      )}
+
+      {/* Hero Action Button - Only show on songs view */}
+      {libraryView === 'songs' && (
+        <Pressable
+          style={styles.fab}
+          onPress={async () => {
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            await playSound();
+            router.push('/add-song');
+          }}
+        >
+          <Plus size={32} color={Colors.softWhite} strokeWidth={3} />
+        </Pressable>
+      )}
+
+      {/* Band Modals */}
+      <CreateBandModal
+        visible={showCreateBandModal}
+        onClose={() => setShowCreateBandModal(false)}
+        onSubmit={handleCreateBandSubmit}
+      />
+      <JoinBandModal
+        visible={showJoinBandModal}
+        onClose={() => setShowJoinBandModal(false)}
+        onSubmit={handleJoinBandSubmit}
+      />
     </View>
   );
 }
@@ -535,5 +704,59 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.graphite,
     marginTop: 4,
+  },
+
+  // --- View Toggle ---
+  viewToggleContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+
+  // --- Bands List ---
+  bandsListContent: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingBottom: 100,
+  },
+  setlistLoading: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  noSetlistsText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 12,
+    color: Colors.graphite,
+    textAlign: 'center',
+    paddingVertical: 12,
+  },
+  bandActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    marginTop: 24,
+  },
+  bandActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.softWhite,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    shadowColor: Colors.charcoal,
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 0,
+    elevation: 2,
+  },
+  bandActionText: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 12,
+    color: Colors.vermilion,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
 });

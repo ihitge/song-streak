@@ -23,7 +23,12 @@ export interface FrequencyTunerProps<T extends string = string> extends BaseFilt
 }
 
 // GangSwitch-specific props
-export interface GangSwitchProps<T extends string = string> extends BaseFilterProps<T> {
+export interface GangSwitchProps<T extends string = string> {
+  label: string;
+  value: T | null;
+  onChange: (value: T | null) => void;
+  options: FilterOption<T>[];
+  disabled?: boolean;
   orientation?: 'horizontal' | 'vertical';
   showIcons?: boolean;
   equalWidth?: boolean;

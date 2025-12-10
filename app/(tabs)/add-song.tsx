@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
@@ -16,6 +16,7 @@ import { PracticeTimer } from '@/components/ui/practice/PracticeTimer';
 import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { AchievementGrid } from '@/components/ui/practice/AchievementGrid';
 import { AchievementModal } from '@/components/ui/practice/AchievementModal';
+import { PracticeCompleteModal } from '@/components/ui/practice/PracticeCompleteModal';
 import { usePracticeData } from '@/hooks/usePracticeData';
 import { Achievement } from '@/types/practice';
 import { instrumentOptions } from '@/config/filterOptions';
@@ -23,6 +24,7 @@ import { analyzeVideoWithGemini, getMockGeminiResponse } from '@/utils/gemini';
 import { fetchAlbumArtwork } from '@/utils/artwork';
 import { fetchLyrics } from '@/utils/lyrics';
 import { supabase } from '@/utils/supabase/client';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 type AddSongTab = 'Basics' | 'Theory' | 'Practice' | 'Lyrics';
 
@@ -83,8 +85,11 @@ export default function AddSongScreen() {
   const [lyrics, setLyrics] = useState<string | null>(null);
   const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
   const [achievementModalVisible, setAchievementModalVisible] = useState(false);
+  const [practiceCompleteModalVisible, setPracticeCompleteModalVisible] = useState(false);
+  const [lastPracticeSeconds, setLastPracticeSeconds] = useState(0);
   const [newlyUnlockedAchievements, setNewlyUnlockedAchievements] = useState<Achievement[]>([]);
   const { playSound } = useClickSound();
+  const { showError, showSuccess, showWarning, showInfo } = useStyledAlert();
 
   // Practice data hook - only active when viewing an existing song
   const {
@@ -150,7 +155,7 @@ export default function AddSongScreen() {
       setFormKey(prev => prev + 1);
     } catch (err) {
       console.error('Error loading song:', err);
-      Alert.alert('Error', 'Failed to load song data');
+      showError('Error', 'Failed to load song data');
     } finally {
       setIsLoadingSong(false);
     }
@@ -172,7 +177,7 @@ export default function AddSongScreen() {
 
   const handleAnalyze = async () => {
     if (!videoUrl.trim()) {
-      Alert.alert('Error', 'Please enter a video URL');
+      showError('Error', 'Please enter a video URL');
       return;
     }
 
@@ -198,41 +203,33 @@ export default function AddSongScreen() {
 
         // Handle validation/config errors that should stop processing
         if (errorMessage.includes('VALIDATION_ERROR')) {
-          Alert.alert(
-            'Input Error',
-            errorMessage.replace('VALIDATION_ERROR: ', ''),
-            [{ text: 'OK' }]
-          );
+          showError('Input Error', errorMessage.replace('VALIDATION_ERROR: ', ''));
           setIsAnalyzing(false);
           return;
         } else if (errorMessage.includes('CONFIG_ERROR')) {
-          Alert.alert(
-            'Configuration Error',
-            errorMessage.replace('CONFIG_ERROR: ', ''),
-            [{ text: 'OK' }]
-          );
+          showError('Configuration Error', errorMessage.replace('CONFIG_ERROR: ', ''));
           setIsAnalyzing(false);
           return;
         }
 
         // For other errors, show alert and continue with mock data
         if (errorMessage.includes('QUOTA_EXCEEDED')) {
-          Alert.alert(
+          showWarning(
             'API Quota Exceeded',
             'The Gemini API quota has been exhausted for now.\n\nOptions:\n• Wait for quota reset (daily/monthly)\n• Upgrade to paid tier\n• Continuing with sample data for testing'
           );
         } else if (errorMessage.includes('MODEL_NOT_FOUND')) {
-          Alert.alert(
+          showWarning(
             'Configuration Error',
             'The Gemini model is not available. Please check your API configuration.\n\nUsing sample data for testing.'
           );
         } else if (errorMessage.includes('AUTH_ERROR')) {
-          Alert.alert(
+          showError(
             'Authentication Error',
             'Invalid API key or insufficient permissions. Please check your credentials.\n\nUsing sample data for testing.'
           );
         } else {
-          Alert.alert(
+          showWarning(
             'Analysis Error',
             'Unable to analyze video with Gemini API.\n\nUsing sample data for testing.\n\nError: ' + errorMessage
           );
@@ -289,7 +286,7 @@ export default function AddSongScreen() {
         });
     } catch (error) {
       console.error('Analysis error:', error);
-      Alert.alert('Error', 'Failed to analyze video. Please try again.');
+      showError('Error', 'Failed to analyze video. Please try again.');
       setIsAnalyzing(false);
     }
   };
@@ -297,13 +294,13 @@ export default function AddSongScreen() {
   const handleSave = async () => {
     // Validation (double-check)
     if (!songTitle.trim() || !artist.trim()) {
-      Alert.alert('Validation Error', 'Please enter both song title and artist');
+      showError('Validation Error', 'Please enter both song title and artist');
       return;
     }
 
     const currentData = instrumentData[currentInstrument];
     if (!currentData?.analyzed) {
-      Alert.alert('Validation Error', 'Please analyze the video first');
+      showError('Validation Error', 'Please analyze the video first');
       return;
     }
 
@@ -317,7 +314,7 @@ export default function AddSongScreen() {
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
-        Alert.alert('Error', 'You must be logged in to save songs');
+        showError('Error', 'You must be logged in to save songs');
         setIsSaving(false);
         return;
       }
@@ -359,7 +356,7 @@ export default function AddSongScreen() {
       }
 
       console.log('✅ Song saved successfully:', data);
-      Alert.alert('Success', 'Song saved successfully!');
+      showSuccess('Success', 'Song saved successfully!');
 
       // TODO: Navigate to Library or reset form
       // Reset form fields
@@ -376,7 +373,7 @@ export default function AddSongScreen() {
     } catch (error) {
       console.error('Save error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to save song. Please try again.';
-      Alert.alert('Error', errorMessage);
+      showError('Error', errorMessage);
     } finally {
       setIsSaving(false);
     }
@@ -384,7 +381,7 @@ export default function AddSongScreen() {
 
   const handleUpdate = async () => {
     if (!songTitle.trim() || !artist.trim()) {
-      Alert.alert('Validation Error', 'Please enter both song title and artist');
+      showError('Validation Error', 'Please enter both song title and artist');
       return;
     }
 
@@ -417,11 +414,11 @@ export default function AddSongScreen() {
 
       if (error) throw error;
 
-      Alert.alert('Success', 'Song updated successfully!');
+      showSuccess('Success', 'Song updated successfully!');
       setIsEditing(false);
     } catch (error) {
       console.error('Update error:', error);
-      Alert.alert('Error', 'Failed to update song. Please try again.');
+      showError('Error', 'Failed to update song. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -470,7 +467,7 @@ export default function AddSongScreen() {
           <GangSwitch
             label="SECTIONS"
             value={activeTab}
-            onChange={setActiveTab}
+            onChange={(val) => val && setActiveTab(val)}
             options={TAB_OPTIONS}
             allowDeselect={false}
             showIcons={true}
@@ -771,7 +768,7 @@ export default function AddSongScreen() {
                 compact
                 onComplete={async (seconds) => {
                   if (!songId) {
-                    Alert.alert('Save First', 'Please save the song before logging practice time.');
+                    showInfo('Save First', 'Please save the song before logging practice time.');
                     return;
                   }
                   try {
@@ -780,13 +777,12 @@ export default function AddSongScreen() {
                       setNewlyUnlockedAchievements(newAchievements);
                       setAchievementModalVisible(true);
                     } else {
-                      const minutes = Math.floor(seconds / 60);
-                      const remainingSeconds = seconds % 60;
-                      Alert.alert('Practice Logged!', `You practiced for ${minutes}m ${remainingSeconds}s`);
+                      setLastPracticeSeconds(seconds);
+                      setPracticeCompleteModalVisible(true);
                     }
                   } catch (error) {
                     console.error('Error logging practice:', error);
-                    Alert.alert('Error', 'Failed to log practice session');
+                    showError('Error', 'Failed to log practice session');
                   }
                 }}
               />
@@ -867,6 +863,13 @@ export default function AddSongScreen() {
           setAchievementModalVisible(false);
           setNewlyUnlockedAchievements([]);
         }}
+      />
+
+      {/* Practice Complete Modal (no new achievements) */}
+      <PracticeCompleteModal
+        visible={practiceCompleteModalVisible}
+        seconds={lastPracticeSeconds}
+        onClose={() => setPracticeCompleteModalVisible(false)}
       />
     </View>
   );

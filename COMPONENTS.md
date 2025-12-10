@@ -20,6 +20,14 @@
 | `SettingsTab` | App settings toggles (dark mode, sound) | `components/ui/account/SettingsTab.tsx` |
 | `BillingTab` | Billing/subscription placeholder | `components/ui/account/BillingTab.tsx` |
 | `SupportTab` | Help, about, and sign out | `components/ui/account/SupportTab.tsx` |
+| `StyledAlertModal` | **Styled alert/confirm modal (replaces native Alert)** | `components/ui/modals/StyledAlertModal.tsx` |
+| `PracticeCompleteModal` | Practice session logged modal | `components/ui/practice/PracticeCompleteModal.tsx` |
+| `AchievementModal` | Achievement unlocked celebration modal | `components/ui/practice/AchievementModal.tsx` |
+| `CreateBandModal` | Modal for creating a new band | `components/ui/bands/CreateBandModal.tsx` |
+| `JoinBandModal` | Modal for joining a band via code | `components/ui/bands/JoinBandModal.tsx` |
+| `VideoPlayerModal` | YouTube video player modal | `components/ui/VideoPlayerModal.tsx` |
+| `BandCard` | Band display card with expandable setlists | `components/ui/bands/BandCard.tsx` |
+| `SetlistCard` | Setlist display card | `components/ui/bands/SetlistCard.tsx` |
 
 ### Hooks
 
@@ -27,11 +35,16 @@
 |------|---------|------------|----------|
 | `useSignOut` | Centralized sign-out logic with error handling | N/A | `hooks/useSignOut.ts` |
 | `useSettings` | App settings (dark mode, sound enabled) | N/A | `hooks/useSettings.ts` |
+| `useStyledAlert` | **Styled alert system (replaces native Alert.alert)** | N/A | `hooks/useStyledAlert.tsx` |
 | `useNavButtonSound` | Audio feedback for NavButton (large nav) | sound-nav-button.wav | `hooks/useNavButtonSound.ts` |
 | `useGangSwitchSound` | Audio feedback for GangSwitch (small filters) | sound-gang-switch.wav | `hooks/useGangSwitchSound.ts` |
 | `useRotaryKnobSound` | Audio feedback for RotaryKnob (genre selector) | sound-rotary-knob.wav | `hooks/useRotaryKnobSound.ts` |
 | `useFABSound` | Audio feedback for FAB (add song button) | sound-fab.wav | `hooks/useFABSound.ts` |
 | `useClickSound` | Audio feedback for shared components | sound-shared-click.mp3 | `hooks/useClickSound.ts` |
+| `useBands` | Band management (create, join, list bands) | N/A | `hooks/useBands.ts` |
+| `useSetlists` | Setlist management for bands | N/A | `hooks/useSetlists.ts` |
+| `usePracticeData` | Practice session tracking and achievements | N/A | `hooks/usePracticeData.ts` |
+| `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
 
 ---
 
@@ -296,7 +309,123 @@ const handlePress = async () => {
 
 ---
 
+### StyledAlertModal & useStyledAlert
+
+**Purpose**: Replaces native `Alert.alert()` with styled modals matching the Industrial Play aesthetic. **ALWAYS use this instead of native alerts.**
+
+**Location**:
+- `components/ui/modals/StyledAlertModal.tsx` - The modal component
+- `hooks/useStyledAlert.tsx` - The provider and hook
+
+**Setup**: App is wrapped with `StyledAlertProvider` in `app/_layout.tsx`
+
+**Alert Types**:
+| Type | Icon | Color | Use Case |
+|------|------|-------|----------|
+| `error` | AlertCircle | vermilion | Validation errors, API failures |
+| `success` | CheckCircle | moss | Save success, operation complete |
+| `info` | Info | deepSpaceBlue | Instructions, coming soon |
+| `warning` | AlertTriangle | amber | Warnings, quota exceeded |
+
+**Usage**:
+```typescript
+import { useStyledAlert } from '@/hooks/useStyledAlert';
+
+function MyComponent() {
+  const { showError, showSuccess, showInfo, showWarning, showConfirm } = useStyledAlert();
+
+  // Simple alerts (single OK button)
+  showError('Error', 'Something went wrong');
+  showSuccess('Success', 'Song saved successfully!');
+  showInfo('Info', 'Please save the song first');
+  showWarning('Warning', 'API quota exceeded');
+
+  // With callback on dismiss
+  showSuccess('Success', 'Password updated', () => router.replace('/(auth)'));
+
+  // Confirmation dialog (Cancel + Confirm buttons)
+  showConfirm(
+    'Delete Song',
+    'Are you sure you want to delete this song?',
+    () => handleDelete(),    // onConfirm callback
+    'Delete',                // confirm button text (default: 'Confirm')
+    'Cancel',                // cancel button text (default: 'Cancel')
+    'error'                  // alert type (default: 'warning')
+  );
+}
+```
+
+**Visual Behavior**:
+- Dark overlay (`rgba(0, 0, 0, 0.85)`)
+- Spring animation on entry
+- Haptic feedback based on alert type
+- Bevel effects matching app aesthetic
+- LinearGradient buttons
+
+---
+
+### PracticeCompleteModal
+
+**Purpose**: Shown when a practice session is logged (no new achievements unlocked).
+
+**Location**: `components/ui/practice/PracticeCompleteModal.tsx`
+
+**Props**:
+```typescript
+interface PracticeCompleteModalProps {
+  visible: boolean;
+  seconds: number;      // Practice duration in seconds
+  onClose: () => void;
+}
+```
+
+---
+
+### CreateBandModal & JoinBandModal
+
+**Purpose**: Modals for band management - creating new bands and joining existing bands via code.
+
+**Location**: `components/ui/bands/`
+
+**CreateBandModal Props**:
+```typescript
+interface CreateBandModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSubmit: (name: string) => Promise<void>;
+}
+```
+
+**JoinBandModal Props**:
+```typescript
+interface JoinBandModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSubmit: (joinCode: string) => Promise<boolean>;
+}
+```
+
+**Features**:
+- Auto-uppercase join code input
+- 6-character code with ABC-123 format display
+- Error state handling
+- Keyboard avoiding behavior
+
+---
+
 ## Anti-Patterns
+
+### Don't use native Alert.alert
+**ALWAYS** use `useStyledAlert` hook instead of `Alert.alert()`. Native alerts don't match the app aesthetic.
+
+```typescript
+// ❌ WRONG - Native iOS alert
+Alert.alert('Error', 'Something went wrong');
+
+// ✅ CORRECT - Styled alert
+const { showError } = useStyledAlert();
+showError('Error', 'Something went wrong');
+```
 
 ### Don't hardcode colors
 Use `Colors` from `@/constants/Colors`.
@@ -305,8 +434,8 @@ Use `Colors` from `@/constants/Colors`.
 Extract to `StyleSheet.create`.
 
 ### Don't mix UI metaphors
-Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches).
+Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches, beveled modals).
 
 ---
 
-*Last updated: Dec 6, 2025 (Added Account screen, Settings context, useSettings hook)*
+*Last updated: Dec 10, 2025 (Added StyledAlertModal, useStyledAlert, Band modals, Practice modals)*

@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { Stack } from 'expo-router';
@@ -20,6 +19,7 @@ import { Colors } from '@/constants/Colors';
 import { supabase } from '@/utils/supabase/client';
 import { AppleSignInButton } from '@/components/auth/AppleSignInButton';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 const { width } = Dimensions.get('window');
 
@@ -30,10 +30,11 @@ export default function AuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const { showError, showSuccess, showInfo } = useStyledAlert();
 
   async function resetPassword() {
     if (!email.trim()) {
-      Alert.alert('Email Required', 'Please enter your email address first, then tap "Forgot Security Key?"');
+      showInfo('Email Required', 'Please enter your email address first, then tap "Forgot Security Key?"');
       return;
     }
 
@@ -45,12 +46,11 @@ export default function AuthScreen() {
     setResetLoading(false);
 
     if (error) {
-      Alert.alert('Error', error.message);
+      showError('Error', error.message);
     } else {
-      Alert.alert(
+      showSuccess(
         'Check Your Email',
-        'If an account exists with this email, you will receive a password reset link shortly.',
-        [{ text: 'OK' }]
+        'If an account exists with this email, you will receive a password reset link shortly.'
       );
     }
   }
@@ -62,13 +62,13 @@ export default function AuthScreen() {
       password: password,
     });
 
-    if (error) Alert.alert(error.message);
+    if (error) showError('Sign In Failed', error.message);
     setLoading(false);
   }
 
   async function signUpWithEmail() {
     if (password !== confirmPassword) {
-      Alert.alert("Passwords do not match");
+      showError('Error', 'Passwords do not match');
       return;
     }
 
@@ -81,8 +81,8 @@ export default function AuthScreen() {
       password: password,
     });
 
-    if (error) Alert.alert(error.message);
-    else if (!session) Alert.alert('Please check your inbox for email verification!');
+    if (error) showError('Sign Up Failed', error.message);
+    else if (!session) showInfo('Verify Email', 'Please check your inbox for email verification!');
     setLoading(false);
   }
 

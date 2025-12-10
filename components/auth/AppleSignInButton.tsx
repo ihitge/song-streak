@@ -1,9 +1,12 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/utils/supabase/client';
-import { Platform, StyleSheet, Alert } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 export function AppleSignInButton() {
+  const { showError } = useStyledAlert();
+
   // Only render on iOS
   if (Platform.OS !== 'ios') return null;
 
@@ -31,13 +34,12 @@ export function AppleSignInButton() {
           if (error.message?.toLowerCase().includes('already registered') ||
               error.message?.toLowerCase().includes('already exists') ||
               error.message?.toLowerCase().includes('user already exists')) {
-            Alert.alert(
+            showError(
               'Account Already Exists',
-              'An account with this email already exists. Please sign in with your email and password instead.',
-              [{ text: 'OK' }]
+              'An account with this email already exists. Please sign in with your email and password instead.'
             );
           } else {
-            Alert.alert('Sign In Failed', error.message);
+            showError('Sign In Failed', error.message);
           }
         }
       } else {
@@ -49,7 +51,7 @@ export function AppleSignInButton() {
         return;
       }
       console.error('Apple Sign-In error:', e);
-      Alert.alert('Sign In Failed', 'Unable to sign in with Apple. Please try again.');
+      showError('Sign In Failed', 'Unable to sign in with Apple. Please try again.');
     }
   };
 

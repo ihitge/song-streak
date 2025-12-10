@@ -23,17 +23,28 @@
 | Tuner Control | `FrequencyTuner` |
 | Rotary Control | `RotaryKnob` |
 | Bottom navigation | `TactileNavbar` |
+| **Alert/Error/Success dialogs** | `useStyledAlert` hook |
+| Create band modal | `CreateBandModal` |
+| Join band modal | `JoinBandModal` |
+| Practice complete modal | `PracticeCompleteModal` |
+| Achievement celebration | `AchievementModal` |
+| Video player | `VideoPlayerModal` |
 
 ### Hooks
 
 | Need | Use This Hook |
 |------|---------------|
+| **Alert dialogs (NEVER use native Alert)** | `useStyledAlert` |
 | Sign out functionality | `useSignOut` |
 | Audio feedback for NavButton | `useNavButtonSound` |
 | Audio feedback for GangSwitch | `useGangSwitchSound` |
 | Audio feedback for RotaryKnob | `useRotaryKnobSound` |
 | Audio feedback for FAB button | `useFABSound` |
 | Audio feedback for other components | `useClickSound` |
+| Band management | `useBands` |
+| Setlist management | `useSetlists` |
+| Practice tracking | `usePracticeData` |
+| Debounced search | `useSearch` |
 
 ### Design Tokens
 
@@ -118,6 +129,40 @@ const handlePress = async () => {
 
 ---
 
+### Alert Dialogs (CRITICAL)
+
+**NEVER use native `Alert.alert()` - ALWAYS use `useStyledAlert` hook.**
+
+```typescript
+// ❌ WRONG - Native iOS alert (breaks app aesthetic)
+import { Alert } from 'react-native';
+Alert.alert('Error', 'Something went wrong');
+
+// ✅ CORRECT - Styled alert matching app design
+import { useStyledAlert } from '@/hooks/useStyledAlert';
+
+const { showError, showSuccess, showInfo, showWarning, showConfirm } = useStyledAlert();
+
+// Simple alerts
+showError('Error', 'Something went wrong');
+showSuccess('Success', 'Song saved!');
+showInfo('Info', 'Please save first');
+showWarning('Warning', 'API quota exceeded');
+
+// Confirmation dialog
+showConfirm(
+  'Delete Song',
+  'Are you sure?',
+  () => handleDelete(),  // onConfirm
+  'Delete',              // confirmText
+  'Cancel',              // cancelText
+  'error'                // type
+);
+```
+
+---
+
 **GOLDEN RULES**:
 - Never make assumptions. Never get lazy. Never hallucinate. Never take the easy route. Always engineer for scalability and the long-term view. Ask when unsure.
 - Every interaction should feel tactile: visual + haptic + audio feedback.
+- **NEVER use native Alert.alert() - always use useStyledAlert hook.**
