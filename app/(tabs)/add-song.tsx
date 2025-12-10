@@ -16,6 +16,7 @@ import { PracticeTimer } from '@/components/ui/practice/PracticeTimer';
 import { instrumentOptions } from '@/config/filterOptions';
 import { analyzeVideoWithGemini, getMockGeminiResponse } from '@/utils/gemini';
 import { fetchAlbumArtwork } from '@/utils/artwork';
+import { fetchLyrics } from '@/utils/lyrics';
 import { supabase } from '@/utils/supabase/client';
 
 type AddSongTab = 'Basics' | 'Theory' | 'Practice' | 'Lyrics';
@@ -74,6 +75,8 @@ export default function AddSongScreen() {
   const [showDebug, setShowDebug] = useState(false);
   const [formKey, setFormKey] = useState(0); // Force re-render key
   const [isVideoModalVisible, setIsVideoModalVisible] = useState(false); // Video player modal
+  const [lyrics, setLyrics] = useState<string | null>(null);
+  const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
   const { playSound } = useClickSound();
 
   // Load existing song data when songId is provided
@@ -252,6 +255,19 @@ export default function AddSongScreen() {
       console.log('Form state updated, formKey incremented');
 
       setIsAnalyzing(false);
+
+      // Fetch lyrics in the background (non-blocking)
+      setIsLoadingLyrics(true);
+      fetchLyrics(analysisResult.title, analysisResult.artist)
+        .then(fetchedLyrics => {
+          setLyrics(fetchedLyrics);
+        })
+        .catch(err => {
+          console.error('Lyrics fetch error:', err);
+        })
+        .finally(() => {
+          setIsLoadingLyrics(false);
+        });
     } catch (error) {
       console.error('Analysis error:', error);
       Alert.alert('Error', 'Failed to analyze video. Please try again.');
@@ -720,8 +736,42 @@ export default function AddSongScreen() {
             <View style={styles.practiceTimerContainer}>
               <PracticeTimer compact />
             </View>
+          ) : activeTab === 'Lyrics' ? (
+            <ScrollView style={styles.lyricsContainer} showsVerticalScrollIndicator={false}>
+              {isLoadingLyrics ? (
+                <View style={styles.lyricsLoadingContainer}>
+                  <ActivityIndicator size="small" color={Colors.vermilion} />
+                  <Text style={styles.lyricsLoadingText}>Searching for lyrics...</Text>
+                </View>
+              ) : lyrics ? (
+                <Text style={styles.lyricsText}>{lyrics}</Text>
+              ) : instrumentData[currentInstrument]?.analyzed ? (
+                <View style={styles.noLyricsContainer}>
+                  <Text style={styles.noLyricsText}>No lyrics found for this song</Text>
+                  <TouchableOpacity
+                    style={styles.retryButton}
+                    onPress={async () => {
+                      if (songTitle && artist) {
+                        setIsLoadingLyrics(true);
+                        const fetchedLyrics = await fetchLyrics(songTitle, artist);
+                        setLyrics(fetchedLyrics);
+                        setIsLoadingLyrics(false);
+                      }
+                    }}
+                  >
+                    <Text style={styles.retryButtonText}>Try Again</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.noAnalysisContainer}>
+                  <Text style={styles.noAnalysisText}>
+                    Analyze a video first to fetch lyrics
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
           ) : (
-            <Text style={styles.placeholderText}>Lyrics feature coming soon</Text>
+            <Text style={styles.placeholderText}>Unknown tab</Text>
           )}
           </View>
         </View>
@@ -1072,5 +1122,54 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'LexendDecaRegular',
     color: Colors.graphite,
+  },
+  // Lyrics Tab Styles
+  lyricsContainer: {
+    flex: 1,
+  },
+  lyricsLoadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 12,
+  },
+  lyricsLoadingText: {
+    fontSize: 14,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.graphite,
+  },
+  lyricsText: {
+    fontSize: 14,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.charcoal,
+    lineHeight: 24,
+    paddingBottom: 20,
+  },
+  noLyricsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+    gap: 16,
+  },
+  noLyricsText: {
+    fontSize: 14,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.graphite,
+    textAlign: 'center',
+  },
+  retryButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: Colors.vermilion,
+  },
+  retryButtonText: {
+    fontSize: 12,
+    fontFamily: 'LexendDecaSemiBold',
+    color: Colors.vermilion,
+    letterSpacing: 1,
   },
 });
