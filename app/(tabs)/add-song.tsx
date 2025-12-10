@@ -568,7 +568,7 @@ export default function AddSongScreen() {
                           ) : (
                             <View style={styles.buttonContent}>
                               <Save size={16} color="#fff" />
-                              <Text style={styles.buttonText}>{isEditMode ? 'UPDATE' : 'SAVE'}</Text>
+                              <Text style={styles.buttonText}>SAVE</Text>
                             </View>
                           )}
                         </LinearGradient>
