@@ -13,6 +13,11 @@ import { ProcessingSignal } from '@/components/ui/ProcessingSignal';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
 import { VideoPlayerModal } from '@/components/ui/VideoPlayerModal';
 import { PracticeTimer } from '@/components/ui/practice/PracticeTimer';
+import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
+import { AchievementGrid } from '@/components/ui/practice/AchievementGrid';
+import { AchievementModal } from '@/components/ui/practice/AchievementModal';
+import { usePracticeData } from '@/hooks/usePracticeData';
+import { Achievement } from '@/types/practice';
 import { instrumentOptions } from '@/config/filterOptions';
 import { analyzeVideoWithGemini, getMockGeminiResponse } from '@/utils/gemini';
 import { fetchAlbumArtwork } from '@/utils/artwork';
@@ -77,7 +82,16 @@ export default function AddSongScreen() {
   const [isVideoModalVisible, setIsVideoModalVisible] = useState(false); // Video player modal
   const [lyrics, setLyrics] = useState<string | null>(null);
   const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
+  const [achievementModalVisible, setAchievementModalVisible] = useState(false);
+  const [newlyUnlockedAchievements, setNewlyUnlockedAchievements] = useState<Achievement[]>([]);
   const { playSound } = useClickSound();
+
+  // Practice data hook - only active when viewing an existing song
+  const {
+    totalSeconds: practiceSeconds,
+    unlockedAchievementIds,
+    logPracticeSession,
+  } = usePracticeData(songId);
 
   // Load existing song data when songId is provided
   useEffect(() => {
@@ -748,9 +762,53 @@ export default function AddSongScreen() {
               )}
             </ScrollView>
           ) : activeTab === 'Practice' ? (
-            <View style={styles.practiceTimerContainer}>
-              <PracticeTimer compact />
-            </View>
+            <ScrollView style={styles.practiceContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.practiceScrollContent}>
+              {/* VU Meter - Total practice time display */}
+              <VUMeterDisplay totalSeconds={practiceSeconds} compact />
+
+              {/* Practice Timer */}
+              <PracticeTimer
+                compact
+                onComplete={async (seconds) => {
+                  if (!songId) {
+                    Alert.alert('Save First', 'Please save the song before logging practice time.');
+                    return;
+                  }
+                  try {
+                    const newAchievements = await logPracticeSession(seconds);
+                    if (newAchievements.length > 0) {
+                      setNewlyUnlockedAchievements(newAchievements);
+                      setAchievementModalVisible(true);
+                    } else {
+                      const minutes = Math.floor(seconds / 60);
+                      const remainingSeconds = seconds % 60;
+                      Alert.alert('Practice Logged!', `You practiced for ${minutes}m ${remainingSeconds}s`);
+                    }
+                  } catch (error) {
+                    console.error('Error logging practice:', error);
+                    Alert.alert('Error', 'Failed to log practice session');
+                  }
+                }}
+              />
+
+              {/* Achievement badges */}
+              {songId && (
+                <AchievementGrid
+                  unlockedAchievementIds={unlockedAchievementIds}
+                  totalSeconds={practiceSeconds}
+                  compact
+                />
+              )}
+
+              {/* Message for new songs */}
+              {!songId && (
+                <View style={styles.saveFirstMessage}>
+                  <Text style={styles.saveFirstText}>
+                    Save the song to start tracking practice time and earning achievements
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
           ) : activeTab === 'Lyrics' ? (
             <ScrollView style={styles.lyricsContainer} showsVerticalScrollIndicator={false}>
               {isLoadingLyrics ? (
@@ -799,6 +857,16 @@ export default function AddSongScreen() {
         title={songTitle}
         artist={artist}
         onClose={() => setIsVideoModalVisible(false)}
+      />
+
+      {/* Achievement Unlocked Modal */}
+      <AchievementModal
+        visible={achievementModalVisible}
+        achievements={newlyUnlockedAchievements}
+        onClose={() => {
+          setAchievementModalVisible(false);
+          setNewlyUnlockedAchievements([]);
+        }}
       />
     </View>
   );
@@ -1068,6 +1136,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 24,
+  },
+  practiceContainer: {
+    flex: 1,
+  },
+  practiceScrollContent: {
+    alignItems: 'center',
+    gap: 20,
+    paddingBottom: 20,
+  },
+  saveFirstMessage: {
+    backgroundColor: Colors.alloy,
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 8,
+  },
+  saveFirstText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 12,
+    color: Colors.graphite,
+    textAlign: 'center',
+    lineHeight: 18,
   },
   difficultyContainer: {
     marginBottom: 20,
