@@ -1,36 +1,74 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { ACHIEVEMENTS, formatPracticeTime, calculateProgress } from '@/types/practice';
 
+/**
+ * VU Meter mode
+ * - 'progress': Shows practice time progress (default)
+ * - 'metronome': Shows pendulum swing for metronome beats
+ */
+type VUMeterMode = 'progress' | 'metronome';
+
 interface VUMeterDisplayProps {
-  totalSeconds: number;
+  totalSeconds?: number;              // For progress mode (optional in metronome mode)
   compact?: boolean;
+  mode?: VUMeterMode;                 // Default: 'progress'
+  beatPosition?: number;              // 0 (left) or 1 (right) for metronome pendulum
+  isMetronomePlaying?: boolean;       // For LED beat effects
+  currentBeat?: number;               // Current beat number (1-indexed)
+  beatsPerMeasure?: number;           // Total beats in measure
+  sessionSeconds?: number;            // Session time for metronome mode display
+  sessionLabel?: string;              // Custom label (default: 'SESSION TIME' or 'TOTAL PRACTICE')
+  showTimeDisplay?: boolean;          // Show embedded time display (default: true)
+  children?: React.ReactNode;         // Content to render at bottom of housing (e.g., BPM display)
 }
 
 /**
- * Skeuomorphic VU Meter display for total practice time
- * Analog-style needle meter with LED threshold indicators
+ * Skeuomorphic VU Meter display with dual modes:
+ * - Progress mode: Shows total practice time with static needle position
+ * - Metronome mode: Shows pendulum swing for metronome beats
  */
 export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
-  totalSeconds,
+  totalSeconds = 0,
   compact = false,
+  mode = 'progress',
+  beatPosition = 0.5,
+  isMetronomePlaying = false,
+  currentBeat = 1,
+  beatsPerMeasure = 4,
+  sessionSeconds,
+  sessionLabel,
+  showTimeDisplay = true,
+  children,
 }) => {
-  const needleRotation = useRef(new Animated.Value(0)).current;
+  const needleRotation = useRef(new Animated.Value(50)).current;
 
-  // Calculate progress (0-100) and map to needle rotation (-45 to +45 degrees)
-  const progress = calculateProgress(totalSeconds);
+  // Calculate target value based on mode
+  const targetValue = useMemo(() => {
+    if (mode === 'metronome') {
+      // Map beatPosition 0-1 to 0-100 for needle rotation
+      // 0 = left (-45deg), 1 = right (+45deg)
+      return beatPosition * 100;
+    }
+    // Progress mode: calculate from totalSeconds
+    return calculateProgress(totalSeconds);
+  }, [mode, beatPosition, totalSeconds]);
 
   useEffect(() => {
     // Animate needle to new position
+    // Use different spring parameters for each mode
+    const springConfig = mode === 'metronome'
+      ? { tension: 120, friction: 8 }   // Snappy for pendulum
+      : { tension: 50, friction: 10 };  // Smooth for progress
+
     Animated.spring(needleRotation, {
-      toValue: progress,
-      tension: 50,
-      friction: 10,
+      toValue: targetValue,
+      ...springConfig,
       useNativeDriver: true,
     }).start();
-  }, [progress, needleRotation]);
+  }, [targetValue, needleRotation, mode]);
 
   // Map progress to rotation: 0% = -45deg, 100% = +45deg
   const rotation = needleRotation.interpolate({
@@ -38,8 +76,8 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     outputRange: ['-45deg', '45deg'],
   });
 
-  // Scale markers for the VU meter (logarithmic feel)
-  const scaleMarkers = [
+  // Scale markers for the VU meter (logarithmic feel) - used in progress mode
+  const progressMarkers = [
     { label: '-20', time: '5m', threshold: 300 },
     { label: '-10', time: '30m', threshold: 1800 },
     { label: '-5', time: '1h', threshold: 3600 },
@@ -47,34 +85,99 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     { label: '+3', time: '10h', threshold: 36000 },
   ];
 
+  // Beat markers for metronome mode - show beat numbers
+  const beatMarkers = useMemo(() => {
+    // Generate beat markers based on beats per measure
+    const markers = [];
+    for (let i = 1; i <= Math.min(beatsPerMeasure, 5); i++) {
+      markers.push({
+        label: String(i),
+        beat: i,
+      });
+    }
+    return markers;
+  }, [beatsPerMeasure]);
+
+  // Determine which LED is active in metronome mode
+  const isLedActiveForBeat = (beatNum: number): boolean => {
+    if (mode !== 'metronome' || !isMetronomePlaying) return false;
+    return beatNum === currentBeat;
+  };
+
+  // LED style for metronome mode (flash on current beat)
+  const getMetronomeLedStyle = (beatNum: number) => {
+    if (!isMetronomePlaying) return {};
+    if (beatNum === currentBeat) {
+      // Current beat - flash with vermilion for downbeat, moss for others
+      return beatNum === 1
+        ? styles.ledActiveDownbeat
+        : styles.ledActiveBeat;
+    }
+    return {};
+  };
+
+  // Time display values
+  const displaySeconds = mode === 'metronome' && sessionSeconds !== undefined
+    ? sessionSeconds
+    : totalSeconds;
+  const displayLabel = sessionLabel
+    ? sessionLabel
+    : mode === 'metronome'
+      ? 'SESSION TIME'
+      : 'TOTAL PRACTICE';
+
   return (
     <View style={[styles.housing, compact && styles.housingCompact]}>
-      {/* VU label */}
-      <Text style={[styles.vuLabel, compact && styles.vuLabelCompact]}>VU</Text>
+      {/* VU label - shows BPM indicator in metronome mode */}
+      <Text style={[styles.vuLabel, compact && styles.vuLabelCompact]}>
+        {mode === 'metronome' ? 'BPM' : 'VU'}
+      </Text>
 
       {/* Meter face */}
       <View style={[styles.meterFace, compact && styles.meterFaceCompact]}>
         {/* Scale arc background */}
         <View style={styles.scaleArc}>
-          {/* Scale markings */}
+          {/* Scale markings - different for each mode */}
           <View style={styles.scaleMarkings}>
-            {scaleMarkers.map((marker, index) => (
-              <View key={marker.label} style={styles.markerContainer}>
-                <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
-                  {marker.label}
-                </Text>
-                <View
-                  style={[
-                    styles.ledIndicator,
-                    compact && styles.ledIndicatorCompact,
-                    totalSeconds >= marker.threshold && styles.ledActive,
-                  ]}
-                />
-                <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
-                  {marker.time}
-                </Text>
-              </View>
-            ))}
+            {mode === 'metronome' ? (
+              // Metronome mode: show beat numbers
+              beatMarkers.map((marker) => (
+                <View key={marker.label} style={styles.markerContainer}>
+                  <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
+                    {marker.label}
+                  </Text>
+                  <View
+                    style={[
+                      styles.ledIndicator,
+                      compact && styles.ledIndicatorCompact,
+                      getMetronomeLedStyle(marker.beat),
+                    ]}
+                  />
+                  <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
+                    {marker.beat === 1 ? '▼' : '·'}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              // Progress mode: show time thresholds
+              progressMarkers.map((marker) => (
+                <View key={marker.label} style={styles.markerContainer}>
+                  <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
+                    {marker.label}
+                  </Text>
+                  <View
+                    style={[
+                      styles.ledIndicator,
+                      compact && styles.ledIndicatorCompact,
+                      totalSeconds >= marker.threshold && styles.ledActive,
+                    ]}
+                  />
+                  <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
+                    {marker.time}
+                  </Text>
+                </View>
+              ))
+            )}
           </View>
         </View>
 
@@ -99,15 +202,24 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
         </View>
       </View>
 
-      {/* Time display */}
-      <View style={[styles.timeDisplay, compact && styles.timeDisplayCompact]}>
-        <Text style={[styles.timeValue, compact && styles.timeValueCompact]}>
-          {formatPracticeTime(totalSeconds)}
-        </Text>
-        <Text style={[styles.timeLabel2, compact && styles.timeLabel2Compact]}>
-          TOTAL PRACTICE
-        </Text>
-      </View>
+      {/* Time display - conditionally rendered */}
+      {showTimeDisplay && (
+        <View style={[styles.timeDisplay, compact && styles.timeDisplayCompact]}>
+          <Text style={[styles.timeValue, compact && styles.timeValueCompact]}>
+            {formatPracticeTime(displaySeconds)}
+          </Text>
+          <Text style={[styles.timeLabel2, compact && styles.timeLabel2Compact]}>
+            {displayLabel}
+          </Text>
+        </View>
+      )}
+
+      {/* Custom content at bottom of housing (e.g., BPM display) */}
+      {children && (
+        <View style={[styles.childrenContainer, compact && styles.childrenContainerCompact]}>
+          {children}
+        </View>
+      )}
     </View>
   );
 };
@@ -216,6 +328,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 6,
   },
+  ledActiveDownbeat: {
+    backgroundColor: Colors.vermilion,
+    opacity: 1,
+    shadowColor: Colors.vermilion,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+  },
+  ledActiveBeat: {
+    backgroundColor: Colors.moss,
+    opacity: 1,
+    shadowColor: Colors.moss,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
+  },
   timeLabel: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 8,
@@ -306,5 +434,12 @@ const styles = StyleSheet.create({
     fontSize: 8,
     letterSpacing: 2,
     marginTop: 2,
+  },
+  childrenContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  childrenContainerCompact: {
+    marginTop: 10,
   },
 });

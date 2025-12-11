@@ -6,6 +6,7 @@ import { Colors } from '@/constants/Colors';
 interface RamsTapeCounterDisplayProps {
   seconds: number;
   compact?: boolean;
+  label?: string;  // Custom label (default: 'ELAPSED')
 }
 
 /**
@@ -15,6 +16,7 @@ interface RamsTapeCounterDisplayProps {
 export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
   seconds,
   compact = false,
+  label = 'ELAPSED',
 }) => {
   // Format seconds into MM:SS
   const minutes = Math.floor(seconds / 60);
@@ -65,7 +67,7 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
       </View>
 
       {/* Label */}
-      <Text style={[styles.label, compact && styles.labelCompact]}>ELAPSED</Text>
+      <Text style={[styles.label, compact && styles.labelCompact]}>{label}</Text>
     </View>
   );
 };
@@ -97,9 +99,10 @@ const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, com
 
 const styles = StyleSheet.create({
   housing: {
+    width: 320,  // Match VU meter housing width
     backgroundColor: Colors.ink,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 8,  // Reduced from 12
+    padding: 11,  // Reduced from 16
     alignItems: 'center',
     // Outer bevel
     borderTopWidth: 1,
@@ -108,22 +111,23 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.3)',
     // Shadow
     shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 4 },  // Reduced from 6
     shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowRadius: 6,  // Reduced from 8
+    elevation: 6,  // Reduced from 8
   },
   housingCompact: {
-    borderRadius: 8,
-    padding: 10,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 4,
-    elevation: 4,
+    width: 224,  // Match VU meter compact width (200 + 12*2 padding)
+    borderRadius: 6,  // Reduced from 8
+    padding: 7,  // Reduced from 10
+    shadowOffset: { width: 0, height: 2 },  // Reduced from 3
+    shadowRadius: 3,  // Reduced from 4
+    elevation: 3,  // Reduced from 4
   },
   recessedWell: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 6,  // Reduced from 8
+    padding: 8,  // Reduced from 12
     // Inset effect
     borderTopWidth: 2,
     borderTopColor: 'rgba(0,0,0,0.5)',
@@ -136,8 +140,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   recessedWellCompact: {
-    borderRadius: 6,
-    padding: 8,
+    borderRadius: 4,  // Reduced from 6
+    padding: 6,  // Reduced from 8
   },
   digitsContainer: {
     flexDirection: 'row',
@@ -147,15 +151,15 @@ const styles = StyleSheet.create({
   digitWheelContainer: {
     position: 'relative',
     overflow: 'hidden',
-    borderRadius: 4,
+    borderRadius: 3,  // Reduced from 4
   },
   digitWheel: {
-    width: 48,
-    height: 64,
+    width: 34,  // Reduced from 48
+    height: 45,  // Reduced from 64
     backgroundColor: Colors.softWhite,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 4,
+    borderRadius: 3,  // Reduced from 4
     // Subtle emboss
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.8)',
@@ -163,65 +167,65 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.15)',
   },
   digitWheelCompact: {
-    width: 32,
-    height: 44,
-    borderRadius: 3,
+    width: 22,  // Reduced from 32
+    height: 31,  // Reduced from 44
+    borderRadius: 2,  // Reduced from 3
   },
   digitText: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 36,
+    fontSize: 25,  // Reduced from 36
     color: Colors.charcoal,
     letterSpacing: -1,
   },
   digitTextCompact: {
-    fontSize: 24,
+    fontSize: 17,  // Reduced from 24
   },
   digitInnerShadow: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 4,
+    borderRadius: 3,  // Reduced from 4
   },
   spacer: {
-    width: 16,
-    height: 64,
+    width: 11,  // Reduced from 16
+    height: 45,  // Reduced from 64
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,  // Reduced from 8
   },
   spacerCompact: {
-    width: 12,
-    height: 44,
-    gap: 6,
+    width: 8,  // Reduced from 12
+    height: 31,  // Reduced from 44
+    gap: 4,  // Reduced from 6
   },
   spacerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 4,  // Reduced from 6
+    height: 4,  // Reduced from 6
+    borderRadius: 2,  // Reduced from 3
     backgroundColor: Colors.vermilion,
     // Glow effect
     shadowColor: Colors.vermilion,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
-    shadowRadius: 4,
+    shadowRadius: 3,  // Reduced from 4
   },
   spacerDotCompact: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    width: 3,  // Reduced from 4
+    height: 3,  // Reduced from 4
+    borderRadius: 1.5,  // Reduced from 2
   },
   cylinderOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 8,
+    borderRadius: 6,  // Reduced from 8
   },
   label: {
     fontFamily: 'LexendDecaSemiBold',
-    fontSize: 10,
+    fontSize: 7,  // Reduced from 10
     color: Colors.graphite,
-    letterSpacing: 3,
-    marginTop: 12,
+    letterSpacing: 2,  // Reduced from 3
+    marginTop: 8,  // Reduced from 12
   },
   labelCompact: {
-    fontSize: 8,
-    letterSpacing: 2,
-    marginTop: 8,
+    fontSize: 6,  // Reduced from 8
+    letterSpacing: 1.5,  // Reduced from 2
+    marginTop: 6,  // Reduced from 8
   },
 });
