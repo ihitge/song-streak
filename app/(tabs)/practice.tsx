@@ -146,13 +146,15 @@ export default function PracticeScreen() {
           </View>
         )}
 
-        {/* Metronome Panel: VU Meter + BPM + Transport + Timer */}
+        {/* Metronome Panel: Time Sig + VU Meter + BPM + Transport + Timer */}
         <View style={styles.meterSection}>
           <MetronomePanel
             beatPosition={metronome.beatPosition}
             isMetronomePlaying={metronome.isPlaying}
             currentBeat={metronome.currentBeat}
             beatsPerMeasure={metronome.beatsPerMeasure}
+            timeSignature={metronome.timeSignature}
+            onTimeSignatureChange={metronome.setTimeSignature}
             bpm={metronome.bpm}
             onBpmChange={metronome.setBpm}
             onTapTempo={metronome.tapTempo}
@@ -162,14 +164,6 @@ export default function PracticeScreen() {
             showComplete={true}
             sessionSeconds={sessionSeconds}
           />
-        </View>
-
-        {/* Time signature display (read-only, from song) */}
-        <View style={styles.timeSignatureRow}>
-          <View style={styles.timeSignatureDisplay}>
-            <Text style={styles.tsLabel}>TIME SIG</Text>
-            <Text style={styles.tsValue}>{metronome.timeSignature}</Text>
-          </View>
         </View>
 
         {/* Subdivision selector */}
@@ -233,33 +227,6 @@ const styles = StyleSheet.create({
   },
   meterSection: {
     alignItems: 'center',
-  },
-  timeSignatureRow: {
-    alignItems: 'center',
-  },
-  timeSignatureDisplay: {
-    alignItems: 'center',
-    backgroundColor: Colors.ink,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    // Inset effect
-    borderTopWidth: 2,
-    borderTopColor: 'rgba(0,0,0,0.5)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
-  },
-  tsLabel: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 8,
-    color: Colors.graphite,
-    letterSpacing: 1,
-    marginBottom: 2,
-  },
-  tsValue: {
-    fontFamily: 'LexendDecaBold',
-    fontSize: 20,
-    color: Colors.softWhite,
   },
   subdivisionSection: {
     alignItems: 'center',

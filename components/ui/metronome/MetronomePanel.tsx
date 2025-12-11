@@ -2,8 +2,10 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { RamsTapeCounterDisplay } from '@/components/ui/practice/RamsTapeCounterDisplay';
+import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
 import { BPMDisplay } from './BPMDisplay';
 import { TransportControls } from './TransportControls';
+import { TIME_SIGNATURE_OPTIONS } from '@/types/metronome';
 
 interface MetronomePanelProps {
   // Metronome state (from useMetronome)
@@ -11,6 +13,10 @@ interface MetronomePanelProps {
   isMetronomePlaying: boolean;
   currentBeat: number;
   beatsPerMeasure: number;
+
+  // Time signature
+  timeSignature: string;
+  onTimeSignatureChange: (ts: string) => void;
 
   // BPM controls
   bpm: number;
@@ -32,18 +38,22 @@ interface MetronomePanelProps {
 
 /**
  * MetronomePanel - Composite component combining:
- * 1. VU Meter + BPM Display + Transport Controls (inside unified housing)
+ * 1. Time Signature + VU Meter + BPM Display + Transport Controls (inside unified housing)
  * 2. Session Timer (tape counter style, separate)
  *
- * Layout (top to bottom):
- * - Metronome Housing (VU meter pendulum + BPM controls + transport)
- * - Tape Counter (session time)
+ * Layout (top to bottom inside housing):
+ * - Time Signature (FrequencyTuner)
+ * - VU meter pendulum
+ * - BPM controls
+ * - Transport controls
  */
 export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   beatPosition,
   isMetronomePlaying,
   currentBeat,
   beatsPerMeasure,
+  timeSignature,
+  onTimeSignatureChange,
   bpm,
   onBpmChange,
   onTapTempo,
@@ -54,9 +64,15 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   sessionSeconds,
   compact = false,
 }) => {
+  // Convert time signature options for FrequencyTuner
+  const timeSignatureOptions = TIME_SIGNATURE_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+  }));
+
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
-      {/* VU Meter with BPM Display and Transport Controls inside the housing */}
+      {/* VU Meter with Time Signature, BPM Display and Transport Controls inside the housing */}
       <VUMeterDisplay
         mode="metronome"
         beatPosition={beatPosition}
@@ -65,6 +81,18 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
         beatsPerMeasure={beatsPerMeasure}
         compact={compact}
         showTimeDisplay={false}
+        headerContent={
+          /* Time Signature selector at top of metronome */
+          <View style={styles.timeSignatureSection}>
+            <FrequencyTuner
+              label="TIME SIGNATURE"
+              value={timeSignature}
+              options={timeSignatureOptions}
+              onChange={onTimeSignatureChange}
+              size="compact"
+            />
+          </View>
+        }
       >
         {/* BPM Display - rendered inside VU meter housing */}
         <BPMDisplay
@@ -108,6 +136,10 @@ const styles = StyleSheet.create({
   },
   containerCompact: {
     gap: 12,
+  },
+  timeSignatureSection: {
+    width: '100%',
+    paddingHorizontal: 16,
   },
   transportSection: {
     marginTop: 12,

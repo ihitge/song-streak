@@ -22,6 +22,7 @@ interface VUMeterDisplayProps {
   sessionSeconds?: number;            // Session time for metronome mode display
   sessionLabel?: string;              // Custom label (default: 'SESSION TIME' or 'TOTAL PRACTICE')
   showTimeDisplay?: boolean;          // Show embedded time display (default: true)
+  headerContent?: React.ReactNode;    // Content to render at top of housing (e.g., time signature)
   children?: React.ReactNode;         // Content to render at bottom of housing (e.g., BPM display)
 }
 
@@ -41,6 +42,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   sessionSeconds,
   sessionLabel,
   showTimeDisplay = true,
+  headerContent,
   children,
 }) => {
   const needleRotation = useRef(new Animated.Value(50)).current;
@@ -128,6 +130,13 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
 
   return (
     <View style={[styles.housing, compact && styles.housingCompact]}>
+      {/* Header content (e.g., time signature selector) */}
+      {headerContent && (
+        <View style={[styles.headerContainer, compact && styles.headerContainerCompact]}>
+          {headerContent}
+        </View>
+      )}
+
       {/* VU label - shows BPM indicator in metronome mode */}
       <Text style={[styles.vuLabel, compact && styles.vuLabelCompact]}>
         {mode === 'metronome' ? 'BPM' : 'VU'}
@@ -248,6 +257,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
     elevation: 6,
+  },
+  headerContainer: {
+    width: '100%',
+    marginBottom: 12,
+  },
+  headerContainerCompact: {
+    marginBottom: 8,
   },
   vuLabel: {
     fontFamily: 'LexendDecaBold',

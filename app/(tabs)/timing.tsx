@@ -110,13 +110,15 @@ export default function TimingScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Metronome Panel: VU Meter + BPM + Transport + Timer */}
+        {/* Metronome Panel: Time Sig + VU Meter + BPM + Transport + Timer */}
         <View style={styles.meterSection}>
           <MetronomePanel
             beatPosition={metronome.beatPosition}
             isMetronomePlaying={metronome.isPlaying}
             currentBeat={metronome.currentBeat}
             beatsPerMeasure={metronome.beatsPerMeasure}
+            timeSignature={metronome.timeSignature}
+            onTimeSignatureChange={metronome.setTimeSignature}
             bpm={metronome.bpm}
             onBpmChange={metronome.setBpm}
             onTapTempo={metronome.tapTempo}
@@ -128,11 +130,9 @@ export default function TimingScreen() {
           />
         </View>
 
-        {/* Metronome Controls: Time Signature + Subdivision */}
+        {/* Metronome Controls: Subdivision only */}
         <View style={styles.controlsSection}>
           <MetronomeControls
-            timeSignature={metronome.timeSignature}
-            onTimeSignatureChange={metronome.setTimeSignature}
             subdivision={metronome.subdivision}
             onSubdivisionChange={handleSubdivisionChange}
           />
