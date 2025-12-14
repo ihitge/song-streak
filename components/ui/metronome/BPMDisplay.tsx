@@ -123,9 +123,6 @@ export const BPMDisplay: React.FC<BPMDisplayProps> = ({
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
-      {/* Label */}
-      <Text style={[styles.label, compact && styles.labelCompact]}>TEMPO</Text>
-
       <View style={styles.controlRow}>
         {/* Decrement button */}
         {!readonly && (
@@ -195,11 +192,6 @@ const styles = StyleSheet.create({
   },
   containerCompact: {
     gap: 3,
-  },
-  label: Typography.label,
-  labelCompact: {
-    ...Typography.label,
-    fontSize: 8,
   },
   controlRow: {
     flexDirection: 'row',
