@@ -25,6 +25,7 @@ CREATE TABLE songs (
   time_signature TEXT,
 
   -- Practice Data
+  -- DEPRECATED: difficulty field kept for backward compatibility but no longer used in UI
   difficulty TEXT,
   techniques TEXT[],
 
@@ -382,3 +383,4 @@ CREATE POLICY "Band members can view setlist songs" ON songs FOR SELECT
 -- 15. setlists belong to bands, limited to 5 per band (app enforced)
 -- 16. setlist_songs references songs from any band member's library
 -- 17. Songs deleted from library are automatically removed from setlists (CASCADE)
+-- 18. difficulty field in songs table is DEPRECATED and no longer used in UI (kept for backward compatibility)

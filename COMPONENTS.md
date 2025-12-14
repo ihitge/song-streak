@@ -28,6 +28,11 @@
 | `VideoPlayerModal` | YouTube video player modal | `components/ui/VideoPlayerModal.tsx` |
 | `BandCard` | Band display card with expandable setlists | `components/ui/bands/BandCard.tsx` |
 | `SetlistCard` | Setlist display card | `components/ui/bands/SetlistCard.tsx` |
+| `BPMDisplay` | Tappable BPM display with tap tempo | `components/ui/metronome/BPMDisplay.tsx` |
+| `MetronomeControls` | Time signature and subdivision controls | `components/ui/metronome/MetronomeControls.tsx` |
+| `MetronomePanel` | **Composite: VU meter + BPM + session timer** | `components/ui/metronome/MetronomePanel.tsx` |
+| `TransportControls` | Play/pause/reset/log buttons for metronome | `components/ui/metronome/TransportControls.tsx` |
+| `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
 
 ### Hooks
 
@@ -45,6 +50,8 @@
 | `useSetlists` | Setlist management for bands | N/A | `hooks/useSetlists.ts` |
 | `usePracticeData` | Practice session tracking and achievements | N/A | `hooks/usePracticeData.ts` |
 | `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
+| `useMetronome` | Core metronome logic with drift-corrected timing | N/A | `hooks/useMetronome.ts` |
+| `useMetronomeSound` | Sound pool for metronome clicks | sound-click-*.wav | `hooks/useMetronomeSound.ts` |
 
 ---
 
@@ -218,7 +225,6 @@ interface LibraryHeaderProps {
   onSearchChange: (text: string) => void;
   searchSuggestions: Song[];
   onSuggestionSelect: (song: Song) => void;
-  difficultyFilter?: ReactNode; // Slot for GangSwitch
   instrumentFilter?: ReactNode; // Slot for FrequencyTuner
   genreFilter?: ReactNode;      // Slot for RotaryKnob
 }
@@ -227,7 +233,7 @@ interface LibraryHeaderProps {
 **Visual Behavior**:
 - **Top Bar**: "SongStreak" logo (MomoTrustDisplay, deepSpaceBlue) + page title + User Avatar/Logout
 - **Filter Deck**: Two-row grid configuration
-  - Row 1: Search Widget | Difficulty Widget
+  - Row 1: Search Widget
   - Row 2: Instrument Widget | Genre Widget
 - **Search Widget**: Flat, recessed input. Height reduced to 38px.
 
@@ -438,4 +444,224 @@ Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches, beveled modal
 
 ---
 
-*Last updated: Dec 10, 2025 (Added StyledAlertModal, useStyledAlert, Band modals, Practice modals)*
+## Metronome Components
+
+### VUMeterDisplay (Dual Mode)
+
+The `VUMeterDisplay` now supports two modes:
+- **Progress mode** (default): Shows total practice time with static needle position
+- **Metronome mode**: Shows pendulum swing synchronized with metronome beats
+
+**Props**:
+```typescript
+interface VUMeterDisplayProps {
+  totalSeconds?: number;              // For progress mode
+  compact?: boolean;
+  mode?: 'progress' | 'metronome';    // Default: 'progress'
+  beatPosition?: number;              // 0 (left) or 1 (right) for pendulum
+  isMetronomePlaying?: boolean;       // For LED beat effects
+  currentBeat?: number;               // Current beat (1-indexed)
+  beatsPerMeasure?: number;           // Beats in measure
+  sessionSeconds?: number;            // Session time display
+  sessionLabel?: string;              // Custom label
+  showTimeDisplay?: boolean;          // Show embedded time (default: true)
+  children?: React.ReactNode;         // Content to render at bottom of housing
+}
+```
+
+**Note**: The `children` prop allows embedding content (like BPM display) inside the VU meter housing. `MetronomePanel` uses this to embed the BPM controls inside the meter housing.
+
+### MetronomePanel (Composite Component)
+
+**Purpose**: Composite component combining VU meter (with embedded BPM) and session timer (tape counter) into a reusable panel.
+
+**Location**: `components/ui/metronome/MetronomePanel.tsx`
+
+**Props**:
+```typescript
+interface MetronomePanelProps {
+  // Metronome state (from useMetronome)
+  beatPosition: number;
+  isMetronomePlaying: boolean;
+  currentBeat: number;
+  beatsPerMeasure: number;
+
+  // BPM controls
+  bpm: number;
+  onBpmChange: (bpm: number) => void;
+  onTapTempo: () => number | null;
+
+  // Timer
+  sessionSeconds: number;
+
+  // Options
+  compact?: boolean;
+}
+```
+
+**Layout** (top to bottom):
+1. VU Meter Housing (contains pendulum + BPM display inside)
+2. Session Timer (RamsTapeCounterDisplay - tape counter style, separate)
+
+**Usage**:
+```typescript
+import { MetronomePanel } from '@/components/ui/metronome';
+
+<MetronomePanel
+  beatPosition={metronome.beatPosition}
+  isMetronomePlaying={metronome.isPlaying}
+  currentBeat={metronome.currentBeat}
+  beatsPerMeasure={metronome.beatsPerMeasure}
+  bpm={metronome.bpm}
+  onBpmChange={metronome.setBpm}
+  onTapTempo={metronome.tapTempo}
+  sessionSeconds={sessionSeconds}
+/>
+```
+
+### RamsTapeCounterDisplay
+
+**Purpose**: Skeuomorphic flip-chart style time display showing MM:SS format.
+
+**Location**: `components/ui/practice/RamsTapeCounterDisplay.tsx`
+
+**Props**:
+```typescript
+interface RamsTapeCounterDisplayProps {
+  seconds: number;
+  compact?: boolean;
+  label?: string;  // Default: 'ELAPSED'
+}
+```
+
+**Visual Behavior**:
+- Four digit wheels (MM:SS)
+- Red separator dots with glow
+- Cylindrical reflection overlay
+- Vintage tape deck aesthetic
+
+### useMetronome Hook
+
+Core metronome logic with drift-corrected timing.
+
+**Usage**:
+```typescript
+import { useMetronome } from '@/hooks/useMetronome';
+
+const metronome = useMetronome({
+  initialBpm: 120,
+  initialTimeSignature: '4/4',
+  initialSubdivision: 1,
+  onBeat: (beat, isDownbeat) => console.log(`Beat ${beat}`),
+  onStateChange: (isPlaying) => console.log(`Playing: ${isPlaying}`),
+});
+
+// Actions
+metronome.start();
+metronome.stop();
+metronome.toggle();
+metronome.setBpm(140);
+metronome.setTimeSignature('3/4');
+metronome.setSubdivision(2);
+const bpm = metronome.tapTempo(); // Tap tempo
+
+// State
+console.log(metronome.bpm);           // 120
+console.log(metronome.isPlaying);     // true/false
+console.log(metronome.beatPosition);  // 0 or 1 for VU meter
+console.log(metronome.currentBeat);   // 1-4
+```
+
+### BPMDisplay Component
+
+Large, tappable BPM display with tap tempo and swipe adjustment.
+
+**Props**:
+```typescript
+interface BPMDisplayProps {
+  bpm: number;
+  onBpmChange: (bpm: number) => void;
+  onTapTempo: () => number | null;
+  isPlaying?: boolean;
+  compact?: boolean;
+  readonly?: boolean;  // For song-specific mode
+}
+```
+
+**Features**:
+- Tap to detect tempo (tap tempo)
+- Vertical swipe to adjust BPM
+- +/- buttons for fine adjustment
+- Visual flash on tap
+- Haptic feedback
+
+### MetronomeControls Component
+
+**Purpose**: Combined time signature and subdivision controls. BPM controls are optional (omit when using `MetronomePanel`).
+
+**Props**:
+```typescript
+interface MetronomeControlsProps {
+  // BPM controls (optional - omit when using MetronomePanel)
+  bpm?: number;
+  onBpmChange?: (bpm: number) => void;
+  onTapTempo?: () => number | null;
+
+  // Time signature (required)
+  timeSignature: string;
+  onTimeSignatureChange: (ts: string) => void;
+
+  // Subdivision (required)
+  subdivision: Subdivision;
+  onSubdivisionChange: (sub: Subdivision) => void;
+
+  // State
+  isPlaying?: boolean;
+  compact?: boolean;
+  readonly?: boolean;
+}
+```
+
+**Usage with MetronomePanel** (BPM handled separately):
+```typescript
+<MetronomeControls
+  timeSignature={metronome.timeSignature}
+  onTimeSignatureChange={metronome.setTimeSignature}
+  subdivision={metronome.subdivision}
+  onSubdivisionChange={handleSubdivisionChange}
+/>
+```
+
+**Usage standalone** (includes BPM):
+```typescript
+<MetronomeControls
+  bpm={metronome.bpm}
+  onBpmChange={metronome.setBpm}
+  onTapTempo={metronome.tapTempo}
+  timeSignature={metronome.timeSignature}
+  onTimeSignatureChange={metronome.setTimeSignature}
+  subdivision={metronome.subdivision}
+  onSubdivisionChange={handleSubdivisionChange}
+/>
+```
+
+### TransportControls Component
+
+Play/Pause, Reset, and Complete buttons for metronome.
+
+**Props**:
+```typescript
+interface TransportControlsProps {
+  isPlaying: boolean;
+  onPlayPause: () => void;
+  onReset: () => void;
+  onComplete?: (seconds: number) => void;
+  sessionSeconds: number;
+  compact?: boolean;
+  showComplete?: boolean;
+}
+```
+
+---
+
+*Last updated: Dec 11, 2025 (Added MetronomePanel composite, RamsTapeCounterDisplay, separated metronome from timer display)*

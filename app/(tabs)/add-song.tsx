@@ -135,7 +135,6 @@ export default function AddSongScreen() {
           scales: data.scales || [],
         },
         practiceData: {
-          difficulty: data.difficulty || 'Medium',
           techniques: data.techniques || [],
         },
         analyzed: true,
@@ -402,7 +401,6 @@ export default function AddSongScreen() {
         time_signature: currentData?.theoryData?.timeSignature,
         chords: currentData?.theoryData?.chords,
         scales: currentData?.theoryData?.scales,
-        difficulty: currentData?.practiceData?.difficulty,
         techniques: currentData?.practiceData?.techniques,
         lyrics: lyrics || null,
       };
@@ -704,21 +702,6 @@ export default function AddSongScreen() {
                       ) : (
                         <Text style={styles.noDataText}>No scales detected</Text>
                       )}
-                    </View>
-                  </View>
-
-                  {/* Difficulty Badge (moved from Practice) */}
-                  <View style={styles.difficultyContainer}>
-                    <Text style={styles.theorySectionTitle}>DIFFICULTY</Text>
-                    <View style={[
-                      styles.difficultyBadge,
-                      instrumentData[currentInstrument]?.practiceData.difficulty === 'Easy' && styles.difficultyEasy,
-                      instrumentData[currentInstrument]?.practiceData.difficulty === 'Medium' && styles.difficultyMedium,
-                      instrumentData[currentInstrument]?.practiceData.difficulty === 'Hard' && styles.difficultyHard,
-                    ]}>
-                      <Text style={styles.difficultyText}>
-                        {instrumentData[currentInstrument]?.practiceData.difficulty || 'Medium'}
-                      </Text>
                     </View>
                   </View>
 
@@ -1170,21 +1153,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignSelf: 'flex-start',
     backgroundColor: Colors.graphite,
-  },
-  difficultyEasy: {
-    backgroundColor: Colors.moss,
-  },
-  difficultyMedium: {
-    backgroundColor: '#D4A017',
-  },
-  difficultyHard: {
-    backgroundColor: Colors.lobsterPink,
-  },
-  difficultyText: {
-    fontSize: 14,
-    fontFamily: 'LexendDecaBold',
-    color: '#FFFFFF',
-    letterSpacing: 1,
   },
   strummingContainer: {
     backgroundColor: Colors.alloy,

@@ -15,7 +15,6 @@ interface LibraryHeaderProps {
   totalResults?: number;
   isLoading?: boolean;
   recentSuggestions?: SongSuggestion[];
-  difficultyFilter?: ReactNode;
   instrumentFilter?: ReactNode;
   genreFilter?: ReactNode;
 }
@@ -28,7 +27,6 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   totalResults = searchSuggestions.length,
   isLoading = false,
   recentSuggestions = [],
-  difficultyFilter,
   instrumentFilter,
   genreFilter,
 }) => {
@@ -68,7 +66,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
     <PageHeader subtitle="SET LIST">
       {/* Filter Deck (The Control Surface) */}
       <View style={styles.filterDeck}>
-        {/* Row 1: Search | Difficulty */}
+        {/* Row 1: Search */}
         <View style={[styles.filterRow, { zIndex: 10 }]}>
           <View style={styles.filterCell}>
             <View style={styles.widgetContainer}>
@@ -98,11 +96,6 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
               />
             )}
           </View>
-          {difficultyFilter && (
-            <View style={styles.filterCell}>
-              {difficultyFilter}
-            </View>
-          )}
         </View>
 
         {/* Row 2: Instrument | Genre */}

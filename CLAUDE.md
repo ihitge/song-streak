@@ -63,7 +63,7 @@ Colors.charcoal      // #333333 - Dark controls/text
 Colors.vermilion     // #EE6C4D - Action/accent (use sparingly)
 Colors.ink           // #221E22 - Primary text (Off-Black)
 Colors.graphite      // #888888 - Labels/secondary text
-Colors.moss          // #417B5A - Success/Easy (Green)
+Colors.moss          // #417B5A - Success/positive states (Green)
 Colors.lobsterPink   // #DB5461 - Accent/Highlight (Lobster Pink)
 Colors.deepSpaceBlue // #0E273C - Dark Accent (Deep Space Blue)
 Colors.warmGray      // #847577 - Secondary Text (Warm Gray)

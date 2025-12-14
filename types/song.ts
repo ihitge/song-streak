@@ -6,7 +6,6 @@ export interface Song {
   title: string;
   artist: string;
   duration: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
   lastPracticed: string;
   instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
   genres: Exclude<Genre, 'All'>[];
