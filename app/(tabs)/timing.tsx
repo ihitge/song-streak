@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { MetronomePanel } from '@/components/ui/metronome';
 import { Colors } from '@/constants/Colors';
@@ -134,19 +134,6 @@ export default function TimingScreen() {
           />
         </View>
 
-        {/* Status indicator */}
-        <View style={styles.statusContainer}>
-          <View
-            style={[styles.statusLed, metronome.isPlaying && styles.statusLedActive]}
-          />
-          <Text style={styles.statusText}>
-            {metronome.isPlaying
-              ? 'PLAYING'
-              : sessionSeconds > 0
-              ? 'PAUSED'
-              : 'READY'}
-          </Text>
-        </View>
       </ScrollView>
     </View>
   );
@@ -166,43 +153,5 @@ const styles = StyleSheet.create({
   meterSection: {
     alignItems: 'center',
     marginTop: 16,
-  },
-  controlsSection: {
-    alignItems: 'center',
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: Colors.alloy,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    alignSelf: 'center',
-    // Inset effect
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
-    borderLeftWidth: 1,
-    borderLeftColor: 'rgba(0,0,0,0.05)',
-  },
-  statusLed: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.graphite,
-  },
-  statusLedActive: {
-    backgroundColor: Colors.vermilion,
-    shadowColor: Colors.vermilion,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 6,
-  },
-  statusText: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 10,
-    color: Colors.graphite,
-    letterSpacing: 2,
   },
 });
