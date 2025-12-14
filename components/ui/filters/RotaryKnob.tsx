@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
-import { Canvas, Box, BoxShadow, rrect, rect } from '@shopify/react-native-skia';
+import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, Keyframe } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
@@ -122,6 +122,20 @@ export const RotaryKnob = <T extends string>({
               <BoxShadow dx={0} dy={-1} blur={2} color="rgba(255,255,255,0.1)" />
             </Box>
           </Canvas>
+
+          {/* Glass overlay gradient */}
+          <View style={styles.glassOverlay}>
+            <Canvas style={StyleSheet.absoluteFill}>
+              <Box box={rrect(rect(0, 0, readoutWidth, READOUT_HEIGHT / 2), 0, 0)}>
+                <LinearGradient
+                  start={vec(0, 0)}
+                  end={vec(0, READOUT_HEIGHT / 2)}
+                  colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0)']}
+                />
+              </Box>
+            </Canvas>
+          </View>
+
           <Animated.View
                 key={value} // Trigger animation on value change
                 entering={direction > 0 ? EnterFromRight : EnterFromLeft}
@@ -185,6 +199,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+  },
+  glassOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    pointerEvents: 'none',
   },
   readoutText: {
     fontSize: 10,
