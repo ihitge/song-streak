@@ -40,7 +40,6 @@ interface InstrumentAnalysisData {
     scales: string[];
   };
   practiceData: {
-    difficulty: string;
     techniques: string[];
     strummingPattern?: string;
   };
@@ -334,7 +333,6 @@ export default function AddSongScreen() {
         time_signature: currentData.theoryData.timeSignature,
         chords: currentData.theoryData.chords,
         scales: currentData.theoryData.scales,
-        difficulty: currentData.practiceData.difficulty,
         techniques: currentData.practiceData.techniques,
         lyrics: lyrics || null,
       };
@@ -1143,16 +1141,6 @@ const styles = StyleSheet.create({
     color: Colors.graphite,
     textAlign: 'center',
     lineHeight: 18,
-  },
-  difficultyContainer: {
-    marginBottom: 20,
-  },
-  difficultyBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.graphite,
   },
   strummingContainer: {
     backgroundColor: Colors.alloy,

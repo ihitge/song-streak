@@ -116,10 +116,10 @@ export const RotaryKnob = <T extends string>({
           <Canvas style={StyleSheet.absoluteFill}>
             <Box
               box={rrect(rect(0, 0, readoutWidth, READOUT_HEIGHT), 6, 6)}
-              color={Colors.alloy}
+              color="#2a2a2a"
             >
-              <BoxShadow dx={2} dy={2} blur={5} color="rgba(0,0,0,0.15)" inner />
-              <BoxShadow dx={-1} dy={-1} blur={3} color="rgba(255,255,255,0.5)" inner />
+              <BoxShadow dx={0} dy={2} blur={6} color="rgba(0,0,0,0.9)" inner />
+              <BoxShadow dx={0} dy={-1} blur={2} color="rgba(255,255,255,0.1)" />
             </Box>
           </Canvas>
           <Animated.View
@@ -191,8 +191,11 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: Colors.charcoal,
+    color: '#e0e0e0',
     textAlign: 'center',
+    textShadowColor: 'rgba(255,255,255,0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 5,
     // Underline
     borderBottomWidth: 2,
     borderBottomColor: Colors.vermilion,
