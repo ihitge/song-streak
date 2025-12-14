@@ -18,6 +18,21 @@ export interface TimeSignature {
 export type Subdivision = 1 | 2 | 3 | 4;
 
 /**
+ * Metronome sound types
+ */
+export type MetronomeSoundType = 'click' | 'snare' | 'bass' | 'hihat';
+
+/**
+ * Sound type options for FrequencyTuner
+ */
+export const METRONOME_SOUND_OPTIONS = [
+  { value: 'click' as MetronomeSoundType, label: 'CLICK' },
+  { value: 'snare' as MetronomeSoundType, label: 'SNARE' },
+  { value: 'bass' as MetronomeSoundType, label: 'BASS' },
+  { value: 'hihat' as MetronomeSoundType, label: 'HI-HAT' },
+] as const;
+
+/**
  * Available time signature options
  */
 export const TIME_SIGNATURE_OPTIONS = [
@@ -59,6 +74,7 @@ export interface UseMetronomeOptions {
   initialBpm?: number;              // Default: 120
   initialTimeSignature?: string;    // Default: '4/4'
   initialSubdivision?: Subdivision; // Default: 1
+  initialSoundType?: MetronomeSoundType; // Default: 'click'
   onBeat?: (beat: number, isDownbeat: boolean) => void;
   onSubdivision?: (subdivisionTick: number, beat: number) => void;
   onStateChange?: (isPlaying: boolean) => void;
@@ -72,6 +88,7 @@ export interface UseMetronomeReturn {
   bpm: number;
   timeSignature: string;
   subdivision: Subdivision;
+  soundType: MetronomeSoundType;
   currentBeat: number;
   currentSubdivision: number;
   isPlaying: boolean;
@@ -85,6 +102,7 @@ export interface UseMetronomeReturn {
   setBpm: (bpm: number) => void;
   setTimeSignature: (ts: string) => void;
   setSubdivision: (sub: Subdivision) => void;
+  setSoundType: (type: MetronomeSoundType) => void;
   tapTempo: () => number | null;  // Returns calculated BPM or null
 }
 

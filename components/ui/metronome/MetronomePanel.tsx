@@ -5,7 +5,11 @@ import { RamsTapeCounterDisplay } from '@/components/ui/practice/RamsTapeCounter
 import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
 import { BPMDisplay } from './BPMDisplay';
 import { TransportControls } from './TransportControls';
-import { TIME_SIGNATURE_OPTIONS } from '@/types/metronome';
+import {
+  TIME_SIGNATURE_OPTIONS,
+  METRONOME_SOUND_OPTIONS,
+  MetronomeSoundType,
+} from '@/types/metronome';
 
 interface MetronomePanelProps {
   // Metronome state (from useMetronome)
@@ -17,6 +21,10 @@ interface MetronomePanelProps {
   // Time signature
   timeSignature: string;
   onTimeSignatureChange: (ts: string) => void;
+
+  // Sound type
+  soundType: MetronomeSoundType;
+  onSoundTypeChange: (type: MetronomeSoundType) => void;
 
   // BPM controls
   bpm: number;
@@ -54,6 +62,8 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   beatsPerMeasure,
   timeSignature,
   onTimeSignatureChange,
+  soundType,
+  onSoundTypeChange,
   bpm,
   onBpmChange,
   onTapTempo,
@@ -70,6 +80,12 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
     label: opt.label,
   }));
 
+  // Convert sound options for FrequencyTuner
+  const soundOptions = METRONOME_SOUND_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: opt.label,
+  }));
+
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
       {/* VU Meter with Time Signature, BPM Display and Transport Controls inside the housing */}
@@ -82,15 +98,26 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
         compact={compact}
         showTimeDisplay={false}
         headerContent={
-          /* Time Signature selector at top of metronome */
-          <View style={styles.timeSignatureSection}>
-            <FrequencyTuner
-              label="TIME SIGNATURE"
-              value={timeSignature}
-              options={timeSignatureOptions}
-              onChange={onTimeSignatureChange}
-              size="compact"
-            />
+          /* Time Signature and Sound selectors at top of metronome */
+          <View style={styles.headerRow}>
+            <View style={styles.tunerWrapper}>
+              <FrequencyTuner
+                label="TIME"
+                value={timeSignature}
+                options={timeSignatureOptions}
+                onChange={onTimeSignatureChange}
+                size="compact"
+              />
+            </View>
+            <View style={styles.tunerWrapper}>
+              <FrequencyTuner
+                label="SOUND"
+                value={soundType}
+                options={soundOptions}
+                onChange={(val) => onSoundTypeChange(val as MetronomeSoundType)}
+                size="compact"
+              />
+            </View>
           </View>
         }
       >
@@ -137,9 +164,15 @@ const styles = StyleSheet.create({
   containerCompact: {
     gap: 12,
   },
-  timeSignatureSection: {
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
+    gap: 8,
+  },
+  tunerWrapper: {
+    flex: 1,
   },
   transportSection: {
     marginTop: 12,

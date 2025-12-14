@@ -63,7 +63,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   );
 
   return (
-    <PageHeader subtitle="SET LIST">
+    <PageHeader subtitle="SONGS">
       {/* Filter Deck (The Control Surface) */}
       <View style={styles.filterDeck}>
         {/* Row 1: Search */}

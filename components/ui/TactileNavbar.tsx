@@ -14,9 +14,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: 'streak', icon: 'bolt', label: 'Streak', route: '/practice' },
-  { name: 'library', icon: 'list', label: 'Library', route: '/' },
+  { name: 'songs', icon: 'music', label: 'Songs', route: '/' },
+  { name: 'setlists', icon: 'list', label: 'Setlists', route: '/setlists' },
   { name: 'metronome', icon: 'play', label: 'Metronome', route: '/timing' },
+  { name: 'streaks', icon: 'bolt', label: 'Streaks', route: '/streaks' },
 ];
 
 export const TactileNavbar: React.FC = () => {

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import * as Haptics from 'expo-haptics';
 import {
   Subdivision,
+  MetronomeSoundType,
   UseMetronomeOptions,
   UseMetronomeReturn,
   getBeatsPerMeasure,
@@ -32,6 +33,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     initialBpm = 120,
     initialTimeSignature = '4/4',
     initialSubdivision = 1,
+    initialSoundType = 'click',
     onBeat,
     onSubdivision,
     onStateChange,
@@ -41,6 +43,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const [bpm, setBpmState] = useState(initialBpm);
   const [timeSignature, setTimeSignatureState] = useState(initialTimeSignature);
   const [subdivision, setSubdivisionState] = useState<Subdivision>(initialSubdivision);
+  const [soundType, setSoundTypeState] = useState<MetronomeSoundType>(initialSoundType);
   const [currentBeat, setCurrentBeat] = useState(1);
   const [currentSubdivisionTick, setCurrentSubdivisionTick] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -51,8 +54,8 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const tapTimesRef = useRef<number[]>([]);
   const isPlayingRef = useRef(false); // Sync ref for closure access
 
-  // Sound hooks
-  const { playAccent, playTick, playSubdivision: playSub } = useMetronomeSound();
+  // Sound hooks - pass soundType to reload sounds when changed
+  const { playAccent, playTick, playSubdivision: playSub } = useMetronomeSound({ soundType });
 
   // Derived values
   const beatsPerMeasure = useMemo(() => getBeatsPerMeasure(timeSignature), [timeSignature]);
@@ -259,6 +262,13 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   }, []);
 
   /**
+   * Set sound type
+   */
+  const setSoundType = useCallback((type: MetronomeSoundType) => {
+    setSoundTypeState(type);
+  }, []);
+
+  /**
    * Tap tempo - returns calculated BPM or null if not enough taps
    */
   const tapTempo = useCallback(() => {
@@ -331,6 +341,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     bpm,
     timeSignature,
     subdivision,
+    soundType,
     currentBeat,
     currentSubdivision: currentSubdivisionTick,
     isPlaying,
@@ -344,6 +355,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     setBpm,
     setTimeSignature,
     setSubdivision,
+    setSoundType,
     tapTempo,
   };
 }

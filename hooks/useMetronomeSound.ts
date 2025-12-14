@@ -1,20 +1,20 @@
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useCallback } from 'react';
 import { useSettingsContext } from '@/ctx/SettingsContext';
+import { MetronomeSoundType } from '@/types/metronome';
 
 /**
  * Sound pool size - multiple instances for low-latency playback
  */
 const POOL_SIZE = 4;
 
-/**
- * Sound types for metronome
- */
-type SoundType = 'accent' | 'tick' | 'subdivision';
-
 interface SoundPool {
   sounds: (Audio.Sound | null)[];
   currentIndex: number;
+}
+
+interface UseMetronomeSoundOptions {
+  soundType?: MetronomeSoundType;
 }
 
 interface UseMetronomeSoundReturn {
@@ -25,15 +25,38 @@ interface UseMetronomeSoundReturn {
 }
 
 /**
+ * Get sound sources based on sound type
+ * For now, all types use the same click sounds - can be replaced with actual drum samples later
+ */
+function getSoundSources(soundType: MetronomeSoundType) {
+  // All sound types currently use the same click sounds
+  // When drum samples are added, this function can return different sources
+  switch (soundType) {
+    case 'click':
+    case 'snare':
+    case 'bass':
+    case 'hihat':
+    default:
+      return {
+        accent: require('@/assets/audio/sound-click-04.wav'),
+        tick: require('@/assets/audio/sound-click-05.wav'),
+        subdivision: require('@/assets/audio/sound-click-06.wav'),
+      };
+  }
+}
+
+/**
  * Hook for metronome sound playback with sound pool pattern
  *
  * Uses multiple pre-loaded sound instances to eliminate stop→seek→play latency.
  * When one sound is playing, the next instance is ready immediately.
  */
-export function useMetronomeSound(): UseMetronomeSoundReturn {
+export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMetronomeSoundReturn {
+  const { soundType = 'click' } = options;
   const { settings } = useSettingsContext();
   const isLoadingRef = useRef(false);
   const isLoadedRef = useRef(false);
+  const currentSoundTypeRef = useRef<MetronomeSoundType>(soundType);
 
   // Sound pools for each type
   const accentPool = useRef<SoundPool>({ sounds: [], currentIndex: 0 });
@@ -57,16 +80,44 @@ export function useMetronomeSound(): UseMetronomeSoundReturn {
   };
 
   /**
+   * Unload a sound pool
+   */
+  const unloadPool = async (pool: SoundPool) => {
+    for (const sound of pool.sounds) {
+      if (sound) {
+        try {
+          await sound.unloadAsync();
+        } catch (error) {
+          console.error('Failed to unload sound:', error);
+        }
+      }
+    }
+    pool.sounds = [];
+    pool.currentIndex = 0;
+  };
+
+  /**
    * Load all sounds into pools
    */
   useEffect(() => {
     let mounted = true;
 
     const loadAllSounds = async () => {
+      // Skip if already loading or if sound type hasn't changed
       if (isLoadingRef.current) return;
+
       isLoadingRef.current = true;
+      isLoadedRef.current = false;
 
       try {
+        // Unload existing sounds if changing sound type
+        if (currentSoundTypeRef.current !== soundType) {
+          await unloadPool(accentPool.current);
+          await unloadPool(tickPool.current);
+          await unloadPool(subdivisionPool.current);
+        }
+        currentSoundTypeRef.current = soundType;
+
         // Configure audio mode for metronome
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
@@ -77,33 +128,31 @@ export function useMetronomeSound(): UseMetronomeSoundReturn {
 
         if (!mounted) return;
 
+        // Get sound sources based on sound type
+        const sources = getSoundSources(soundType);
+
         // Load accent sounds (for downbeat)
-        // Using existing click sounds - sound-click-04 is a strong click for accents
-        const accentSource = require('@/assets/audio/sound-click-04.wav');
         const accentPromises = Array(POOL_SIZE)
           .fill(null)
-          .map(() => loadSound(accentSource));
+          .map(() => loadSound(sources.accent));
         const accentSounds = await Promise.all(accentPromises);
 
         if (!mounted) return;
         accentPool.current.sounds = accentSounds;
 
         // Load tick sounds (for regular beats)
-        // Using sound-click-05 for regular beats
-        const tickSource = require('@/assets/audio/sound-click-05.wav');
         const tickPromises = Array(POOL_SIZE)
           .fill(null)
-          .map(() => loadSound(tickSource));
+          .map(() => loadSound(sources.tick));
         const tickSounds = await Promise.all(tickPromises);
 
         if (!mounted) return;
         tickPool.current.sounds = tickSounds;
 
-        // Load subdivision sounds (for subdivisions - use lighter click)
-        const subdivisionSource = require('@/assets/audio/sound-click-06.wav');
+        // Load subdivision sounds
         const subdivisionPromises = Array(POOL_SIZE)
           .fill(null)
-          .map(() => loadSound(subdivisionSource));
+          .map(() => loadSound(sources.subdivision));
         const subdivisionSounds = await Promise.all(subdivisionPromises);
 
         if (!mounted) return;
@@ -122,26 +171,11 @@ export function useMetronomeSound(): UseMetronomeSoundReturn {
     // Cleanup
     return () => {
       mounted = false;
-
-      const unloadPool = async (pool: SoundPool) => {
-        for (const sound of pool.sounds) {
-          if (sound) {
-            try {
-              await sound.unloadAsync();
-            } catch (error) {
-              console.error('Failed to unload sound:', error);
-            }
-          }
-        }
-        pool.sounds = [];
-        pool.currentIndex = 0;
-      };
-
       unloadPool(accentPool.current);
       unloadPool(tickPool.current);
       unloadPool(subdivisionPool.current);
     };
-  }, []);
+  }, [soundType]);
 
   /**
    * Play a sound from a pool using round-robin

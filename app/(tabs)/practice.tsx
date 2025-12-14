@@ -155,6 +155,8 @@ export default function PracticeScreen() {
             beatsPerMeasure={metronome.beatsPerMeasure}
             timeSignature={metronome.timeSignature}
             onTimeSignatureChange={metronome.setTimeSignature}
+            soundType={metronome.soundType}
+            onSoundTypeChange={metronome.setSoundType}
             bpm={metronome.bpm}
             onBpmChange={metronome.setBpm}
             onTapTempo={metronome.tapTempo}
