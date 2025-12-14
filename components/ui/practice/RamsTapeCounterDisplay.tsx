@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Styles';
 
 interface RamsTapeCounterDisplayProps {
   seconds: number;
@@ -217,15 +218,12 @@ const styles = StyleSheet.create({
     borderRadius: 6,  // Reduced from 8
   },
   label: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 7,  // Reduced from 10
-    color: Colors.graphite,
-    letterSpacing: 2,  // Reduced from 3
-    marginTop: 8,  // Reduced from 12
+    ...Typography.label,
+    marginTop: 8,
   },
   labelCompact: {
-    fontSize: 6,  // Reduced from 8
-    letterSpacing: 1.5,  // Reduced from 2
-    marginTop: 6,  // Reduced from 8
+    ...Typography.label,
+    fontSize: 8,
+    marginTop: 6,
   },
 });

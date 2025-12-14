@@ -2,6 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, PanResponder, Animated } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Styles';
 import { useClickSound } from '@/hooks/useClickSound';
 import { BPM_MIN, BPM_MAX } from '@/types/metronome';
 
@@ -195,16 +196,10 @@ const styles = StyleSheet.create({
   containerCompact: {
     gap: 3,
   },
-  label: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 8,  // Reduced from 10
-    color: Colors.warmGray,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
+  label: Typography.label,
   labelCompact: {
-    fontSize: 7,
-    letterSpacing: 1,
+    ...Typography.label,
+    fontSize: 8,
   },
   controlRow: {
     flexDirection: 'row',
@@ -291,16 +286,16 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   tapHint: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 7,  // Reduced from 9
+    ...Typography.label,
     color: Colors.vermilion,
-    letterSpacing: 1.5,
     textAlign: 'center',
     marginTop: 3,
   },
   tapHintCompact: {
-    fontSize: 6,
-    letterSpacing: 1,
+    ...Typography.label,
+    fontSize: 8,
+    color: Colors.vermilion,
+    textAlign: 'center',
     marginTop: 2,
   },
 });
