@@ -3,11 +3,10 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { MetronomePanel } from '@/components/ui/metronome';
-import { GangSwitch } from '@/components/ui/filters/GangSwitch';
 import { Colors } from '@/constants/Colors';
 import { useMetronome } from '@/hooks/useMetronome';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
-import { parseBpm, parseTimeSignatureString, Subdivision, SUBDIVISION_OPTIONS } from '@/types/metronome';
+import { parseBpm, parseTimeSignatureString } from '@/types/metronome';
 
 /**
  * Practice Screen - Song-Specific Metronome
@@ -110,23 +109,6 @@ export default function PracticeScreen() {
     [metronome, params.songTitle, params.songId, router, showSuccess]
   );
 
-  /**
-   * Handle subdivision change
-   */
-  const handleSubdivisionChange = useCallback(
-    (value: string | null) => {
-      if (value) {
-        metronome.setSubdivision(Number(value) as Subdivision);
-      }
-    },
-    [metronome]
-  );
-
-  // Subdivision options for GangSwitch
-  const subdivisionOptions = SUBDIVISION_OPTIONS.map((opt) => ({
-    value: String(opt.value),
-    label: opt.label,
-  }));
 
   return (
     <View style={styles.container}>
@@ -146,7 +128,7 @@ export default function PracticeScreen() {
           </View>
         )}
 
-        {/* Metronome Panel: Time Sig + VU Meter + BPM + Transport + Timer */}
+        {/* Metronome Panel: Time Sig + Sound + Subdivision + VU Meter + BPM + Transport + Timer */}
         <View style={styles.meterSection}>
           <MetronomePanel
             beatPosition={metronome.beatPosition}
@@ -157,6 +139,8 @@ export default function PracticeScreen() {
             onTimeSignatureChange={metronome.setTimeSignature}
             soundType={metronome.soundType}
             onSoundTypeChange={metronome.setSoundType}
+            subdivision={metronome.subdivision}
+            onSubdivisionChange={(sub) => metronome.setSubdivision(sub)}
             bpm={metronome.bpm}
             onBpmChange={metronome.setBpm}
             onTapTempo={metronome.tapTempo}
@@ -165,18 +149,6 @@ export default function PracticeScreen() {
             onComplete={handleComplete}
             showComplete={true}
             sessionSeconds={sessionSeconds}
-          />
-        </View>
-
-        {/* Subdivision selector */}
-        <View style={styles.subdivisionSection}>
-          <GangSwitch
-            label="SUBDIVISION"
-            value={String(metronome.subdivision)}
-            options={subdivisionOptions}
-            onChange={handleSubdivisionChange}
-            orientation="horizontal"
-            allowDeselect={false}
           />
         </View>
 

@@ -3,6 +3,17 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useSettingsContext } from '@/ctx/SettingsContext';
 import { MetronomeSoundType } from '@/types/metronome';
 
+// Import all metronome sound files statically
+const clickSound = require('@/assets/audio/metronome-click.wav');
+const snareSound = require('@/assets/audio/metronome-snare.wav');
+const kickSound = require('@/assets/audio/metronome-kick.wav');
+const hihatSound = require('@/assets/audio/metronome-hihat.wav');
+
+// Legacy click sounds as fallback
+const clickAccent = require('@/assets/audio/sound-click-04.wav');
+const clickTick = require('@/assets/audio/sound-click-05.wav');
+const clickSubdiv = require('@/assets/audio/sound-click-06.wav');
+
 /**
  * Sound pool size - multiple instances for low-latency playback
  */
@@ -26,21 +37,40 @@ interface UseMetronomeSoundReturn {
 
 /**
  * Get sound sources based on sound type
- * For now, all types use the same click sounds - can be replaced with actual drum samples later
+ * Maps each metronome sound type to its corresponding drum sample
  */
 function getSoundSources(soundType: MetronomeSoundType) {
-  // All sound types currently use the same click sounds
-  // When drum samples are added, this function can return different sources
   switch (soundType) {
     case 'click':
-    case 'snare':
-    case 'bass':
-    case 'hihat':
-    default:
       return {
-        accent: require('@/assets/audio/sound-click-04.wav'),
-        tick: require('@/assets/audio/sound-click-05.wav'),
-        subdivision: require('@/assets/audio/sound-click-06.wav'),
+        accent: clickAccent,
+        tick: clickTick,
+        subdivision: clickSubdiv,
+      };
+    case 'snare':
+      return {
+        accent: snareSound,
+        tick: snareSound,
+        subdivision: snareSound,
+      };
+    case 'bass':
+      return {
+        accent: kickSound,
+        tick: kickSound,
+        subdivision: kickSound,
+      };
+    case 'hihat':
+      return {
+        accent: hihatSound,
+        tick: hihatSound,
+        subdivision: hihatSound,
+      };
+    default:
+      // Fallback to click
+      return {
+        accent: clickAccent,
+        tick: clickTick,
+        subdivision: clickSubdiv,
       };
   }
 }
@@ -68,13 +98,15 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
    */
   const loadSound = async (source: any): Promise<Audio.Sound | null> => {
     try {
+      console.log('Loading metronome sound:', source);
       const { sound } = await Audio.Sound.createAsync(source, {
         shouldPlay: false,
         volume: 1.0,
       });
+      console.log('Successfully loaded metronome sound');
       return sound;
     } catch (error) {
-      console.error('Failed to load metronome sound:', error);
+      console.error('Failed to load metronome sound:', error, 'source:', source);
       return null;
     }
   };
@@ -129,7 +161,14 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
         if (!mounted) return;
 
         // Get sound sources based on sound type
-        const sources = getSoundSources(soundType);
+        let sources;
+        try {
+          sources = getSoundSources(soundType);
+          console.log('Sound type:', soundType, 'sources resolved:', Object.keys(sources));
+        } catch (e) {
+          console.error('Error getting sound sources for type:', soundType, e);
+          throw e;
+        }
 
         // Load accent sounds (for downbeat)
         const accentPromises = Array(POOL_SIZE)

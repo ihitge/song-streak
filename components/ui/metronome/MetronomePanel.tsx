@@ -8,7 +8,9 @@ import { TransportControls } from './TransportControls';
 import {
   TIME_SIGNATURE_OPTIONS,
   METRONOME_SOUND_OPTIONS,
+  SUBDIVISION_OPTIONS,
   MetronomeSoundType,
+  Subdivision,
 } from '@/types/metronome';
 
 interface MetronomePanelProps {
@@ -25,6 +27,10 @@ interface MetronomePanelProps {
   // Sound type
   soundType: MetronomeSoundType;
   onSoundTypeChange: (type: MetronomeSoundType) => void;
+
+  // Subdivision
+  subdivision: Subdivision;
+  onSubdivisionChange: (sub: Subdivision) => void;
 
   // BPM controls
   bpm: number;
@@ -64,6 +70,8 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   onTimeSignatureChange,
   soundType,
   onSoundTypeChange,
+  subdivision,
+  onSubdivisionChange,
   bpm,
   onBpmChange,
   onTapTempo,
@@ -86,6 +94,12 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
     label: opt.label,
   }));
 
+  // Convert subdivision options for FrequencyTuner
+  const subdivisionOptions = SUBDIVISION_OPTIONS.map((opt) => ({
+    value: String(opt.value),
+    label: opt.label,
+  }));
+
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
       {/* VU Meter with Time Signature, BPM Display and Transport Controls inside the housing */}
@@ -98,7 +112,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
         compact={compact}
         showTimeDisplay={false}
         headerContent={
-          /* Time Signature and Sound selectors at top of metronome */
+          /* Time Signature, Sound, and Subdivision selectors at top of metronome */
           <View style={styles.headerRow}>
             <View style={styles.tunerWrapper}>
               <FrequencyTuner
@@ -115,6 +129,15 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 value={soundType}
                 options={soundOptions}
                 onChange={(val) => onSoundTypeChange(val as MetronomeSoundType)}
+                size="compact"
+              />
+            </View>
+            <View style={styles.tunerWrapper}>
+              <FrequencyTuner
+                label="SUB"
+                value={String(subdivision)}
+                options={subdivisionOptions}
+                onChange={(val) => onSubdivisionChange(Number(val) as Subdivision)}
                 size="compact"
               />
             </View>

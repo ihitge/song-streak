@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { MetronomeControls, MetronomePanel } from '@/components/ui/metronome';
+import { MetronomePanel } from '@/components/ui/metronome';
 import { Colors } from '@/constants/Colors';
 import { useMetronome } from '@/hooks/useMetronome';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
@@ -110,7 +110,7 @@ export default function TimingScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Metronome Panel: Time Sig + VU Meter + BPM + Transport + Timer */}
+        {/* Metronome Panel: Time Sig + Sound + Subdivision + VU Meter + BPM + Transport + Timer */}
         <View style={styles.meterSection}>
           <MetronomePanel
             beatPosition={metronome.beatPosition}
@@ -121,6 +121,8 @@ export default function TimingScreen() {
             onTimeSignatureChange={metronome.setTimeSignature}
             soundType={metronome.soundType}
             onSoundTypeChange={metronome.setSoundType}
+            subdivision={metronome.subdivision}
+            onSubdivisionChange={handleSubdivisionChange}
             bpm={metronome.bpm}
             onBpmChange={metronome.setBpm}
             onTapTempo={metronome.tapTempo}
@@ -129,14 +131,6 @@ export default function TimingScreen() {
             onComplete={handleComplete}
             showComplete={true}
             sessionSeconds={sessionSeconds}
-          />
-        </View>
-
-        {/* Metronome Controls: Subdivision only */}
-        <View style={styles.controlsSection}>
-          <MetronomeControls
-            subdivision={metronome.subdivision}
-            onSubdivisionChange={handleSubdivisionChange}
           />
         </View>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { GangSwitch } from '@/components/ui/filters/GangSwitch';
+import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
 import {
   Subdivision,
   SUBDIVISION_OPTIONS,
@@ -19,8 +19,8 @@ interface MetronomeControlsProps {
 /**
  * Metronome Controls Component
  *
- * Subdivision selector for metronome using GangSwitch.
- * Time signature is now part of MetronomePanel.
+ * Subdivision selector for metronome using FrequencyTuner.
+ * This component is now integrated into MetronomePanel's header row.
  */
 export const MetronomeControls: React.FC<MetronomeControlsProps> = ({
   subdivision,
@@ -35,14 +35,13 @@ export const MetronomeControls: React.FC<MetronomeControlsProps> = ({
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
-      <GangSwitch
-        label="SUBDIVISION"
+      <FrequencyTuner
+        label="SUB"
         value={String(subdivision)}
         options={subdivisionOptions}
-        onChange={(val) => val && onSubdivisionChange(Number(val) as Subdivision)}
+        onChange={(val) => onSubdivisionChange(Number(val) as Subdivision)}
         disabled={readonly}
-        orientation="horizontal"
-        allowDeselect={false}
+        size="compact"
       />
     </View>
   );
