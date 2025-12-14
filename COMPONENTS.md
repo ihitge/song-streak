@@ -51,7 +51,7 @@
 | `usePracticeData` | Practice session tracking and achievements | N/A | `hooks/usePracticeData.ts` |
 | `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
 | `useMetronome` | Core metronome logic with drift-corrected timing | N/A | `hooks/useMetronome.ts` |
-| `useMetronomeSound` | Sound pool for metronome clicks | sound-click-*.wav | `hooks/useMetronomeSound.ts` |
+| `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | metronome-*.wav, sound-click-*.wav | `hooks/useMetronomeSound.ts` |
 
 ---
 
@@ -473,7 +473,7 @@ interface VUMeterDisplayProps {
 
 ### MetronomePanel (Composite Component)
 
-**Purpose**: Composite component combining VU meter (with embedded BPM) and session timer (tape counter) into a reusable panel.
+**Purpose**: Composite component combining VU meter (with embedded BPM and transport controls) and session timer (tape counter) into a reusable panel.
 
 **Location**: `components/ui/metronome/MetronomePanel.tsx`
 
@@ -486,10 +486,28 @@ interface MetronomePanelProps {
   currentBeat: number;
   beatsPerMeasure: number;
 
+  // Time signature
+  timeSignature: string;
+  onTimeSignatureChange: (ts: string) => void;
+
+  // Sound type (click, snare, bass, hihat)
+  soundType: MetronomeSoundType;
+  onSoundTypeChange: (type: MetronomeSoundType) => void;
+
+  // Subdivision
+  subdivision: Subdivision;
+  onSubdivisionChange: (sub: Subdivision) => void;
+
   // BPM controls
   bpm: number;
   onBpmChange: (bpm: number) => void;
   onTapTempo: () => number | null;
+
+  // Transport controls
+  onPlayPause: () => void;
+  onReset: () => void;
+  onComplete?: (seconds: number) => void;
+  showComplete?: boolean;
 
   // Timer
   sessionSeconds: number;
@@ -499,9 +517,12 @@ interface MetronomePanelProps {
 }
 ```
 
-**Layout** (top to bottom):
-1. VU Meter Housing (contains pendulum + BPM display inside)
-2. Session Timer (RamsTapeCounterDisplay - tape counter style, separate)
+**Layout** (top to bottom inside housing):
+1. Header row: TIME (FrequencyTuner) | SOUND (FrequencyTuner) | SUB (FrequencyTuner)
+2. VU Meter pendulum
+3. BPM Display (tappable with tap tempo)
+4. Transport Controls (play/pause, reset, complete)
+5. Session Timer (RamsTapeCounterDisplay - tape counter style, below housing)
 
 **Usage**:
 ```typescript
@@ -512,9 +533,19 @@ import { MetronomePanel } from '@/components/ui/metronome';
   isMetronomePlaying={metronome.isPlaying}
   currentBeat={metronome.currentBeat}
   beatsPerMeasure={metronome.beatsPerMeasure}
+  timeSignature={metronome.timeSignature}
+  onTimeSignatureChange={metronome.setTimeSignature}
+  soundType={metronome.soundType}
+  onSoundTypeChange={metronome.setSoundType}
+  subdivision={metronome.subdivision}
+  onSubdivisionChange={metronome.setSubdivision}
   bpm={metronome.bpm}
   onBpmChange={metronome.setBpm}
   onTapTempo={metronome.tapTempo}
+  onPlayPause={handlePlayPause}
+  onReset={handleReset}
+  onComplete={handleComplete}
+  showComplete={true}
   sessionSeconds={sessionSeconds}
 />
 ```
@@ -542,7 +573,7 @@ interface RamsTapeCounterDisplayProps {
 
 ### useMetronome Hook
 
-Core metronome logic with drift-corrected timing.
+Core metronome logic with drift-corrected timing and sound type support.
 
 **Usage**:
 ```typescript
@@ -552,6 +583,7 @@ const metronome = useMetronome({
   initialBpm: 120,
   initialTimeSignature: '4/4',
   initialSubdivision: 1,
+  initialSoundType: 'click', // 'click' | 'snare' | 'bass' | 'hihat'
   onBeat: (beat, isDownbeat) => console.log(`Beat ${beat}`),
   onStateChange: (isPlaying) => console.log(`Playing: ${isPlaying}`),
 });
@@ -563,6 +595,7 @@ metronome.toggle();
 metronome.setBpm(140);
 metronome.setTimeSignature('3/4');
 metronome.setSubdivision(2);
+metronome.setSoundType('snare'); // Change sound type
 const bpm = metronome.tapTempo(); // Tap tempo
 
 // State
@@ -570,6 +603,7 @@ console.log(metronome.bpm);           // 120
 console.log(metronome.isPlaying);     // true/false
 console.log(metronome.beatPosition);  // 0 or 1 for VU meter
 console.log(metronome.currentBeat);   // 1-4
+console.log(metronome.soundType);     // 'click' | 'snare' | 'bass' | 'hihat'
 ```
 
 ### BPMDisplay Component
@@ -664,4 +698,8 @@ interface TransportControlsProps {
 
 ---
 
-*Last updated: Dec 11, 2025 (Added MetronomePanel composite, RamsTapeCounterDisplay, separated metronome from timer display)*
+*Last updated: Dec 14, 2025*
+- Added sound type selector (click, snare, bass, hihat) to MetronomePanel
+- Moved subdivision control into MetronomePanel header
+- Fixed metronome sound race condition (load all sounds upfront)
+- Added metronome drum samples: metronome-snare.wav, metronome-kick.wav, metronome-hihat.wav
