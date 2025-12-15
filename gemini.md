@@ -98,6 +98,17 @@ This document serves as a log of interactions with the Gemini AI assistant for t
 
 ---
 
+## Date: December 15, 2025 (Session 2)
+
+**Prompt:** Refine Inactive LED Appearance
+
+**Key Outcomes:**
+- **LEDIndicator Refinement:**
+    - Modified `LEDIndicator` to include a faint "white" light at the center of the lens when inactive, using `rgba(255,255,255,0.08)`.
+    - Increased the opacity of the glass reflection to `0.2` when inactive to enhance the skeuomorphic look.
+
+---
+
 ## Usage Notes for Gemini:
 
 - This file can be used to track ongoing requests, decisions, and architectural discussions.

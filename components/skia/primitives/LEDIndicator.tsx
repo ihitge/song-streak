@@ -82,9 +82,9 @@ export const LEDIndicator: React.FC<LEDIndicatorProps> = ({
                  r={lensRadius}
                  colors={isActive 
                    ? ['#ffffff', color, color]  // Active: Hot center -> Color body
-                   : [offColorCenter, offColorEdge] // Inactive: Dark
+                   : ['rgba(255,255,255,0.08)', offColorCenter, offColorEdge] // Inactive: Faint white center -> Dark
                  }
-                 positions={isActive ? [0, 0.4, 1] : [0, 1]}
+                 positions={isActive ? [0, 0.4, 1] : [0, 0.4, 1]}
                />
              </Circle>
 
@@ -107,7 +107,7 @@ export const LEDIndicator: React.FC<LEDIndicatorProps> = ({
             cy={center - lensRadius * 0.35}
             r={lensRadius * 0.25}
             color="white"
-            opacity={isActive ? 0.5 : 0.15}
+            opacity={isActive ? 0.5 : 0.2}
           >
              <BlurMask blur={1} style="normal" />
           </Circle>
