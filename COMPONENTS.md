@@ -34,6 +34,7 @@
 | `TransportControls` | Play/pause/reset/log buttons for metronome | `components/ui/metronome/TransportControls.tsx` |
 | `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
 | `InsetWindow` | **Reusable Skia inset window (dark/light variants)** | `components/ui/InsetWindow.tsx` |
+| `LEDIndicator` | **Skeuomorphic LED with metal bezel and bloom** | `components/skia/primitives/LEDIndicator.tsx` |
 
 ### Hooks
 
@@ -470,6 +471,13 @@ interface VUMeterDisplayProps {
 }
 ```
 
+**Visual Updates (Dec 15, 2025)**:
+- **LED Indicators**: Uses the new `LEDIndicator` Skia primitive (16px size) with realistic bloom.
+  - **Downbeat**: Vermilion glow.
+  - **Other Beats**: Moss green glow.
+- **Meter Face**: Uses `InsetWindow` (light variant) for a recessed glass look.
+- **Typography**: Beat numbers (1, 2, 3, 4) increased to 24px for better readability.
+
 **Note**: The `children` prop allows embedding content (like BPM display) inside the VU meter housing. `MetronomePanel` uses this to embed the BPM controls inside the meter housing.
 
 ### MetronomePanel (Composite Component)
@@ -696,6 +704,31 @@ interface TransportControlsProps {
   showComplete?: boolean;
 }
 ```
+
+---
+
+### LEDIndicator (Skia Primitive)
+
+**Purpose**: Photorealistic, skeuomorphic LED indicator inspired by Dieter Rams' industrial design. Features a metal bezel, convex glass lens, and realistic bloom/glow effects.
+
+**Location**: `components/skia/primitives/LEDIndicator.tsx`
+
+**Props**:
+```typescript
+interface LEDIndicatorProps {
+  size?: number;       // Diameter (default: 16)
+  isActive: boolean;   // On/Off state
+  color?: string;      // Color when active (default: Colors.vermilion)
+}
+```
+
+**Visual Behavior**:
+- **Off State**: Dark lens (#1a1a1a) inside a metal bezel (#2a2a2a).
+- **On State**: 
+  - Bright core color with radial gradient to simulate convexity.
+  - Realistic bloom/glow (BlurMask) extending beyond the bezel.
+  - High-contrast reflection highlight on the lens.
+- **Construction**: Built using Skia primitives (`Circle`, `LinearGradient`, `RadialGradient`, `BlurMask`) for high-performance rendering.
 
 ---
 

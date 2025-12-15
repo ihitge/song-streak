@@ -83,6 +83,21 @@ This document serves as a log of interactions with the Gemini AI assistant for t
 
 ---
 
+## Date: December 15, 2025
+
+**Prompt:** Improve Metronome LED Design (Skeuomorphic Redesign)
+
+**Key Outcomes:**
+- **Component Redesign:**
+    - Rebuilt `LEDIndicator` using Skia for a realistic industrial look inspired by Dieter Rams.
+    - Features: Metal bezel (gradient + inner shadow), Convex glass lens (radial gradient + highlight reflection), Realistic glow/bloom (active state).
+    - Component now handles its own sizing logic with padding for bloom effects, wrapped in a View to maintain layout flow.
+- **Integration:**
+    - Updated `VUMeterDisplay` to replace the basic View-based LED with the new Skia `LEDIndicator` component.
+    - Removed legacy CSS-based LED styles from `VUMeterDisplay`.
+
+---
+
 ## Usage Notes for Gemini:
 
 - This file can be used to track ongoing requests, decisions, and architectural discussions.

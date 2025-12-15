@@ -5,6 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { ACHIEVEMENTS, formatPracticeTime, calculateProgress } from '@/types/practice';
 import { InsetWindow } from '@/components/ui/InsetWindow';
+import { LEDIndicator } from '@/components/skia/primitives';
 
 /**
  * VU Meter mode
@@ -110,17 +111,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     return beatNum === currentBeat;
   };
 
-  // LED style for metronome mode (flash on current beat)
-  const getMetronomeLedStyle = (beatNum: number) => {
-    if (!isMetronomePlaying) return {};
-    if (beatNum === currentBeat) {
-      // Current beat - flash with vermilion for downbeat, moss for others
-      return beatNum === 1
-        ? styles.ledActiveDownbeat
-        : styles.ledActiveBeat;
-    }
-    return {};
-  };
+
 
   // Time display values
   const displaySeconds = mode === 'metronome' && sessionSeconds !== undefined
@@ -163,12 +154,10 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
                   <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
                     {marker.label}
                   </Text>
-                  <View
-                    style={[
-                      styles.ledIndicator,
-                      compact && styles.ledIndicatorCompact,
-                      getMetronomeLedStyle(marker.beat),
-                    ]}
+                  <LEDIndicator
+                    size={compact ? 12 : 16}
+                    isActive={isLedActiveForBeat(marker.beat)}
+                    color={marker.beat === 1 ? Colors.vermilion : Colors.moss}
                   />
                   <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
                     {marker.beat === 1 ? '▼' : '·'}
@@ -182,12 +171,10 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
                   <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
                     {marker.label}
                   </Text>
-                  <View
-                    style={[
-                      styles.ledIndicator,
-                      compact && styles.ledIndicatorCompact,
-                      totalSeconds >= marker.threshold && styles.ledActive,
-                    ]}
+                  <LEDIndicator
+                    size={compact ? 12 : 16}
+                    isActive={totalSeconds >= marker.threshold}
+                    color={Colors.moss}
                   />
                   <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
                     {marker.time}
@@ -330,48 +317,7 @@ const styles = StyleSheet.create({
   markerLabelCompact: {
     fontSize: 18,
   },
-  ledIndicator: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#1a1a1a',
-    borderWidth: 2,
-    borderColor: '#2a2a2a',
-    shadowColor: 'rgba(0,0,0,0.8)',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 1,
-    shadowRadius: 2,
-  },
-  ledIndicatorCompact: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 1.5,
-  },
-  ledActive: {
-    backgroundColor: Colors.moss,
-    borderColor: '#3a4a3a',
-    shadowColor: Colors.moss,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-  },
-  ledActiveDownbeat: {
-    backgroundColor: Colors.vermilion,
-    borderColor: '#4a3a3a',
-    shadowColor: Colors.vermilion,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-  },
-  ledActiveBeat: {
-    backgroundColor: Colors.moss,
-    borderColor: '#3a4a3a',
-    shadowColor: Colors.moss,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-  },
+
   timeLabel: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 8,

@@ -220,7 +220,7 @@ Phase 4: The Polish (Animation) (In Progress)
 
 [x] Analog Glitch: Added slide/flicker animations to Tuner and Knob readouts.
 
-[ ] LED Logic: Animate the little orange dots on your toggles with a "glow" (shadow opacity) when active.
+[x] LED Logic: Implemented skeuomorphic Skia-based `LEDIndicator` with realistic bloom and metal bezel.
 
 4. Audio Feedback (The "Click")
 
