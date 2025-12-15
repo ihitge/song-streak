@@ -723,7 +723,7 @@ interface LEDIndicatorProps {
 ```
 
 **Visual Behavior**:
-- **Off State**: Dark lens (#1a1a1a) inside a metal bezel (#2a2a2a).
+- **Off State**: Dark lens (#1a1a1a) inside a metal bezel (#2a2a2a) with a faint white center light (#ffffff 8%) and enhanced glass reflection.
 - **On State**: 
   - Bright core color with radial gradient to simulate convexity.
   - Realistic bloom/glow (BlurMask) extending beyond the bezel.
