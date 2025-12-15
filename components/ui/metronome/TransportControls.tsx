@@ -4,7 +4,7 @@ import { Play, Pause, RotateCcw, Check } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
+import { useNavButtonSound } from '@/hooks/useNavButtonSound';
 
 interface TransportControlsProps {
   isPlaying: boolean;
@@ -31,7 +31,7 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   compact = false,
   showComplete = true,
 }) => {
-  const { playSound } = useClickSound();
+  const { playSound } = useNavButtonSound();
 
   /**
    * Handle play/pause button press

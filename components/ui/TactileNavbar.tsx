@@ -55,5 +55,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around', // items centered and spaced evenly
     alignItems: 'center', // Center vertically
     paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 25,
   },
 });

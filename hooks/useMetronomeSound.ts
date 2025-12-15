@@ -1,7 +1,7 @@
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useCallback } from 'react';
-import { useSettingsContext } from '@/ctx/SettingsContext';
 import { MetronomeSoundType } from '@/types/metronome';
+import { METRONOME_VOLUMES } from '@/constants/Audio';
 
 // Import all metronome sound files statically
 const clickAccent = require('@/assets/audio/sound-click-04.wav');
@@ -35,6 +35,7 @@ interface UseMetronomeSoundReturn {
   playAccent: () => Promise<void>;
   playTick: () => Promise<void>;
   playSubdivision: () => Promise<void>;
+  playDrumBeat: (beat: number) => Promise<void>;
   isLoaded: boolean;
 }
 
@@ -45,9 +46,9 @@ function getSoundSources(type: MetronomeSoundType) {
   switch (type) {
     case 'click':
       return {
-        accent: clickAccent,
+        accent: clickTick,
         tick: clickTick,
-        subdivision: clickSubdiv,
+        subdivision: clickTick,
       };
     case 'snare':
       return {
@@ -84,7 +85,7 @@ function getSoundSources(type: MetronomeSoundType) {
  */
 export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMetronomeSoundReturn {
   const { soundType = 'click' } = options;
-  const { settings } = useSettingsContext();
+  // Note: Metronome sounds always play, regardless of UI sound settings
   const isLoadingRef = useRef(false);
   const isLoadedRef = useRef(false);
 
@@ -203,11 +204,10 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
 
   /**
    * Play a sound from a pool using round-robin
+   * Note: Metronome sounds always play, regardless of UI sound settings
    */
   const playFromPool = useCallback(
     async (pool: SoundPool, volume: number = 1.0) => {
-      if (!settings.soundEnabled) return;
-
       const sounds = pool.sounds;
       if (sounds.length === 0) {
         console.warn('Sound pool not loaded');
@@ -233,7 +233,7 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
       // Move to next sound in pool (round-robin)
       pool.currentIndex = (currentIndex + 1) % POOL_SIZE;
     },
-    [settings.soundEnabled]
+    []
   );
 
   /**
@@ -242,7 +242,7 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
   const playAccent = useCallback(async () => {
     const pools = allPools.current.get(soundType);
     if (pools) {
-      await playFromPool(pools.accent, 1.0);
+      await playFromPool(pools.accent, METRONOME_VOLUMES.accent);
     }
   }, [soundType, playFromPool]);
 
@@ -252,7 +252,7 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
   const playTick = useCallback(async () => {
     const pools = allPools.current.get(soundType);
     if (pools) {
-      await playFromPool(pools.tick, 0.8);
+      await playFromPool(pools.tick, METRONOME_VOLUMES.tick);
     }
   }, [soundType, playFromPool]);
 
@@ -262,14 +262,43 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
   const playSubdivision = useCallback(async () => {
     const pools = allPools.current.get(soundType);
     if (pools) {
-      await playFromPool(pools.subdivision, 0.5);
+      await playFromPool(pools.subdivision, METRONOME_VOLUMES.subdivision);
     }
   }, [soundType, playFromPool]);
+
+  /**
+   * Play drum beat for "drums" mode
+   * - Hi-hat on all beats
+   * - Kick on beats 1 & 3
+   * - Snare on beats 2 & 4
+   */
+  const playDrumBeat = useCallback(async (beat: number) => {
+    const hihatPools = allPools.current.get('hihat');
+    const kickPools = allPools.current.get('bass');
+    const snarePools = allPools.current.get('snare');
+
+    // Always play hi-hat
+    if (hihatPools) {
+      playFromPool(hihatPools.tick, METRONOME_VOLUMES.tick);
+    }
+
+    // Kick on beats 1 & 3, Snare on beats 2 & 4
+    if (beat === 1 || beat === 3) {
+      if (kickPools) {
+        playFromPool(kickPools.tick, METRONOME_VOLUMES.accent);
+      }
+    } else if (beat === 2 || beat === 4) {
+      if (snarePools) {
+        playFromPool(snarePools.tick, METRONOME_VOLUMES.accent);
+      }
+    }
+  }, [playFromPool]);
 
   return {
     playAccent,
     playTick,
     playSubdivision,
+    playDrumBeat,
     isLoaded: isLoadedRef.current,
   };
 }

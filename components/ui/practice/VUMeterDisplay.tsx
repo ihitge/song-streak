@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Styles';
 import { ACHIEVEMENTS, formatPracticeTime, calculateProgress } from '@/types/practice';
+import { InsetWindow } from '@/components/ui/InsetWindow';
 
 /**
  * VU Meter mode
@@ -14,6 +16,7 @@ type VUMeterMode = 'progress' | 'metronome';
 interface VUMeterDisplayProps {
   totalSeconds?: number;              // For progress mode (optional in metronome mode)
   compact?: boolean;
+  fullWidth?: boolean;                // Full viewport width, no rounded corners
   mode?: VUMeterMode;                 // Default: 'progress'
   beatPosition?: number;              // 0 (left) or 1 (right) for metronome pendulum
   isMetronomePlaying?: boolean;       // For LED beat effects
@@ -34,6 +37,7 @@ interface VUMeterDisplayProps {
 export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   totalSeconds = 0,
   compact = false,
+  fullWidth = false,
   mode = 'progress',
   beatPosition = 0.5,
   isMetronomePlaying = false,
@@ -129,7 +133,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
       : 'TOTAL PRACTICE';
 
   return (
-    <View style={[styles.housing, compact && styles.housingCompact]}>
+    <View style={[styles.housing, compact && styles.housingCompact, fullWidth && styles.housingFullWidth]}>
       {/* Header content (e.g., time signature selector) */}
       {headerContent && (
         <View style={[styles.headerContainer, compact && styles.headerContainerCompact]}>
@@ -143,7 +147,11 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
       </Text>
 
       {/* Meter face */}
-      <View style={[styles.meterFace, compact && styles.meterFaceCompact]}>
+      <InsetWindow
+        variant="light"
+        borderRadius={compact ? 8 : 12}
+        style={[styles.meterFace, compact && styles.meterFaceCompact]}
+      >
         {/* Scale arc background */}
         <View style={styles.scaleArc}>
           {/* Scale markings - different for each mode */}
@@ -209,7 +217,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
           {/* Pivot screw */}
           <View style={[styles.pivotScrew, compact && styles.pivotScrewCompact]} />
         </View>
-      </View>
+      </InsetWindow>
 
       {/* Time display - conditionally rendered */}
       {showTimeDisplay && (
@@ -235,9 +243,11 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
 
 const styles = StyleSheet.create({
   housing: {
+    width: 310,
     backgroundColor: Colors.ink,
     borderRadius: 16,
-    padding: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
     alignItems: 'center',
     // Outer bevel
     borderTopWidth: 1,
@@ -252,11 +262,17 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   housingCompact: {
+    width: 218,
     borderRadius: 12,
-    padding: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 9,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 6,
     elevation: 6,
+  },
+  housingFullWidth: {
+    width: '100%',
+    borderRadius: 0,
   },
   headerContainer: {
     width: '100%',
@@ -268,7 +284,7 @@ const styles = StyleSheet.create({
   vuLabel: {
     fontFamily: 'LexendDecaBold',
     fontSize: 14,
-    color: Colors.vermilion,
+    color: 'transparent',
     letterSpacing: 4,
     marginBottom: 8,
   },
@@ -279,22 +295,12 @@ const styles = StyleSheet.create({
   },
   meterFace: {
     width: 280,
-    height: 140,
-    backgroundColor: Colors.softWhite,
+    height: 112,
     borderRadius: 12,
-    overflow: 'hidden',
-    position: 'relative',
-    // Inset effect
-    borderTopWidth: 3,
-    borderTopColor: 'rgba(0,0,0,0.2)',
-    borderLeftWidth: 2,
-    borderLeftColor: 'rgba(0,0,0,0.1)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.8)',
   },
   meterFaceCompact: {
     width: 200,
-    height: 100,
+    height: 80,
     borderRadius: 8,
   },
   scaleArc: {
@@ -302,7 +308,7 @@ const styles = StyleSheet.create({
     top: 10,
     left: 0,
     right: 0,
-    height: 80,
+    height: 64,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
@@ -318,47 +324,53 @@ const styles = StyleSheet.create({
   },
   markerLabel: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 12,
+    fontSize: 24,
     color: Colors.charcoal,
   },
   markerLabelCompact: {
-    fontSize: 9,
+    fontSize: 18,
   },
   ledIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.graphite,
-    opacity: 0.4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#1a1a1a',
+    borderWidth: 2,
+    borderColor: '#2a2a2a',
+    shadowColor: 'rgba(0,0,0,0.8)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 1,
+    shadowRadius: 2,
   },
   ledIndicatorCompact: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1.5,
   },
   ledActive: {
     backgroundColor: Colors.moss,
-    opacity: 1,
+    borderColor: '#3a4a3a',
     shadowColor: Colors.moss,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 6,
+    shadowRadius: 10,
   },
   ledActiveDownbeat: {
     backgroundColor: Colors.vermilion,
-    opacity: 1,
+    borderColor: '#4a3a3a',
     shadowColor: Colors.vermilion,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 8,
+    shadowRadius: 12,
   },
   ledActiveBeat: {
     backgroundColor: Colors.moss,
-    opacity: 1,
+    borderColor: '#3a4a3a',
     shadowColor: Colors.moss,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 6,
+    shadowRadius: 10,
   },
   timeLabel: {
     fontFamily: 'LexendDecaRegular',
@@ -382,11 +394,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 6,
     width: 4,
-    height: 90,
+    height: 72,
     transformOrigin: 'bottom center',
   },
   needleCompact: {
-    height: 65,
+    height: 52,
     width: 3,
   },
   needleBody: {
@@ -440,15 +452,14 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   timeLabel2: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 10,
-    color: Colors.graphite,
-    letterSpacing: 3,
+    ...Typography.label,
+    color: Colors.vermilion,
     marginTop: 4,
   },
   timeLabel2Compact: {
+    ...Typography.label,
     fontSize: 8,
-    letterSpacing: 2,
+    color: Colors.vermilion,
     marginTop: 2,
   },
   childrenContainer: {

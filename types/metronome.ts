@@ -20,7 +20,7 @@ export type Subdivision = 1 | 2 | 3 | 4;
 /**
  * Metronome sound types
  */
-export type MetronomeSoundType = 'click' | 'snare' | 'bass' | 'hihat';
+export type MetronomeSoundType = 'click' | 'snare' | 'bass' | 'hihat' | 'drums';
 
 /**
  * Sound type options for FrequencyTuner
@@ -28,8 +28,9 @@ export type MetronomeSoundType = 'click' | 'snare' | 'bass' | 'hihat';
 export const METRONOME_SOUND_OPTIONS = [
   { value: 'click' as MetronomeSoundType, label: 'CLICK' },
   { value: 'snare' as MetronomeSoundType, label: 'SNARE' },
-  { value: 'bass' as MetronomeSoundType, label: 'BASS' },
+  { value: 'bass' as MetronomeSoundType, label: 'KICK' },
   { value: 'hihat' as MetronomeSoundType, label: 'HI-HAT' },
+  { value: 'drums' as MetronomeSoundType, label: 'DRUMS' },
 ] as const;
 
 /**
@@ -48,10 +49,10 @@ export const TIME_SIGNATURE_OPTIONS = [
  * Subdivision options for GangSwitch
  */
 export const SUBDIVISION_OPTIONS = [
-  { value: 1 as Subdivision, label: '1' },  // Quarter notes
-  { value: 2 as Subdivision, label: '2' },  // Eighth notes
-  { value: 3 as Subdivision, label: '3' },  // Triplets
-  { value: 4 as Subdivision, label: '4' },  // Sixteenth notes
+  { value: 1 as Subdivision, label: 'ONE' },    // Quarter notes
+  { value: 2 as Subdivision, label: 'TWO' },    // Eighth notes
+  { value: 3 as Subdivision, label: 'THREE' },  // Triplets
+  { value: 4 as Subdivision, label: 'FOUR' },   // Sixteenth notes
 ] as const;
 
 /**

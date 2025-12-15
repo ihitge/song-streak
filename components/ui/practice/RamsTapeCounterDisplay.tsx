@@ -7,6 +7,7 @@ import { Typography } from '@/constants/Styles';
 interface RamsTapeCounterDisplayProps {
   seconds: number;
   compact?: boolean;
+  fullWidth?: boolean;  // Full viewport width, no rounded corners
   label?: string;  // Custom label (default: 'ELAPSED')
 }
 
@@ -17,6 +18,7 @@ interface RamsTapeCounterDisplayProps {
 export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
   seconds,
   compact = false,
+  fullWidth = false,
   label = 'ELAPSED',
 }) => {
   // Format seconds into MM:SS
@@ -33,7 +35,7 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
   ];
 
   return (
-    <View style={[styles.housing, compact && styles.housingCompact]}>
+    <View style={[styles.housing, compact && styles.housingCompact, fullWidth && styles.housingFullWidth]}>
       {/* Inner recessed well */}
       <View style={[styles.recessedWell, compact && styles.recessedWellCompact]}>
         {/* Digit wheels container */}
@@ -100,7 +102,7 @@ const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, com
 
 const styles = StyleSheet.create({
   housing: {
-    width: 320,  // Match VU meter housing width
+    width: 310,  // Match VU meter housing width
     backgroundColor: Colors.ink,
     borderRadius: 8,  // Reduced from 12
     padding: 11,  // Reduced from 16
@@ -118,12 +120,20 @@ const styles = StyleSheet.create({
     elevation: 6,  // Reduced from 8
   },
   housingCompact: {
-    width: 224,  // Match VU meter compact width (200 + 12*2 padding)
+    width: 218,  // Match VU meter compact width (200 + 9*2 padding)
     borderRadius: 6,  // Reduced from 8
     padding: 7,  // Reduced from 10
     shadowOffset: { width: 0, height: 2 },  // Reduced from 3
     shadowRadius: 3,  // Reduced from 4
     elevation: 3,  // Reduced from 4
+  },
+  housingFullWidth: {
+    width: '100%',
+    borderRadius: 0,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+    borderTopWidth: 0,
+    paddingBottom: 0,
   },
   recessedWell: {
     backgroundColor: '#1a1a1a',
@@ -219,11 +229,13 @@ const styles = StyleSheet.create({
   },
   label: {
     ...Typography.label,
+    color: Colors.warmGray,
     marginTop: 8,
   },
   labelCompact: {
     ...Typography.label,
     fontSize: 8,
+    color: Colors.warmGray,
     marginTop: 6,
   },
 });

@@ -48,6 +48,8 @@ interface MetronomePanelProps {
 
   // Options
   compact?: boolean;
+  fullWidth?: boolean;
+  showTimer?: boolean;
 }
 
 /**
@@ -81,6 +83,8 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   showComplete = true,
   sessionSeconds,
   compact = false,
+  fullWidth = false,
+  showTimer = true,
 }) => {
   // Convert time signature options for FrequencyTuner
   const timeSignatureOptions = TIME_SIGNATURE_OPTIONS.map((opt) => ({
@@ -110,6 +114,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
         currentBeat={currentBeat}
         beatsPerMeasure={beatsPerMeasure}
         compact={compact}
+        fullWidth={fullWidth}
         showTimeDisplay={false}
         headerContent={
           /* Time Signature, Sound, and Subdivision selectors at top of metronome */
@@ -121,6 +126,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 options={timeSignatureOptions}
                 onChange={onTimeSignatureChange}
                 size="compact"
+                variant="light"
               />
             </View>
             <View style={styles.tunerWrapper}>
@@ -130,15 +136,17 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 options={soundOptions}
                 onChange={(val) => onSoundTypeChange(val as MetronomeSoundType)}
                 size="compact"
+                variant="light"
               />
             </View>
             <View style={styles.tunerWrapper}>
               <FrequencyTuner
-                label="SUB"
+                label="SUBDIVISION"
                 value={String(subdivision)}
                 options={subdivisionOptions}
                 onChange={(val) => onSubdivisionChange(Number(val) as Subdivision)}
                 size="compact"
+                variant="light"
               />
             </View>
           </View>
@@ -168,13 +176,15 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
       </VUMeterDisplay>
 
       {/* Session Timer - tape counter style (separate from metronome) */}
-      <View style={styles.timerSection}>
-        <RamsTapeCounterDisplay
-          seconds={sessionSeconds}
-          compact={compact}
-          label="SESSION TIME"
-        />
-      </View>
+      {showTimer && (
+        <View style={styles.timerSection}>
+          <RamsTapeCounterDisplay
+            seconds={sessionSeconds}
+            compact={compact}
+            label="SESSION TIME"
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -191,14 +201,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: 8,
-    gap: 8,
+    paddingHorizontal: 4,
+    gap: 6,
   },
   tunerWrapper: {
     flex: 1,
   },
   transportSection: {
-    marginTop: 12,
+    marginTop: 28,
   },
   timerSection: {
     alignItems: 'center',

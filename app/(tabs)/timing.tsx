@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { MetronomePanel } from '@/components/ui/metronome';
+import { RamsTapeCounterDisplay } from '@/components/ui/practice/RamsTapeCounterDisplay';
 import { Colors } from '@/constants/Colors';
 import { useMetronome } from '@/hooks/useMetronome';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
@@ -106,35 +107,38 @@ export default function TimingScreen() {
     <View style={styles.container}>
       <PageHeader subtitle="METRONOME" />
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Metronome Panel: Time Sig + Sound + Subdivision + VU Meter + BPM + Transport + Timer */}
-        <View style={styles.meterSection}>
-          <MetronomePanel
-            beatPosition={metronome.beatPosition}
-            isMetronomePlaying={metronome.isPlaying}
-            currentBeat={metronome.currentBeat}
-            beatsPerMeasure={metronome.beatsPerMeasure}
-            timeSignature={metronome.timeSignature}
-            onTimeSignatureChange={metronome.setTimeSignature}
-            soundType={metronome.soundType}
-            onSoundTypeChange={metronome.setSoundType}
-            subdivision={metronome.subdivision}
-            onSubdivisionChange={handleSubdivisionChange}
-            bpm={metronome.bpm}
-            onBpmChange={metronome.setBpm}
-            onTapTempo={metronome.tapTempo}
-            onPlayPause={handlePlayPause}
-            onReset={handleReset}
-            onComplete={handleComplete}
-            showComplete={true}
-            sessionSeconds={sessionSeconds}
-          />
-        </View>
+      {/* Metronome Panel - centered in available space */}
+      <View style={styles.metronomeSection}>
+        <MetronomePanel
+          beatPosition={metronome.beatPosition}
+          isMetronomePlaying={metronome.isPlaying}
+          currentBeat={metronome.currentBeat}
+          beatsPerMeasure={metronome.beatsPerMeasure}
+          timeSignature={metronome.timeSignature}
+          onTimeSignatureChange={metronome.setTimeSignature}
+          soundType={metronome.soundType}
+          onSoundTypeChange={metronome.setSoundType}
+          subdivision={metronome.subdivision}
+          onSubdivisionChange={handleSubdivisionChange}
+          bpm={metronome.bpm}
+          onBpmChange={metronome.setBpm}
+          onTapTempo={metronome.tapTempo}
+          onPlayPause={handlePlayPause}
+          onReset={handleReset}
+          onComplete={handleComplete}
+          showComplete={true}
+          sessionSeconds={sessionSeconds}
+          fullWidth={true}
+          showTimer={false}
+        />
+      </View>
 
-      </ScrollView>
+      {/* Session Timer pinned at bottom */}
+      <RamsTapeCounterDisplay
+        seconds={sessionSeconds}
+        fullWidth={true}
+        label="PRACTICE TIME"
+      />
     </View>
   );
 }
@@ -144,14 +148,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.matteFog,
   },
-  content: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 120, // Account for tab bar
-    gap: 32,
-  },
-  meterSection: {
-    alignItems: 'center',
-    marginTop: 16,
+  metronomeSection: {
+    flex: 1,
   },
 });

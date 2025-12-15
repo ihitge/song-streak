@@ -1,6 +1,7 @@
 import { Audio } from 'expo-av';
 import { useEffect, useRef } from 'react';
 import { useSettingsContext } from '@/ctx/SettingsContext';
+import { UI_VOLUMES } from '@/constants/Audio';
 
 export function useFABSound() {
   const { settings } = useSettingsContext();
@@ -64,7 +65,8 @@ export function useFABSound() {
     }
 
     try {
-      // Reset to beginning and play
+      // Set normalized volume and play
+      await sound.current.setVolumeAsync(UI_VOLUMES.fab);
       await sound.current.stopAsync();
       await sound.current.playAsync();
     } catch (error) {

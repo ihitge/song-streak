@@ -123,6 +123,13 @@ export const BPMDisplay: React.FC<BPMDisplayProps> = ({
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
+      {/* Tap tempo hint - above BPM display */}
+      {!readonly && (
+        <Text style={[styles.tapHint, compact && styles.tapHintCompact]}>
+          TAP TO SET TEMPO
+        </Text>
+      )}
+
       <View style={styles.controlRow}>
         {/* Decrement button */}
         {!readonly && (
@@ -174,13 +181,6 @@ export const BPMDisplay: React.FC<BPMDisplayProps> = ({
           </TouchableOpacity>
         )}
       </View>
-
-      {/* Tap tempo hint - centered below BPM display */}
-      {!readonly && (
-        <Text style={[styles.tapHint, compact && styles.tapHintCompact]}>
-          TAP TO SET TEMPO
-        </Text>
-      )}
     </View>
   );
 };
@@ -281,13 +281,13 @@ const styles = StyleSheet.create({
     ...Typography.label,
     color: Colors.vermilion,
     textAlign: 'center',
-    marginTop: 3,
+    marginBottom: 3,
   },
   tapHintCompact: {
     ...Typography.label,
     fontSize: 8,
     color: Colors.vermilion,
     textAlign: 'center',
-    marginTop: 2,
+    marginBottom: 2,
   },
 });

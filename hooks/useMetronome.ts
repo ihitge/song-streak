@@ -55,7 +55,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const isPlayingRef = useRef(false); // Sync ref for closure access
 
   // Sound hooks - pass soundType to reload sounds when changed
-  const { playAccent, playTick, playSubdivision: playSub } = useMetronomeSound({ soundType });
+  const { playAccent, playTick, playSubdivision: playSub, playDrumBeat } = useMetronomeSound({ soundType });
 
   // Derived values
   const beatsPerMeasure = useMemo(() => getBeatsPerMeasure(timeSignature), [timeSignature]);
@@ -93,7 +93,9 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
 
       // Play appropriate sound
       if (isBeat) {
-        if (isDownbeat) {
+        if (soundType === 'drums') {
+          playDrumBeat(beat);
+        } else if (isDownbeat) {
           playAccent();
         } else {
           playTick();
@@ -104,7 +106,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
         onSubdivision?.(subTick, beat);
       }
     },
-    [playAccent, playTick, playSub, onBeat, onSubdivision]
+    [playAccent, playTick, playSub, playDrumBeat, soundType, onBeat, onSubdivision]
   );
 
   /**

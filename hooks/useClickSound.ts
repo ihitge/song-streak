@@ -1,6 +1,7 @@
 import { Audio } from 'expo-av';
 import { useEffect, useRef } from 'react';
 import { useSettingsContext } from '@/ctx/SettingsContext';
+import { UI_VOLUMES } from '@/constants/Audio';
 
 export function useClickSound() {
   const { settings } = useSettingsContext();
@@ -64,7 +65,8 @@ export function useClickSound() {
     }
 
     try {
-      // Reset to beginning and play
+      // Set normalized volume and play
+      await sound.current.setVolumeAsync(UI_VOLUMES.sharedClick);
       await sound.current.stopAsync();
       await sound.current.playAsync();
     } catch (error) {

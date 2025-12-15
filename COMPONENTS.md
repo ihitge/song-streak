@@ -33,6 +33,7 @@
 | `MetronomePanel` | **Composite: VU meter + BPM + session timer** | `components/ui/metronome/MetronomePanel.tsx` |
 | `TransportControls` | Play/pause/reset/log buttons for metronome | `components/ui/metronome/TransportControls.tsx` |
 | `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
+| `InsetWindow` | **Reusable Skia inset window (dark/light variants)** | `components/ui/InsetWindow.tsx` |
 
 ### Hooks
 
@@ -698,7 +699,88 @@ interface TransportControlsProps {
 
 ---
 
-*Last updated: Dec 14, 2025*
+### InsetWindow
+
+**Purpose**: Reusable Skia-based inset window component with glass effect. Supports dark and light variants for consistent styling across the app.
+
+**Location**: `components/ui/InsetWindow.tsx`
+
+**Props**:
+```typescript
+interface InsetWindowProps {
+  variant: 'dark' | 'light';    // Color scheme
+  borderRadius?: number;         // Default: 6
+  children?: React.ReactNode;
+  style?: ViewStyle;
+}
+```
+
+**Variants**:
+- **Dark**: Dark background (#2a2a2a) with subtle white highlights - used for controls
+- **Light**: Light background (softWhite) with shadow depth - used for displays/meters
+
+**Visual Behavior**:
+- Skia Canvas with Box + BoxShadow for realistic inset shadows
+- Glass overlay gradient at top for depth
+- Configurable border radius
+
+**Usage**:
+```typescript
+import { InsetWindow } from '@/components/ui/InsetWindow';
+
+// Light variant for displays
+<InsetWindow variant="light" borderRadius={12} style={{ width: 280, height: 112 }}>
+  {/* Content */}
+</InsetWindow>
+
+// Dark variant for controls
+<InsetWindow variant="dark" borderRadius={6}>
+  {/* Content */}
+</InsetWindow>
+```
+
+---
+
+*Last updated: Dec 15, 2025*
+
+## Dec 15, 2025 Changes
+
+### Layout & Structure
+- **timing.tsx**: Full-width metronome layout, VU meter touches PageHeader, session timer pinned to bottom
+- **TactileNavbar**: Added padding (10px top, 25px bottom) for better spacing
+- **RamsTapeCounterDisplay**: Added `fullWidth` prop with transparent background, no borders
+
+### InsetWindow Component (NEW)
+- Created reusable Skia-based inset window with `dark` and `light` variants
+- Applied to VUMeterDisplay meter face (light variant)
+- Consistent glass effect across the app
+
+### FrequencyTuner Enhancements
+- Added `variant` prop ('dark' | 'light') for theme support
+- Light variant: softWhite background, charcoal text/chevrons, white glass highlight
+- Labels now orange (Colors.vermilion) for metronome
+- Renamed "SUB" label to "SUBDIVISION" in MetronomePanel
+
+### VUMeterDisplay Updates
+- Uses InsetWindow for meter face (light variant)
+- Removed "BPM" label (transparent color, space preserved)
+- Beat numbers (1,2,3,4) doubled in size: 12px → 24px
+- **Skeuomorphic Power LEDs**: Redesigned beat indicators
+  - 16px size (doubled from 8px)
+  - Dark lens (#1a1a1a) with metal bezel (#2a2a2a) when off
+  - Vermilion glow (12px bloom) for downbeat
+  - Moss green glow (10px bloom) for other beats
+
+### MetronomePanel Updates
+- Increased spacing between BPM controls and transport (marginTop: 12 → 28)
+- FrequencyTuners use `variant="light"` for light background
+
+### Gradient Tuning
+- Light variant inner shadow: 0.25 → 0.40 (darker bottom)
+- Light variant glass overlay: Changed from dark (0.08 black) to bright (0.35 white)
+- Scale markings in light FrequencyTuner use Colors.charcoal (matches chevrons)
+
+### Previous Changes (Dec 14, 2025)
 - Added sound type selector (click, snare, bass, hihat) to MetronomePanel
 - Moved subdivision control into MetronomePanel header
 - Fixed metronome sound race condition (load all sounds upfront)
