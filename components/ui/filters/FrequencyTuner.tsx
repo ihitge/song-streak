@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { useClickSound } from '@/hooks/useClickSound';
+import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import type { FrequencyTunerProps } from '@/types/filters';
 
 type TunerVariant = 'dark' | 'light';
@@ -59,7 +60,8 @@ export const FrequencyTuner = <T extends string>({
   showValueLabel = true,
   size = 'standard',
   variant = 'dark',
-}: FrequencyTunerProps<T> & { variant?: TunerVariant }) => {
+  showGlassOverlay = false,
+}: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean }) => {
   const [width, setWidth] = useState(200); // default fallback
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
   const { playSound } = useClickSound();
@@ -189,6 +191,17 @@ export const FrequencyTuner = <T extends string>({
 
         {/* Inner ring/border effect */}
         <View style={[styles.innerRing, { borderColor: innerRingColor }]} pointerEvents="none" />
+
+        {/* Optional glass overlay for enhanced realism */}
+        {showGlassOverlay && (
+          <GlassOverlay
+            width={width}
+            height={height}
+            borderRadius={6}
+            glareOpacity={0.2}
+            specularOpacity={0.3}
+          />
+        )}
       </View>
     </View>
   );

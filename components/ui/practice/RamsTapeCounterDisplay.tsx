@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
+import { GlassOverlay } from '@/components/ui/GlassOverlay';
 
 interface RamsTapeCounterDisplayProps {
   seconds: number;
@@ -79,6 +80,11 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
  * Individual digit wheel with 3D mechanical appearance
  */
 const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, compact = false }) => {
+  // Dimensions based on compact mode
+  const width = compact ? 22 : 34;
+  const height = compact ? 31 : 45;
+  const borderRadius = compact ? 2 : 3;
+
   return (
     <View style={styles.digitWheelContainer}>
       <View style={[styles.digitWheel, compact && styles.digitWheelCompact]}>
@@ -95,6 +101,14 @@ const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, com
         locations={[0, 0.15, 0.85, 1]}
         style={styles.digitInnerShadow}
         pointerEvents="none"
+      />
+      {/* Glass overlay on individual digit */}
+      <GlassOverlay
+        width={width}
+        height={height}
+        borderRadius={borderRadius}
+        glareOpacity={0.2}
+        specularOpacity={0.3}
       />
     </View>
   );

@@ -35,6 +35,7 @@
 | `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
 | `InsetWindow` | **Reusable Skia inset window (dark/light variants)** | `components/ui/InsetWindow.tsx` |
 | `LEDIndicator` | **Skeuomorphic LED with metal bezel and bloom** | `components/skia/primitives/LEDIndicator.tsx` |
+| `GlassOverlay` | **Skia-based glass effect overlay (glare, specular highlight, bezel)** | `components/ui/GlassOverlay.tsx` |
 
 ### Hooks
 
@@ -772,7 +773,56 @@ import { InsetWindow } from '@/components/ui/InsetWindow';
 
 ---
 
-*Last updated: Dec 15, 2025*
+### GlassOverlay
+
+**Purpose**: Skia-based glass effect overlay that simulates physical glass windows with vintage hi-fi aesthetics. Use this to add depth and realism to control windows and displays.
+
+**Location**: `components/ui/GlassOverlay.tsx`
+
+**Props**:
+```typescript
+interface GlassOverlayProps {
+  width: number;              // Width in pixels (required)
+  height: number;             // Height in pixels (required)
+  borderRadius?: number;      // Default: 6
+  glareOpacity?: number;      // Glare intensity (default: 0.175)
+  specularOpacity?: number;   // Specular highlight intensity (default: 0.25)
+}
+```
+
+**Visual Behavior**:
+- **Glare gradient**: Top-to-bottom white gradient simulating light reflection
+- **Specular highlight**: Circular bright spot in top-left area (like a light source reflection)
+- **Bezel edges**: 3D depth with light top/left borders, dark bottom/right borders
+- **pointerEvents="none"**: Touch events pass through to controls underneath
+
+**Usage**:
+```typescript
+import { GlassOverlay } from '@/components/ui/GlassOverlay';
+
+// Basic usage (absolute positioned over a control)
+<View style={{ position: 'relative' }}>
+  <YourControl />
+  <GlassOverlay
+    width={200}
+    height={44}
+    borderRadius={6}
+    glareOpacity={0.2}
+    specularOpacity={0.3}
+  />
+</View>
+```
+
+**Where It's Applied**:
+- `FrequencyTuner` - via `showGlassOverlay` prop
+- `RotaryKnob` - via `showGlassOverlay` prop
+- `InsetWindow` - via `showGlassOverlay` prop (used by VUMeterDisplay)
+- `RamsTapeCounterDisplay` - on each individual digit wheel
+- Album artwork thumbnails in song cards
+
+---
+
+*Last updated: Dec 16, 2025*
 
 ## Dec 15, 2025 Changes
 
@@ -841,6 +891,14 @@ import { InsetWindow } from '@/components/ui/InsetWindow';
 **MetronomePanel Spacing**
 - Increased gap between FrequencyTuners: 6px → 11px
 - Reduced headerContainer marginBottom: 12px → 8px (compact: 8px → 6px)
+
+**GlassOverlay Component (NEW)**
+- Created reusable Skia-based glass overlay component (`components/ui/GlassOverlay.tsx`)
+- Features: top-to-bottom glare gradient, specular highlight circle, 3D bezel edges
+- Applied to: FrequencyTuner, RotaryKnob, InsetWindow (via `showGlassOverlay` prop)
+- Applied to: Album artwork thumbnails in song cards
+- Applied to: Individual digit wheels in RamsTapeCounterDisplay (not the overall container)
+- Opacity values tuned to 50% for subtle effect (glareOpacity: 0.175, specularOpacity: 0.25)
 
 ### Previous Changes (Dec 14, 2025)
 - Added sound type selector (click, snare, bass, hihat) to MetronomePanel

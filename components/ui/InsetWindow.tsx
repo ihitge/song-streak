@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { View, StyleSheet, LayoutChangeEvent, ViewStyle } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
 import { Colors } from '@/constants/Colors';
+import { GlassOverlay } from '@/components/ui/GlassOverlay';
 
 interface InsetWindowProps {
   variant: 'dark' | 'light';
   borderRadius?: number;
   children?: React.ReactNode;
   style?: ViewStyle;
+  showGlassOverlay?: boolean;
 }
 
 /**
@@ -19,6 +21,7 @@ export const InsetWindow: React.FC<InsetWindowProps> = ({
   borderRadius = 6,
   children,
   style,
+  showGlassOverlay = false,
 }) => {
   const [dimensions, setDimensions] = useState({ width: 200, height: 100 });
 
@@ -68,6 +71,17 @@ export const InsetWindow: React.FC<InsetWindowProps> = ({
       <View style={styles.content}>
         {children}
       </View>
+
+      {/* Enhanced glass overlay */}
+      {showGlassOverlay && (
+        <GlassOverlay
+          width={width}
+          height={height}
+          borderRadius={borderRadius}
+          glareOpacity={0.175}
+          specularOpacity={0.25}
+        />
+      )}
     </View>
   );
 };

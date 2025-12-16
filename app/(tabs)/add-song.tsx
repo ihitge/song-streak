@@ -634,6 +634,7 @@ export default function AddSongScreen() {
                 onChange={handleInstrumentChange}
                 options={ADD_SONG_INSTRUMENT_OPTIONS}
                 disabled={isEditMode && !isEditing}
+                showGlassOverlay
               />
             </ScrollView>
           ) : activeTab === 'Theory' ? (

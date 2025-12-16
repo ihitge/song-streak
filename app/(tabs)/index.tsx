@@ -8,6 +8,7 @@ import { Plus, Music, Clock, Trash2 } from 'lucide-react-native';
 import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
+import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { instrumentOptions, genreOptions } from '@/config/filterOptions';
 import { useSearch } from '@/hooks/useSearch';
 import { useFABSound } from '@/hooks/useFABSound';
@@ -88,7 +89,10 @@ const SongCard = ({ song, onDelete, onPress }: {
         {/* Recessed Thumbnail */}
         <View style={styles.thumbnailContainer}>
             {song.artwork ? (
-              <Image source={{ uri: song.artwork }} style={styles.thumbnailImage} />
+              <>
+                <Image source={{ uri: song.artwork }} style={styles.thumbnailImage} />
+                <GlassOverlay width={58} height={58} borderRadius={8} glareOpacity={0.15} specularOpacity={0.225} />
+              </>
             ) : (
               <Music size={24} color={Colors.graphite} />
             )}
@@ -287,6 +291,7 @@ export default function SetListScreen() {
             value={instrument}
             onChange={setInstrument}
             options={instrumentOptions}
+            showGlassOverlay
           />
         }
         genreFilter={
@@ -295,6 +300,7 @@ export default function SetListScreen() {
             value={genre}
             onChange={setGenre}
             options={genreOptions}
+            showGlassOverlay
           />
         }
       />

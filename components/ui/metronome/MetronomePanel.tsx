@@ -127,6 +127,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 onChange={onTimeSignatureChange}
                 size="compact"
                 variant="light"
+                showGlassOverlay
               />
             </View>
             <View style={styles.tunerWrapper}>
@@ -137,6 +138,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 onChange={(val) => onSoundTypeChange(val as MetronomeSoundType)}
                 size="compact"
                 variant="light"
+                showGlassOverlay
               />
             </View>
             <View style={styles.tunerWrapper}>
@@ -147,6 +149,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 onChange={(val) => onSubdivisionChange(Number(val) as Subdivision)}
                 size="compact"
                 variant="light"
+                showGlassOverlay
               />
             </View>
           </View>

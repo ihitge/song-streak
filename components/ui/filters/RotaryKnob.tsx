@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { useRotaryKnobSound } from '@/hooks/useRotaryKnobSound';
+import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import type { RotaryKnobProps } from '@/types/filters';
 
 const KNOB_SIZE = 44; // Increased from 38px
@@ -53,7 +54,8 @@ export const RotaryKnob = <T extends string>({
   size = KNOB_SIZE,
   showNotches = true,
   hapticFeedback = true,
-}: RotaryKnobProps<T>) => {
+  showGlassOverlay = false,
+}: RotaryKnobProps<T> & { showGlassOverlay?: boolean }) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
   const { playSound } = useRotaryKnobSound();
@@ -135,6 +137,17 @@ export const RotaryKnob = <T extends string>({
               </Box>
             </Canvas>
           </View>
+
+          {/* Enhanced glass overlay */}
+          {showGlassOverlay && (
+            <GlassOverlay
+              width={readoutWidth}
+              height={READOUT_HEIGHT}
+              borderRadius={6}
+              glareOpacity={0.2}
+              specularOpacity={0.3}
+            />
+          )}
 
           <Animated.View
                 key={value} // Trigger animation on value change
