@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { Colors } from '@/constants/Colors';
 import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { RamsTapeCounterDisplay } from '@/components/ui/practice/RamsTapeCounterDisplay';
 import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
@@ -128,6 +129,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 size="compact"
                 variant="light"
                 showGlassOverlay
+                labelColor={Colors.vermilion}
               />
             </View>
             <View style={styles.tunerWrapper}>
@@ -139,6 +141,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 size="compact"
                 variant="light"
                 showGlassOverlay
+                labelColor={Colors.vermilion}
               />
             </View>
             <View style={styles.tunerWrapper}>
@@ -150,6 +153,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 size="compact"
                 variant="light"
                 showGlassOverlay
+                labelColor={Colors.vermilion}
               />
             </View>
           </View>

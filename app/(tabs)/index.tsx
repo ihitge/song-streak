@@ -9,6 +9,7 @@ import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
+import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
 import { instrumentOptions, genreOptions } from '@/config/filterOptions';
 import { useSearch } from '@/hooks/useSearch';
 import { useFABSound } from '@/hooks/useFABSound';
@@ -91,7 +92,12 @@ const SongCard = ({ song, onDelete, onPress }: {
             {song.artwork ? (
               <>
                 <Image source={{ uri: song.artwork }} style={styles.thumbnailImage} />
-                <GlassOverlay width={58} height={58} borderRadius={8} glareOpacity={0.15} specularOpacity={0.225} />
+                {/* Layer 1: Inset shadow for recessed depth */}
+                <InsetShadowOverlay width={58} height={58} borderRadius={8} insetDepth={5} shadowIntensity={0.7} variant="dark" />
+                {/* Layer 2: Glass overlay */}
+                <GlassOverlay width={58} height={58} borderRadius={8} glareOpacity={0.15} specularOpacity={0.225} variant="dark" />
+                {/* Layer 3: Surface texture for dust/scratches */}
+                <SurfaceTextureOverlay width={58} height={58} borderRadius={8} textureOpacity={0.025} variant="dark" />
               </>
             ) : (
               <Music size={24} color={Colors.graphite} />
@@ -287,7 +293,7 @@ export default function SetListScreen() {
         recentSuggestions={recentSuggestions}
         instrumentFilter={
           <FrequencyTuner
-            label="INST"
+            label="INSTRUMENT"
             value={instrument}
             onChange={setInstrument}
             options={instrumentOptions}

@@ -3,6 +3,7 @@ import { View, StyleSheet, LayoutChangeEvent, ViewStyle } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
 import { Colors } from '@/constants/Colors';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
+import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
 
 interface InsetWindowProps {
   variant: 'dark' | 'light';
@@ -72,15 +73,36 @@ export const InsetWindow: React.FC<InsetWindowProps> = ({
         {children}
       </View>
 
-      {/* Enhanced glass overlay */}
+      {/* Enhanced overlays for realism */}
       {showGlassOverlay && (
-        <GlassOverlay
-          width={width}
-          height={height}
-          borderRadius={borderRadius}
-          glareOpacity={0.175}
-          specularOpacity={0.25}
-        />
+        <>
+          {/* Layer 1: Inset shadow for recessed depth */}
+          <InsetShadowOverlay
+            width={width}
+            height={height}
+            borderRadius={borderRadius}
+            insetDepth={10}
+            shadowIntensity={1.0}
+            variant={variant}
+          />
+          {/* Layer 2: Glass overlay */}
+          <GlassOverlay
+            width={width}
+            height={height}
+            borderRadius={borderRadius}
+            glareOpacity={0.175}
+            specularOpacity={0.25}
+            variant={variant}
+          />
+          {/* Layer 3: Surface texture for dust/scratches */}
+          <SurfaceTextureOverlay
+            width={width}
+            height={height}
+            borderRadius={borderRadius}
+            textureOpacity={0.04}
+            variant={variant}
+          />
+        </>
       )}
     </View>
   );

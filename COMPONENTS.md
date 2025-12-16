@@ -36,6 +36,8 @@
 | `InsetWindow` | **Reusable Skia inset window (dark/light variants)** | `components/ui/InsetWindow.tsx` |
 | `LEDIndicator` | **Skeuomorphic LED with metal bezel and bloom** | `components/skia/primitives/LEDIndicator.tsx` |
 | `GlassOverlay` | **Skia-based glass effect overlay (glare, specular highlight, bezel)** | `components/ui/GlassOverlay.tsx` |
+| `InsetShadowOverlay` | **Recessed depth effect via edge gradients** | `components/skia/primitives/InsetShadowOverlay.tsx` |
+| `SurfaceTextureOverlay` | **Noise/grain texture for dust/scratches on glass** | `components/skia/primitives/SurfaceTextureOverlay.tsx` |
 
 ### Hooks
 
@@ -168,21 +170,29 @@ interface GangSwitchProps<T extends string> {
 **Props**:
 ```typescript
 interface FrequencyTunerProps<T extends string> {
-  label: string; // Label above the tuner (increased to 10px)
-  value: T;      // Current selected value (value text increased to 10px)
+  label: string;              // Label above the tuner (left-aligned)
+  value: T;                   // Current selected value
   options: FilterOption<T>[];
   onChange: (val: T) => void;
   disabled?: boolean;
+  variant?: 'dark' | 'light'; // Default: 'dark'
+  showGlassOverlay?: boolean; // Enable enhanced glass effects
+  labelColor?: string;        // Custom label color (default: Colors.warmGray)
 }
 ```
 
 **Visual Behavior**:
 - **Height**: Reduced to 38px.
-- Dark window with scale markings
-- "Glass" reflection overlay
+- Dark window with scale markings (or light variant for metronome)
+- "Glass" reflection overlay with optional enhanced effects
 - Orange hairline indicator
+- **Label**: Left-aligned, warmGray by default (use `labelColor` for custom color)
 - **Animated Text**: Value text animates with a "glitchy" slide from the side when changed.
 - Audio + haptic feedback on chevron taps (`useClickSound` hook)
+
+**Variant Support**:
+- `dark`: Dark background (#2a2a2a), light text - default for most uses
+- `light`: Light background (softWhite), charcoal text - used in metronome
 
 ---
 
@@ -232,9 +242,9 @@ interface LibraryHeaderProps {
 ```
 
 **Visual Behavior**:
-- **Top Bar**: "SongStreak" logo (MomoTrustDisplay, deepSpaceBlue) + page title + User Avatar/Logout
+- **Top Bar**: "SongStreak" logo (MomoTrustDisplay, deepSpaceBlue) + User Avatar/Logout
 - **Filter Deck**: Two-row grid configuration
-  - Row 1: Search Widget
+  - Row 1: Search Widget (no label, placeholder: "Search songs...")
   - Row 2: Instrument Widget | Genre Widget
 - **Search Widget**: Flat, recessed input. Height reduced to 38px.
 
@@ -787,6 +797,7 @@ interface GlassOverlayProps {
   borderRadius?: number;      // Default: 6
   glareOpacity?: number;      // Glare intensity (default: 0.175)
   specularOpacity?: number;   // Specular highlight intensity (default: 0.25)
+  variant?: 'light' | 'dark'; // Default: 'light' - adjusts intensity for background
 }
 ```
 
@@ -795,6 +806,10 @@ interface GlassOverlayProps {
 - **Specular highlight**: Circular bright spot in top-left area (like a light source reflection)
 - **Bezel edges**: 3D depth with light top/left borders, dark bottom/right borders
 - **pointerEvents="none"**: Touch events pass through to controls underneath
+
+**Variant Support**:
+- `light`: Full opacity glare/specular for light backgrounds
+- `dark`: Reduced opacity (specular 40%, glare 70%) for dark backgrounds
 
 **Usage**:
 ```typescript
@@ -822,7 +837,166 @@ import { GlassOverlay } from '@/components/ui/GlassOverlay';
 
 ---
 
+### InsetShadowOverlay
+
+**Purpose**: Creates recessed depth effect via edge gradients, simulating a bezel casting shadow onto the content surface. Use this below GlassOverlay to make content appear to sit 5mm behind the plastic frame.
+
+**Location**: `components/skia/primitives/InsetShadowOverlay.tsx`
+
+**Props**:
+```typescript
+interface InsetShadowOverlayProps {
+  width: number;              // Width in pixels (required)
+  height: number;             // Height in pixels (required)
+  borderRadius?: number;      // Default: 6
+  insetDepth?: number;        // Shadow spread in pixels (default: 8)
+  shadowIntensity?: number;   // 0-1 multiplier (default: 1.0)
+  variant?: 'light' | 'dark'; // Default: 'light' - adjusts highlight visibility
+}
+```
+
+**Visual Behavior**:
+- **Top edge**: Strongest shadow (0.35 opacity) - light blocked by bezel
+- **Left edge**: Medium shadow (0.25 opacity)
+- **Bottom edge**: Subtle highlight (light: 0.15, dark: 0.25 opacity) - bounced light
+- **Right edge**: Lightest (light: 0.08, dark: 0.15 opacity)
+
+**Dark Variant**: Increases bottom/right highlight opacity for visibility on dark backgrounds (#2a2a2a)
+
+**Size Adaptation Guidelines**:
+| Component Size | insetDepth | shadowIntensity |
+|----------------|------------|-----------------|
+| Small (<40px)  | 4-5px      | 0.7             |
+| Medium (40-100px) | 6-8px   | 0.9             |
+| Large (>100px) | 10-12px    | 1.0             |
+
+**Usage**:
+```typescript
+import { InsetShadowOverlay } from '@/components/skia/primitives';
+
+// Layer BELOW GlassOverlay
+<InsetShadowOverlay
+  width={200}
+  height={44}
+  borderRadius={6}
+  insetDepth={6}
+  shadowIntensity={0.9}
+/>
+```
+
+---
+
+### SurfaceTextureOverlay
+
+**Purpose**: Adds subtle dust/grain texture using FractalNoise shader to simulate glass imperfections. Use this above GlassOverlay to make surfaces feel physical rather than digital.
+
+**Location**: `components/skia/primitives/SurfaceTextureOverlay.tsx`
+
+**Props**:
+```typescript
+interface SurfaceTextureOverlayProps {
+  width: number;              // Width in pixels (required)
+  height: number;             // Height in pixels (required)
+  borderRadius?: number;      // Default: 6
+  textureOpacity?: number;    // 0-1, very subtle (default: 0.03)
+  variant?: 'light' | 'dark'; // Default: 'light' - adjusts opacity and blend mode
+}
+```
+
+**Visual Behavior**:
+- Uses Skia `FractalNoise` shader
+- **Light variant**: `softLight` blend mode, base opacity
+- **Dark variant**: `overlay` blend mode, 1.5x opacity for visibility
+- Very subtle effect (2-4% opacity recommended)
+- Fixed seed (42) ensures consistent appearance across renders
+
+**Usage**:
+```typescript
+import { SurfaceTextureOverlay } from '@/components/skia/primitives';
+
+// Layer ABOVE GlassOverlay
+<SurfaceTextureOverlay
+  width={200}
+  height={44}
+  borderRadius={6}
+  textureOpacity={0.03}
+/>
+```
+
+---
+
+### Complete Overlay Stack
+
+For full skeuomorphic realism, use all three overlays in this order (back to front):
+
+```typescript
+import { GlassOverlay } from '@/components/ui/GlassOverlay';
+import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
+
+<View style={{ position: 'relative' }}>
+  <YourContent />
+  {/* Layer 1: Inset shadow (shadow cast BY bezel ONTO content) */}
+  <InsetShadowOverlay width={200} height={44} insetDepth={6} shadowIntensity={0.9} />
+  {/* Layer 2: Glass effect (glare + specular on glass surface) */}
+  <GlassOverlay width={200} height={44} glareOpacity={0.2} specularOpacity={0.3} />
+  {/* Layer 3: Surface texture (dust/scratches ON TOP of glass) */}
+  <SurfaceTextureOverlay width={200} height={44} textureOpacity={0.03} />
+</View>
+```
+
+---
+
 *Last updated: Dec 16, 2025*
+
+## Dec 16, 2025 Changes
+
+### Label & Styling Updates
+
+**FrequencyTuner**:
+- Default label color changed from vermilion to warmGray (matches RotaryKnob)
+- Added `labelColor` prop for custom label colors
+- Labels now left-aligned (was centered)
+- Metronome FrequencyTuners (TIME, SOUND, SUBDIVISION) use `labelColor={Colors.vermilion}`
+
+**LibraryHeader**:
+- Removed "FIND" label from search input
+- Instrument filter label changed from "INST" to "INSTRUMENT"
+
+**GlassOverlay**:
+- Added `variant` prop ('light' | 'dark')
+- Dark variant reduces specular (40%) and glare (70%) for visibility on dark backgrounds
+
+**InsetShadowOverlay & SurfaceTextureOverlay**:
+- Both now support `variant` prop for dark/light theme adaptation
+- Dark variant adjusts opacity and blend modes for visibility
+
+**Album Art Thumbnails**:
+- Now use `variant="dark"` on all overlays for proper effect on dark album images
+
+### Enhanced Skeuomorphic Overlays
+
+**InsetShadowOverlay** (`components/skia/primitives/InsetShadowOverlay.tsx`)
+- Creates recessed depth via 4 edge gradients
+- Top/left edges: dark shadows (bezel blocks light)
+- Bottom/right edges: subtle highlights (bounced light)
+- Props: `insetDepth`, `shadowIntensity`, `variant` for size/theme adaptation
+- Dark variant: increases highlight opacity (0.25/0.15 vs 0.15/0.08) for visibility
+
+**SurfaceTextureOverlay** (`components/skia/primitives/SurfaceTextureOverlay.tsx`)
+- Adds dust/grain texture using Skia FractalNoise shader
+- Props: `textureOpacity`, `variant` for theme adaptation
+- Light variant: `softLight` blend mode, base opacity
+- Dark variant: `overlay` blend mode, 1.5x opacity for visibility
+
+**Integration**:
+All components using GlassOverlay now include the full overlay stack:
+1. InsetShadowOverlay (below glass)
+2. GlassOverlay (existing)
+3. SurfaceTextureOverlay (on top of glass)
+
+Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (DigitWheel), Song thumbnails
+
+---
 
 ## Dec 15, 2025 Changes
 

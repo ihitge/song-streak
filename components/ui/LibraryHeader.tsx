@@ -70,7 +70,6 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
         <View style={[styles.filterRow, { zIndex: 10 }]}>
           <View style={styles.filterCell}>
             <View style={styles.widgetContainer}>
-              <Text style={styles.label}>FIND</Text>
               <View style={styles.searchRow}>
                 <Search size={16} color={Colors.graphite} style={styles.searchIcon} />
                 <TextInput

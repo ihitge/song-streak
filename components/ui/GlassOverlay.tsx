@@ -13,10 +13,12 @@ interface GlassOverlayProps {
   width: number;
   height: number;
   borderRadius?: number;
-  /** Opacity of the glare highlight (default: 0.35) */
+  /** Opacity of the glare highlight (default: 0.175) */
   glareOpacity?: number;
-  /** Opacity of the specular highlight (default: 0.5) */
+  /** Opacity of the specular highlight (default: 0.25) */
   specularOpacity?: number;
+  /** Theme variant - dark reduces specular intensity */
+  variant?: 'light' | 'dark';
 }
 
 /**
@@ -37,7 +39,13 @@ export const GlassOverlay: React.FC<GlassOverlayProps> = ({
   borderRadius = 6,
   glareOpacity = 0.175,
   specularOpacity = 0.25,
+  variant = 'light',
 }) => {
+  const isDark = variant === 'dark';
+  // Dark variant: reduce specular intensity to avoid harsh bright spot on dark backgrounds
+  const effectiveSpecularOpacity = isDark ? specularOpacity * 0.4 : specularOpacity;
+  const effectiveGlareOpacity = isDark ? glareOpacity * 0.7 : glareOpacity;
+
   return (
     <View
       pointerEvents="none"
@@ -52,8 +60,8 @@ export const GlassOverlay: React.FC<GlassOverlayProps> = ({
             start={vec(0, 0)}
             end={vec(0, height)}
             colors={[
-              `rgba(255, 255, 255, ${glareOpacity})`,
-              `rgba(255, 255, 255, ${glareOpacity * 0.3})`,
+              `rgba(255, 255, 255, ${effectiveGlareOpacity})`,
+              `rgba(255, 255, 255, ${effectiveGlareOpacity * 0.3})`,
               'rgba(255, 255, 255, 0)',
               'rgba(0, 0, 0, 0.1)',
             ]}
@@ -67,7 +75,7 @@ export const GlassOverlay: React.FC<GlassOverlayProps> = ({
             c={vec(width * 0.25, height * 0.3)}
             r={width * 0.2}
             colors={[
-              `rgba(255, 255, 255, ${specularOpacity})`,
+              `rgba(255, 255, 255, ${effectiveSpecularOpacity})`,
               'rgba(255, 255, 255, 0)',
             ]}
           />

@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
+import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
 
 interface RamsTapeCounterDisplayProps {
   seconds: number;
@@ -102,13 +103,28 @@ const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, com
         style={styles.digitInnerShadow}
         pointerEvents="none"
       />
-      {/* Glass overlay on individual digit */}
+      {/* Layer 1: Inset shadow for recessed depth */}
+      <InsetShadowOverlay
+        width={width}
+        height={height}
+        borderRadius={borderRadius}
+        insetDepth={compact ? 4 : 5}
+        shadowIntensity={0.7}
+      />
+      {/* Layer 2: Glass overlay on individual digit */}
       <GlassOverlay
         width={width}
         height={height}
         borderRadius={borderRadius}
         glareOpacity={0.2}
         specularOpacity={0.3}
+      />
+      {/* Layer 3: Surface texture for dust/scratches */}
+      <SurfaceTextureOverlay
+        width={width}
+        height={height}
+        borderRadius={borderRadius}
+        textureOpacity={0.025}
       />
     </View>
   );

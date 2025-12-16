@@ -7,6 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { useRotaryKnobSound } from '@/hooks/useRotaryKnobSound';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
+import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
 import type { RotaryKnobProps } from '@/types/filters';
 
 const KNOB_SIZE = 44; // Increased from 38px
@@ -138,15 +139,36 @@ export const RotaryKnob = <T extends string>({
             </Canvas>
           </View>
 
-          {/* Enhanced glass overlay */}
+          {/* Enhanced overlays for realism */}
           {showGlassOverlay && (
-            <GlassOverlay
-              width={readoutWidth}
-              height={READOUT_HEIGHT}
-              borderRadius={6}
-              glareOpacity={0.2}
-              specularOpacity={0.3}
-            />
+            <>
+              {/* Layer 1: Inset shadow for recessed depth */}
+              <InsetShadowOverlay
+                width={readoutWidth}
+                height={READOUT_HEIGHT}
+                borderRadius={6}
+                insetDepth={6}
+                shadowIntensity={0.9}
+                variant="dark"
+              />
+              {/* Layer 2: Glass overlay */}
+              <GlassOverlay
+                width={readoutWidth}
+                height={READOUT_HEIGHT}
+                borderRadius={6}
+                glareOpacity={0.2}
+                specularOpacity={0.3}
+                variant="dark"
+              />
+              {/* Layer 3: Surface texture for dust/scratches */}
+              <SurfaceTextureOverlay
+                width={readoutWidth}
+                height={READOUT_HEIGHT}
+                borderRadius={6}
+                textureOpacity={0.03}
+                variant="dark"
+              />
+            </>
           )}
 
           <Animated.View

@@ -8,6 +8,7 @@ import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { useClickSound } from '@/hooks/useClickSound';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
+import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
 import type { FrequencyTunerProps } from '@/types/filters';
 
 type TunerVariant = 'dark' | 'light';
@@ -61,7 +62,8 @@ export const FrequencyTuner = <T extends string>({
   size = 'standard',
   variant = 'dark',
   showGlassOverlay = false,
-}: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean }) => {
+  labelColor,
+}: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean; labelColor?: string }) => {
   const [width, setWidth] = useState(200); // default fallback
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
   const { playSound } = useClickSound();
@@ -104,7 +106,7 @@ export const FrequencyTuner = <T extends string>({
   return (
     <View style={styles.container}>
       {/* Label */}
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, labelColor && { color: labelColor }]}>{label}</Text>
 
       {/* Tuner Window */}
       <View style={[styles.tunerWindow, { height }]} onLayout={handleLayout}>
@@ -192,15 +194,36 @@ export const FrequencyTuner = <T extends string>({
         {/* Inner ring/border effect */}
         <View style={[styles.innerRing, { borderColor: innerRingColor }]} pointerEvents="none" />
 
-        {/* Optional glass overlay for enhanced realism */}
+        {/* Optional enhanced overlays for realism */}
         {showGlassOverlay && (
-          <GlassOverlay
-            width={width}
-            height={height}
-            borderRadius={6}
-            glareOpacity={0.2}
-            specularOpacity={0.3}
-          />
+          <>
+            {/* Layer 1: Inset shadow for recessed depth */}
+            <InsetShadowOverlay
+              width={width}
+              height={height}
+              borderRadius={6}
+              insetDepth={6}
+              shadowIntensity={0.9}
+              variant={variant}
+            />
+            {/* Layer 2: Glass overlay */}
+            <GlassOverlay
+              width={width}
+              height={height}
+              borderRadius={6}
+              glareOpacity={0.2}
+              specularOpacity={0.3}
+              variant={variant}
+            />
+            {/* Layer 3: Surface texture for dust/scratches */}
+            <SurfaceTextureOverlay
+              width={width}
+              height={height}
+              borderRadius={6}
+              textureOpacity={0.03}
+              variant={variant}
+            />
+          </>
         )}
       </View>
     </View>
@@ -214,8 +237,8 @@ const styles = StyleSheet.create({
   },
   label: {
     ...Typography.label,
-    textAlign: 'center',
-    color: Colors.vermilion,
+    textAlign: 'left',
+    color: Colors.warmGray,
   },
   tunerWindow: {
     borderRadius: 6,
