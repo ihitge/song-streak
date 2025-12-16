@@ -830,6 +830,18 @@ import { InsetWindow } from '@/components/ui/InsetWindow';
 - LED colors brightened for better visibility: orange `#FF6B35`, green `#16A34A`
 - Removed downbeat triangle marker (▼) - orange LED alone distinguishes beat 1
 
+**VUMeterDisplay Needle Improvements**
+- Thinner needle: 4px → 3px (standard), 3px → 2px (compact)
+- Tapered tip using borderRadius (3px top corners, 1px bottom)
+- Skeuomorphic depth with cylindrical gradient simulating rounded metal:
+  - 5-color gradient: `['#cc3300', Colors.vermilion, '#ff8866', Colors.vermilion, '#cc3300']`
+- Drop shadow for depth: `shadowOffset: {1, 2}`, `shadowOpacity: 0.5`
+- Left edge highlight: `borderLeftWidth: 0.5`, `borderLeftColor: rgba(255,255,255,0.3)`
+
+**MetronomePanel Spacing**
+- Increased gap between FrequencyTuners: 6px → 11px
+- Reduced headerContainer marginBottom: 12px → 8px (compact: 8px → 6px)
+
 ### Previous Changes (Dec 14, 2025)
 - Added sound type selector (click, snare, bass, hihat) to MetronomePanel
 - Moved subdivision control into MetronomePanel header

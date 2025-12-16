@@ -195,7 +195,8 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
             ]}
           >
             <LinearGradient
-              colors={[Colors.vermilion, '#cc3300']}
+              colors={['#cc3300', Colors.vermilion, '#ff8866', Colors.vermilion, '#cc3300']}
+              locations={[0, 0.2, 0.5, 0.8, 1]}
               style={styles.needleBody}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
@@ -339,18 +340,30 @@ const styles = StyleSheet.create({
   needle: {
     position: 'absolute',
     bottom: 6,
-    width: 4,
+    width: 3,
     height: 72,
     transformOrigin: 'bottom center',
+    // Drop shadow for depth
+    shadowColor: 'rgba(0,0,0,0.6)',
+    shadowOffset: { width: 1, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 3,
   },
   needleCompact: {
     height: 52,
-    width: 3,
+    width: 2,
   },
   needleBody: {
     flex: 1,
     width: '100%',
-    borderRadius: 2,
+    borderTopLeftRadius: 3,
+    borderTopRightRadius: 3,
+    borderBottomLeftRadius: 1,
+    borderBottomRightRadius: 1,
+    // Highlight edge for 3D effect
+    borderLeftWidth: 0.5,
+    borderLeftColor: 'rgba(255,255,255,0.3)',
   },
   pivotScrew: {
     width: 16,
