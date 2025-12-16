@@ -39,7 +39,7 @@ export default function AccountScreen() {
 
   return (
     <View style={styles.container}>
-      <PageHeader subtitle="ACCOUNT" />
+      <PageHeader />
 
       <View style={styles.content}>
         <GangSwitch

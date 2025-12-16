@@ -6,7 +6,7 @@ import { Colors } from '@/constants/Colors';
 export default function StreaksScreen() {
   return (
     <View style={styles.container}>
-      <PageHeader subtitle="STREAKS" />
+      <PageHeader />
       <View style={styles.content}>
         <Text style={styles.placeholder}>Streaks coming soon</Text>
       </View>

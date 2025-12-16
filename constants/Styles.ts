@@ -12,15 +12,6 @@ export const Typography = StyleSheet.create({
     marginBottom: 4,
   },
 
-  // Page titles
-  pageSubtitle: {
-    fontSize: 12,
-    fontFamily: 'LexendDecaRegular',
-    textTransform: 'uppercase',
-    letterSpacing: 3,
-    color: Colors.warmGray,
-  },
-
   // Song card typography
   songTitle: {
     fontFamily: 'LexendDecaBold',

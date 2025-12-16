@@ -10,7 +10,6 @@ import { useClickSound } from '@/hooks/useClickSound';
 import { useAuth } from '@/ctx/AuthContext';
 
 interface PageHeaderProps {
-  subtitle: string;
   children?: ReactNode;
 }
 
@@ -27,7 +26,6 @@ const getInitials = (email?: string | null): string => {
 };
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
-  subtitle,
   children,
 }) => {
   const { handleSignOut } = useSignOut();
@@ -61,7 +59,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {/* Left */}
         <View>
           <Text style={styles.h1Title}>SongStreak</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
 
         {/* Right (Controls) */}
@@ -98,7 +95,6 @@ const styles = StyleSheet.create({
     borderBottomColor: 'white',
   },
   h1Title: Typography.appLogo,
-  subtitle: Typography.pageSubtitle,
   topBarControls: {
     flexDirection: 'row',
     alignItems: 'center',

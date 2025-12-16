@@ -120,10 +120,10 @@ const styles = StyleSheet.create({
     elevation: 8, // For Android
   },
   labelText: {
-    fontSize: 9, // text-[9px]
-    textTransform: 'uppercase', // uppercase
-    fontWeight: 'bold', // bold
-    letterSpacing: 2, // tracking-wider (approx)
+    fontSize: 9,
+    textTransform: 'uppercase',
+    fontWeight: 'bold',
+    letterSpacing: 2,
     marginTop: 5,
     color: '#333',
   },

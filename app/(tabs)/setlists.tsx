@@ -6,7 +6,7 @@ import { Colors } from '@/constants/Colors';
 export default function SetlistsScreen() {
   return (
     <View style={styles.container}>
-      <PageHeader subtitle="SETLISTS" />
+      <PageHeader />
       <View style={styles.content}>
         <Text style={styles.placeholder}>Setlists coming soon</Text>
       </View>

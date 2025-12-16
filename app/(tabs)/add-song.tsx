@@ -436,7 +436,7 @@ export default function AddSongScreen() {
 
   return (
     <View style={styles.container}>
-      <PageHeader subtitle={isEditMode ? (isEditing ? "EDIT SONG" : "VIEW SONG") : "ADD SONG"} />
+      <PageHeader />
 
       {/* Edit button for view mode */}
       {isEditMode && !isEditing && !isLoadingSong && (

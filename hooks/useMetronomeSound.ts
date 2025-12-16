@@ -1,7 +1,6 @@
 import { Audio } from 'expo-av';
 import { useEffect, useRef, useCallback } from 'react';
 import { MetronomeSoundType } from '@/types/metronome';
-import { METRONOME_VOLUMES } from '@/constants/Audio';
 
 // Import all metronome sound files statically
 const clickAccent = require('@/assets/audio/sound-click-04.wav');
@@ -32,10 +31,10 @@ interface UseMetronomeSoundOptions {
 }
 
 interface UseMetronomeSoundReturn {
-  playAccent: () => Promise<void>;
-  playTick: () => Promise<void>;
-  playSubdivision: () => Promise<void>;
-  playDrumBeat: (beat: number) => Promise<void>;
+  playAccent: () => void;
+  playTick: () => void;
+  playSubdivision: () => void;
+  playDrumBeat: (beat: number) => void;
   isLoaded: boolean;
 }
 
@@ -204,33 +203,26 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
 
   /**
    * Play a sound from a pool using round-robin
+   * CRITICAL: Fire-and-forget pattern for precise timing - no awaits!
    * Note: Metronome sounds always play, regardless of UI sound settings
    */
   const playFromPool = useCallback(
-    async (pool: SoundPool, volume: number = 1.0) => {
+    (pool: SoundPool) => {
       const sounds = pool.sounds;
-      if (sounds.length === 0) {
-        console.warn('Sound pool not loaded');
-        return;
-      }
+      if (sounds.length === 0) return;
 
       const currentIndex = pool.currentIndex;
       const sound = sounds[currentIndex];
+      if (!sound) return;
 
-      if (!sound) {
-        console.warn('Sound instance not available');
-        return;
-      }
+      // Fire and forget - seek to start then play, no awaiting
+      sound.setPositionAsync(0).then(() => {
+        sound.playAsync();
+      }).catch(() => {
+        // Silent catch - don't block on errors
+      });
 
-      try {
-        await sound.setVolumeAsync(volume);
-        await sound.stopAsync();
-        await sound.playAsync();
-      } catch (error) {
-        console.error('Failed to play sound:', error);
-      }
-
-      // Move to next sound in pool (round-robin)
+      // Move to next sound in pool immediately (round-robin)
       pool.currentIndex = (currentIndex + 1) % POOL_SIZE;
     },
     []
@@ -238,31 +230,34 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
 
   /**
    * Play accent sound (for downbeat/beat 1)
+   * Synchronous - fire and forget for precise timing
    */
-  const playAccent = useCallback(async () => {
+  const playAccent = useCallback(() => {
     const pools = allPools.current.get(soundType);
     if (pools) {
-      await playFromPool(pools.accent, METRONOME_VOLUMES.accent);
+      playFromPool(pools.accent);
     }
   }, [soundType, playFromPool]);
 
   /**
    * Play tick sound (for regular beats)
+   * Synchronous - fire and forget for precise timing
    */
-  const playTick = useCallback(async () => {
+  const playTick = useCallback(() => {
     const pools = allPools.current.get(soundType);
     if (pools) {
-      await playFromPool(pools.tick, METRONOME_VOLUMES.tick);
+      playFromPool(pools.tick);
     }
   }, [soundType, playFromPool]);
 
   /**
    * Play subdivision sound (for subdivision clicks)
+   * Synchronous - fire and forget for precise timing
    */
-  const playSubdivision = useCallback(async () => {
+  const playSubdivision = useCallback(() => {
     const pools = allPools.current.get(soundType);
     if (pools) {
-      await playFromPool(pools.subdivision, METRONOME_VOLUMES.subdivision);
+      playFromPool(pools.subdivision);
     }
   }, [soundType, playFromPool]);
 
@@ -271,25 +266,26 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
    * - Hi-hat on all beats
    * - Kick on beats 1 & 3
    * - Snare on beats 2 & 4
+   * Synchronous - all sounds fire immediately for precise timing
    */
-  const playDrumBeat = useCallback(async (beat: number) => {
+  const playDrumBeat = useCallback((beat: number) => {
     const hihatPools = allPools.current.get('hihat');
     const kickPools = allPools.current.get('bass');
     const snarePools = allPools.current.get('snare');
 
     // Always play hi-hat
     if (hihatPools) {
-      playFromPool(hihatPools.tick, METRONOME_VOLUMES.tick);
+      playFromPool(hihatPools.tick);
     }
 
     // Kick on beats 1 & 3, Snare on beats 2 & 4
     if (beat === 1 || beat === 3) {
       if (kickPools) {
-        playFromPool(kickPools.tick, METRONOME_VOLUMES.accent);
+        playFromPool(kickPools.tick);
       }
     } else if (beat === 2 || beat === 4) {
       if (snarePools) {
-        playFromPool(snarePools.tick, METRONOME_VOLUMES.accent);
+        playFromPool(snarePools.tick);
       }
     }
   }, [playFromPool]);

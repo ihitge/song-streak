@@ -112,7 +112,7 @@ export default function PracticeScreen() {
 
   return (
     <View style={styles.container}>
-      <PageHeader subtitle="STREAK" />
+      <PageHeader />
 
       <ScrollView
         contentContainerStyle={styles.content}

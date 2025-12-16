@@ -149,15 +149,16 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
             newBeat = 1;
           }
 
-          // Call handleTick with new values
-          setTimeout(() => handleTick(newBeat, 1), 0);
+          // Call handleTick immediately - no setTimeout for precise timing
+          handleTick(newBeat, 1);
 
           return newBeat;
         });
       } else {
         // Just a subdivision tick
         setCurrentBeat((prevBeat) => {
-          setTimeout(() => handleTick(prevBeat, newSubTick), 0);
+          // Call handleTick immediately - no setTimeout for precise timing
+          handleTick(prevBeat, newSubTick);
           return prevBeat;
         });
       }

@@ -96,7 +96,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   const beatMarkers = useMemo(() => {
     // Generate beat markers based on beats per measure
     const markers = [];
-    for (let i = 1; i <= Math.min(beatsPerMeasure, 5); i++) {
+    for (let i = 1; i <= beatsPerMeasure; i++) {
       markers.push({
         label: String(i),
         beat: i,
@@ -157,10 +157,10 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
                   <LEDIndicator
                     size={compact ? 12 : 16}
                     isActive={isLedActiveForBeat(marker.beat)}
-                    color={marker.beat === 1 ? Colors.vermilion : Colors.moss}
+                    color={marker.beat === 1 ? '#FF6B35' : '#16A34A'}
                   />
                   <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
-                    {marker.beat === 1 ? '▼' : '·'}
+                    ·
                   </Text>
                 </View>
               ))
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   markerLabel: {
     fontFamily: 'LexendDecaBold',
     fontSize: 24,
-    color: Colors.charcoal,
+    color: Colors.warmGray,
   },
   markerLabelCompact: {
     fontSize: 18,

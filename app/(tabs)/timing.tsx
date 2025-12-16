@@ -105,7 +105,7 @@ export default function TimingScreen() {
 
   return (
     <View style={styles.container}>
-      <PageHeader subtitle="METRONOME" />
+      <PageHeader />
 
       {/* Metronome Panel - centered in available space */}
       <View style={styles.metronomeSection}>

@@ -99,14 +99,13 @@ Import: `import { Colors } from '@/constants/Colors';`
 
 ### PageHeader
 
-**Purpose**: Reusable page header component with SongStreak logo, page subtitle, and user controls. Use this for all new pages to ensure consistent branding.
+**Purpose**: Reusable page header component with SongStreak logo and user controls. Use this for all new pages to ensure consistent branding.
 
 **Location**: `components/ui/PageHeader.tsx`
 
 **Props**:
 ```typescript
 interface PageHeaderProps {
-  subtitle: string;    // Page title (e.g., "LIBRARY", "ADD SONG")
   children?: ReactNode; // Optional content below header (e.g., filter deck)
 }
 ```
@@ -114,17 +113,16 @@ interface PageHeaderProps {
 **Usage**:
 ```typescript
 // Basic page
-<PageHeader subtitle="PAGE NAME" />
+<PageHeader />
 
 // Page with additional content below header
-<PageHeader subtitle="LIBRARY">
+<PageHeader>
   <FilterDeck>...</FilterDeck>
 </PageHeader>
 ```
 
 **Visual Behavior**:
 - SongStreak logo (MomoTrustDisplay, deepSpaceBlue)
-- Page subtitle (uppercase, warmGray)
 - User avatar button - displays user initials from email, navigates to `/account` on tap
 - Logout button with audio + haptic feedback (uses `useSignOut` hook)
 
@@ -812,6 +810,25 @@ import { InsetWindow } from '@/components/ui/InsetWindow';
 - Light variant inner shadow: 0.25 → 0.40 (darker bottom)
 - Light variant glass overlay: Changed from dark (0.08 black) to bright (0.35 white)
 - Scale markings in light FrequencyTuner use Colors.charcoal (matches chevrons)
+
+### Changes (Dec 16, 2025)
+
+**Metronome Timing Precision Fix**
+- Eliminated 15-45ms latency from sequential async awaits in sound playback
+- Removed setTimeout wrapper that caused 4-16ms jitter per beat
+- Sound playback now uses fire-and-forget pattern: `setPositionAsync(0).then(() => playAsync())`
+- All play functions (`playAccent`, `playTick`, `playSubdivision`, `playDrumBeat`) are now synchronous
+- Drums mode timing is now consistent across all beats including 4→1 transition
+
+**PageHeader Simplification**
+- Removed `subtitle` prop - page titles no longer displayed under logo
+- Updated all pages to use `<PageHeader />` without subtitle
+
+**VUMeterDisplay Beat Indicator Updates**
+- Beat indicators now support 6/8 and 7/8 time signatures (removed 5-beat cap)
+- Beat numbers changed from charcoal to warmGray
+- LED colors brightened for better visibility: orange `#FF6B35`, green `#16A34A`
+- Removed downbeat triangle marker (▼) - orange LED alone distinguishes beat 1
 
 ### Previous Changes (Dec 14, 2025)
 - Added sound type selector (click, snare, bass, hihat) to MetronomePanel
