@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     paddingHorizontal: 4,
-    gap: 6,
+    gap: 11,
   },
   tunerWrapper: {
     flex: 1,

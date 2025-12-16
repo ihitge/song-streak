@@ -263,10 +263,10 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   headerContainerCompact: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   vuLabel: {
     fontFamily: 'LexendDecaBold',
