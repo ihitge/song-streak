@@ -5,7 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Edit2 } from 'lucide-react-native';
+import { TheorySection, TheoryMetricsRow, TheoryChipGroup, TheoryChordSection, AddChordModal } from '@/components/ui/theory';
+import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Edit2, Guitar } from 'lucide-react-native';
 import { FilterOption, Instrument } from '@/types/filters';
 import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
@@ -85,10 +86,11 @@ export default function AddSongScreen() {
   const [isLoadingLyrics, setIsLoadingLyrics] = useState(false);
   const [achievementModalVisible, setAchievementModalVisible] = useState(false);
   const [practiceCompleteModalVisible, setPracticeCompleteModalVisible] = useState(false);
+  const [addChordModalVisible, setAddChordModalVisible] = useState(false);
   const [lastPracticeSeconds, setLastPracticeSeconds] = useState(0);
   const [newlyUnlockedAchievements, setNewlyUnlockedAchievements] = useState<Achievement[]>([]);
   const { playSound } = useClickSound();
-  const { showError, showSuccess, showWarning, showInfo } = useStyledAlert();
+  const { showError, showSuccess, showWarning, showInfo, showConfirm } = useStyledAlert();
 
   // Practice data hook - only active when viewing an existing song
   const {
@@ -420,6 +422,116 @@ export default function AddSongScreen() {
     }
   };
 
+  // Auto-save chords to database (for existing songs)
+  const autoSaveChords = async (chords: string[]) => {
+    if (!songId) return;
+
+    try {
+      const { error } = await supabase
+        .from('songs')
+        .update({ chords })
+        .eq('id', songId);
+
+      if (error) throw error;
+      // Silent success - no alert needed for auto-save
+    } catch (err) {
+      console.error('Auto-save chords error:', err);
+      showError('Error', 'Failed to save chord changes');
+    }
+  };
+
+  // Add chord to current instrument
+  const handleAddChord = async (chordName: string) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+
+    const currentData = instrumentData[currentInstrument];
+    const newChords = [...(currentData?.theoryData.chords || []), chordName];
+
+    setInstrumentData((prev) => {
+      const current = prev[currentInstrument];
+      if (!current) {
+        // Initialize instrument data if it doesn't exist
+        return {
+          ...prev,
+          [currentInstrument]: {
+            videoUrl: '',
+            title: songTitle,
+            artist: artist,
+            theoryData: {
+              key: '',
+              tempo: '',
+              timeSignature: '4/4',
+              chords: [chordName],
+              scales: [],
+            },
+            practiceData: {
+              techniques: [],
+            },
+            analyzed: false,
+          },
+        };
+      }
+      return {
+        ...prev,
+        [currentInstrument]: {
+          ...current,
+          theoryData: {
+            ...current.theoryData,
+            chords: newChords,
+          },
+        },
+      };
+    });
+
+    // Auto-save if editing existing song
+    if (songId) {
+      await autoSaveChords(newChords);
+    }
+
+    setAddChordModalVisible(false);
+  };
+
+  // Delete chord from current instrument
+  const handleDeleteChord = (chordToDelete: string) => {
+    showConfirm(
+      'Delete Chord',
+      `Remove "${chordToDelete}" from this song?`,
+      async () => {
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await playSound();
+
+        const currentData = instrumentData[currentInstrument];
+        const newChords = (currentData?.theoryData.chords || []).filter(
+          (c) => c !== chordToDelete
+        );
+
+        setInstrumentData((prev) => {
+          const current = prev[currentInstrument];
+          if (!current) return prev;
+          return {
+            ...prev,
+            [currentInstrument]: {
+              ...current,
+              theoryData: {
+                ...current.theoryData,
+                chords: newChords,
+              },
+            },
+          };
+        });
+
+        // Auto-save if editing existing song
+        if (songId) {
+          await autoSaveChords(newChords);
+        }
+      },
+      'Delete',
+      'Cancel',
+      'error'
+    );
+  };
+
   const tabLoadingStates: Record<AddSongTab, boolean> = {
     Basics: false,
     Theory: isAnalyzing,
@@ -641,96 +753,57 @@ export default function AddSongScreen() {
             <ScrollView style={styles.theoryContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.theoryScrollContent}>
               {instrumentData[currentInstrument]?.analyzed ? (
                 <>
-                  {/* Key, Tempo, Time Signature Row */}
-                  <View style={styles.theoryRow}>
-                    <View style={styles.theoryCard}>
-                      <View style={styles.theoryCardHeader}>
-                        <Music size={14} color={Colors.vermilion} />
-                        <Text style={styles.theoryCardLabel}>KEY</Text>
-                      </View>
-                      <Text style={styles.theoryCardValue}>
-                        {instrumentData[currentInstrument]?.theoryData.key || 'Unknown'}
-                      </Text>
-                    </View>
-                    <View style={styles.theoryCard}>
-                      <View style={styles.theoryCardHeader}>
-                        <Clock size={14} color={Colors.vermilion} />
-                        <Text style={styles.theoryCardLabel}>TEMPO</Text>
-                      </View>
-                      <Text style={styles.theoryCardValue}>
-                        {instrumentData[currentInstrument]?.theoryData.tempo || 'Unknown'}
-                      </Text>
-                    </View>
-                    <View style={styles.theoryCard}>
-                      <View style={styles.theoryCardHeader}>
-                        <Hash size={14} color={Colors.vermilion} />
-                        <Text style={styles.theoryCardLabel}>TIME</Text>
-                      </View>
-                      <Text style={styles.theoryCardValue}>
-                        {instrumentData[currentInstrument]?.theoryData.timeSignature || '4/4'}
-                      </Text>
-                    </View>
-                  </View>
+                  {/* SONG METRICS - Key, Tempo, Time Signature */}
+                  <TheorySection label="SONG METRICS">
+                    <TheoryMetricsRow
+                      keyValue={instrumentData[currentInstrument]?.theoryData.key || 'Unknown'}
+                      tempo={instrumentData[currentInstrument]?.theoryData.tempo || 'Unknown'}
+                      timeSignature={instrumentData[currentInstrument]?.theoryData.timeSignature || '4/4'}
+                    />
+                  </TheorySection>
 
-                  {/* Chords Section */}
-                  <View style={styles.theorySection}>
-                    <Text style={styles.theorySectionTitle}>CHORDS</Text>
-                    <View style={styles.chipContainer}>
-                      {instrumentData[currentInstrument]?.theoryData.chords?.length > 0 ? (
-                        instrumentData[currentInstrument]?.theoryData.chords.map((chord, index) => (
-                          <View key={index} style={styles.chip}>
-                            <Text style={styles.chipText}>{chord}</Text>
-                          </View>
-                        ))
-                      ) : (
-                        <Text style={styles.noDataText}>No chords detected</Text>
-                      )}
-                    </View>
-                  </View>
+                  {/* HARMONY - Chords and Scales */}
+                  <TheorySection label="HARMONY">
+                    <TheoryChordSection
+                      label="CHORDS"
+                      chords={instrumentData[currentInstrument]?.theoryData.chords || []}
+                      instrument={currentInstrument.toLowerCase() as 'guitar' | 'bass' | 'drums' | 'piano' | 'vocals'}
+                      chipColor={Colors.vermilion}
+                      emptyText="No chords detected"
+                      editable={true}
+                      onAddChord={() => setAddChordModalVisible(true)}
+                      onDeleteChord={handleDeleteChord}
+                    />
+                    <View style={styles.innerDivider} />
+                    <TheoryChipGroup
+                      label="SCALES"
+                      items={instrumentData[currentInstrument]?.theoryData.scales || []}
+                      chipColor={Colors.deepSpaceBlue}
+                      emptyText="No scales detected"
+                    />
+                  </TheorySection>
 
-                  {/* Scales Section */}
-                  <View style={styles.theorySection}>
-                    <Text style={styles.theorySectionTitle}>SCALES</Text>
-                    <View style={styles.chipContainer}>
-                      {instrumentData[currentInstrument]?.theoryData.scales?.length > 0 ? (
-                        instrumentData[currentInstrument]?.theoryData.scales.map((scale, index) => (
-                          <View key={index} style={[styles.chip, styles.chipScale]}>
-                            <Text style={styles.chipText}>{scale}</Text>
-                          </View>
-                        ))
-                      ) : (
-                        <Text style={styles.noDataText}>No scales detected</Text>
-                      )}
-                    </View>
-                  </View>
-
-                  {/* Techniques Section (moved from Practice) */}
-                  <View style={styles.theorySection}>
-                    <Text style={styles.theorySectionTitle}>TECHNIQUES</Text>
-                    <View style={styles.chipContainer}>
-                      {instrumentData[currentInstrument]?.practiceData.techniques?.length > 0 ? (
-                        instrumentData[currentInstrument]?.practiceData.techniques.map((technique, index) => (
-                          <View key={index} style={[styles.chip, styles.chipTechnique]}>
-                            <Text style={styles.chipText}>{technique}</Text>
-                          </View>
-                        ))
-                      ) : (
-                        <Text style={styles.noDataText}>No techniques detected</Text>
-                      )}
-                    </View>
-                  </View>
-
-                  {/* Strumming Pattern (moved from Practice) */}
-                  {instrumentData[currentInstrument]?.practiceData.strummingPattern && (
-                    <View style={styles.theorySection}>
-                      <Text style={styles.theorySectionTitle}>STRUMMING PATTERN</Text>
-                      <View style={styles.strummingContainer}>
-                        <Text style={styles.strummingText}>
-                          {instrumentData[currentInstrument]?.practiceData.strummingPattern}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
+                  {/* TECHNIQUE - Techniques and Strumming Pattern */}
+                  <TheorySection label="TECHNIQUE">
+                    <TheoryChipGroup
+                      label="TECHNIQUES"
+                      items={instrumentData[currentInstrument]?.practiceData.techniques || []}
+                      chipColor={Colors.moss}
+                      emptyText="No techniques detected"
+                      icon={Guitar}
+                    />
+                    {instrumentData[currentInstrument]?.practiceData.strummingPattern && (
+                      <>
+                        <View style={styles.innerDivider} />
+                        <View style={styles.strummingSection}>
+                          <Text style={styles.strummingLabel}>STRUMMING PATTERN</Text>
+                          <Text style={styles.strummingText}>
+                            {instrumentData[currentInstrument]?.practiceData.strummingPattern}
+                          </Text>
+                        </View>
+                      </>
+                    )}
+                  </TheorySection>
                 </>
               ) : (
                 <View style={styles.noAnalysisContainer}>
@@ -852,6 +925,14 @@ export default function AddSongScreen() {
         visible={practiceCompleteModalVisible}
         seconds={lastPracticeSeconds}
         onClose={() => setPracticeCompleteModalVisible(false)}
+      />
+
+      {/* Add Chord Modal */}
+      <AddChordModal
+        visible={addChordModalVisible}
+        onClose={() => setAddChordModalVisible(false)}
+        onSubmit={handleAddChord}
+        existingChords={instrumentData[currentInstrument]?.theoryData.chords || []}
       />
     </View>
   );
@@ -1034,74 +1115,19 @@ const styles = StyleSheet.create({
     gap: 20,
     paddingBottom: 20,
   },
-  theoryRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
+  innerDivider: {
+    height: 1,
+    backgroundColor: '#c0c0c0',
+    marginVertical: 4,
   },
-  theoryCard: {
-    flex: 1,
-    backgroundColor: Colors.alloy,
-    borderRadius: 8,
-    padding: 12,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-    borderColor: '#d0d0d0',
+  strummingSection: {
+    gap: 10,
   },
-  theoryCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 8,
-  },
-  theoryCardLabel: {
-    fontSize: 10,
-    fontFamily: 'LexendDecaSemiBold',
-    color: Colors.warmGray,
-    letterSpacing: 1,
-  },
-  theoryCardValue: {
-    fontSize: 16,
-    fontFamily: 'LexendDecaBold',
-    color: Colors.charcoal,
-  },
-  theorySection: {
-    marginBottom: 20,
-  },
-  theorySectionTitle: {
+  strummingLabel: {
     fontSize: 10,
     fontFamily: 'LexendDecaSemiBold',
     color: Colors.warmGray,
     letterSpacing: 2,
-    marginBottom: 10,
-  },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    backgroundColor: Colors.vermilion,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  chipScale: {
-    backgroundColor: Colors.deepSpaceBlue,
-  },
-  chipTechnique: {
-    backgroundColor: Colors.moss,
-  },
-  chipText: {
-    fontSize: 12,
-    fontFamily: 'LexendDecaSemiBold',
-    color: '#FFFFFF',
-  },
-  noDataText: {
-    fontSize: 12,
-    fontFamily: 'LexendDecaRegular',
-    color: Colors.graphite,
-    fontStyle: 'italic',
   },
   noAnalysisContainer: {
     flex: 1,
@@ -1142,14 +1168,6 @@ const styles = StyleSheet.create({
     color: Colors.graphite,
     textAlign: 'center',
     lineHeight: 18,
-  },
-  strummingContainer: {
-    backgroundColor: Colors.alloy,
-    borderRadius: 8,
-    padding: 16,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-    borderColor: '#d0d0d0',
   },
   strummingText: {
     fontSize: 20,

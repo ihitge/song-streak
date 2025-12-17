@@ -38,6 +38,15 @@
 | `GlassOverlay` | **Skia-based glass effect overlay (glare, specular highlight, bezel)** | `components/ui/GlassOverlay.tsx` |
 | `InsetShadowOverlay` | **Recessed depth effect via edge gradients** | `components/skia/primitives/InsetShadowOverlay.tsx` |
 | `SurfaceTextureOverlay` | **Noise/grain texture for dust/scratches on glass** | `components/skia/primitives/SurfaceTextureOverlay.tsx` |
+| `TheorySection` | **Section container with label + alloy content box** | `components/ui/theory/TheorySection.tsx` |
+| `TheoryMetricsRow` | **3-column display for Key, Tempo, Time Signature** | `components/ui/theory/TheoryMetricsRow.tsx` |
+| `TheoryChipGroup` | **Labeled chip container for chords/scales/techniques** | `components/ui/theory/TheoryChipGroup.tsx` |
+| `TheoryChordSection` | **Interactive chord chips with add/delete + diagram modal** | `components/ui/theory/TheoryChordSection.tsx` |
+| `ChordChartModal` | **Full-screen chord diagram modal** | `components/ui/theory/ChordChartModal.tsx` |
+| `AddChordModal` | **Modal for manually adding chords** | `components/ui/theory/chords/AddChordModal.tsx` |
+| `GuitarChordDiagram` | **Skia-based guitar chord visualization** | `components/ui/theory/chords/GuitarChordDiagram.tsx` |
+| `ChordVisualization` | **Unified chord diagram wrapper (multi-instrument)** | `components/ui/theory/chords/ChordVisualization.tsx` |
+| `ChordChip` | **Tappable chord chip with diagram indicator + delete** | `components/ui/theory/chords/ChordChip.tsx` |
 
 ### Hooks
 
@@ -51,6 +60,7 @@
 | `useRotaryKnobSound` | Audio feedback for RotaryKnob (genre selector) | sound-rotary-knob.wav | `hooks/useRotaryKnobSound.ts` |
 | `useFABSound` | Audio feedback for FAB (add song button) | sound-fab.wav | `hooks/useFABSound.ts` |
 | `useClickSound` | Audio feedback for shared components | sound-shared-click.mp3 | `hooks/useClickSound.ts` |
+| `useChordChartSound` | Audio feedback for chord chart interactions | sound-shared-click.mp3 | `hooks/useChordChartSound.ts` |
 | `useBands` | Band management (create, join, list bands) | N/A | `hooks/useBands.ts` |
 | `useSetlists` | Setlist management for bands | N/A | `hooks/useSetlists.ts` |
 | `usePracticeData` | Practice session tracking and achievements | N/A | `hooks/usePracticeData.ts` |
@@ -946,9 +956,92 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 ---
 
-*Last updated: Dec 16, 2025*
+*Last updated: Dec 17, 2025*
+
+## Dec 17, 2025 Changes
+
+### Chord Diagram Algorithmic Voicing Fixes
+
+**Problem**: Extended chords like Am9, Cmaj7, Dm11 were generating incomplete voicings (only 1 dot shown) because the voicing generator was producing shapes with mostly open strings that missed essential chord tones (particularly the 3rd).
+
+**Root Causes Fixed**:
+
+1. **Lookup Order** (`data/chords/utils/lookup.ts`):
+   - Fuzzy match was intercepting extended chords before algorithmic generation
+   - Fixed: Algorithmic generation now runs BEFORE fuzzy match
+
+2. **Voicing Generator Constraints** (`data/chords/generator/voicing-generator.ts`):
+   - `requireThird: false` allowed voicings missing the 3rd (which defines major/minor)
+   - Fixed: `requireThird: true` by default - voicings MUST include the 3rd
+   - Fallback logic updated to try progressively relaxed constraints while still requiring third
+
+3. **Voicing Scorer Weights** (`data/chords/generator/voicing-scorer.ts`):
+   - Missing third wasn't penalized; completeness weight was too low
+   - Fixed: -15 penalty for missing third, +10 bonus for having it
+   - Completeness weight increased from 0-15 to 0-25 points
+
+4. **GuitarChordDiagram Loading** (`components/ui/theory/chords/GuitarChordDiagram.tsx`):
+   - Component returned `null` while fonts loaded, causing blank diagrams
+   - Fixed: Shows ActivityIndicator loading state instead
+
+5. **Instrument Comparison** (`components/ui/theory/TheoryChordSection.tsx`):
+   - Case-sensitive comparison failed for some instrument types
+   - Fixed: `instrument.toLowerCase() === 'guitar'`
+
+6. **Sound File** (`hooks/useChordChartSound.ts`):
+   - Referenced non-existent `sound-click-07.mp3`
+   - Fixed: Uses `sound-shared-click.mp3`
+
+**Result**: Extended chords now generate proper voicings with all essential notes displayed as orange dots on the fretboard diagram.
+
+---
 
 ## Dec 16, 2025 Changes
+
+### Theory Tab Components (NEW)
+
+Created reusable components for the Theory tab with improved information hierarchy:
+
+**TheorySection** (`components/ui/theory/TheorySection.tsx`)
+- Generic section container with label + alloy content box
+- Follows SettingsTab pattern for consistency
+```typescript
+interface TheorySectionProps {
+  label: string;     // Section header (e.g., "HARMONY")
+  children: ReactNode;
+}
+```
+
+**TheoryMetricsRow** (`components/ui/theory/TheoryMetricsRow.tsx`)
+- 3-column display for Key, Tempo, Time Signature
+- Each metric shows icon + label + value
+```typescript
+interface TheoryMetricsRowProps {
+  keyValue: string;
+  tempo: string;
+  timeSignature: string;
+}
+```
+
+**TheoryChipGroup** (`components/ui/theory/TheoryChipGroup.tsx`)
+- Labeled chip container for chords, scales, techniques
+- Supports optional icon prefix and empty state
+```typescript
+interface TheoryChipGroupProps {
+  label: string;
+  items: string[];
+  chipColor: string;  // Colors.vermilion, deepSpaceBlue, moss
+  emptyText?: string;
+  icon?: LucideIcon;
+}
+```
+
+**Theory Tab Information Architecture**:
+| Group | Contents | Color |
+|-------|----------|-------|
+| SONG METRICS | Key, Tempo, Time Signature | vermilion icons |
+| HARMONY | Chords, Scales | vermilion / deepSpaceBlue chips |
+| TECHNIQUE | Techniques, Strumming Pattern | moss chips |
 
 ### Label & Styling Updates
 

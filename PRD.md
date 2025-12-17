@@ -1,15 +1,21 @@
 # Product Requirements Document (PRD)
 # Song Streak
 
-**Version:** 1.0
-**Date:** November 30, 2025
-**Status:** In Development (~77% Complete)
+**Version:** 1.1
+**Date:** December 17, 2025
+**Status:** In Development (~85% Complete)
 
 ---
 
 ## 1. Executive Summary
 
-Song Streak is an iOS and Android mobile application designed to help musicians organize their song repertoire, track practice sessions, and leverage AI to analyze music theory from video tutorial references. The app combines a personal song library with integrated practice tools (metronome, practice streak, practice time to track how long a specific song has been practiced) and analytics to help musicians build consistent practice habits. Progress will be gamified with rewards and achievements to keep users motivated based on practice streaks and fluency levels.
+Song Streak is an iOS and Android mobile application designed to help musicians organize their song repertoire, track practice sessions, and leverage AI to analyze music theory from video tutorial references. The app combines a personal song library with integrated practice tools (metronome, practice streak, practice time to track how long a specific song has been practiced), interactive chord diagrams, and analytics to help musicians build consistent practice habits. Progress will be gamified with rewards and achievements to keep users motivated based on practice streaks and fluency levels.
+
+**Key capabilities include:**
+- AI-powered theory extraction from YouTube videos (BPM, key, chords, scales, lyrics)
+- Interactive Skia-based chord diagrams with algorithmic shape generation
+- Practice session tracking with streak mechanics
+- Integrated metronome with haptic feedback
 
 The app features a distinctive "Industrial Play" design aesthetic inspired by Teenage Engineering hardware, Dieter Rams principles, and Braun, emphasizing tactile minimalism and functional beauty.
 
@@ -30,6 +36,7 @@ Musicians face several challenges when trying to maintain a consistent practice 
 Create a unified practice companion that:
 - Centralizes song library with rich music theory metadata
 - Automates theory extraction using AI video analysis
+- Displays interactive chord diagrams with visual fretboard positions
 - Tracks practice streaks to build habit momentum
 - Integrates essential practice tools (metronome, timer)
 - Provides clear progress visualization
@@ -72,6 +79,7 @@ Create a unified practice companion that:
 | Enable consistent practice | Weekly practice time per user | > 60 minutes |
 | Reduce friction | Time from video URL to populated form | < 30 seconds |
 | Increase fluency | Songs moved to higher fluency level | > 2 per month |
+| Support chord learning | Songs with chord diagrams viewed | > 60% |
 
 ---
 
@@ -254,6 +262,65 @@ Last Practice: 2+ days ago → Streak broken, reset to 0
 
 ---
 
+### 5.7 Interactive Chord Library
+
+**User Stories:**
+- As a guitarist, I want to see chord diagrams so I know which frets to play
+- As a musician, I want chords auto-generated from the song's chord list so I don't have to look them up
+- As a musician, I want to add custom chords manually when the AI doesn't detect them
+- As a musician, I want to delete incorrect chords from my song
+
+**Requirements:**
+
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Visual chord diagrams (guitar fretboard) | P1 | Complete |
+| Algorithmic chord shape generation | P1 | Complete |
+| Support for major, minor, 7th, maj7, sus, dim, aug chords | P1 | Complete |
+| Support for power chords (5) | P1 | Complete |
+| Tap chord chip to view full diagram | P1 | Complete |
+| Modal with enlarged chord diagram | P1 | Complete |
+| Manual chord add button (+ ADD) | P1 | Complete |
+| Add chord modal with text input | P1 | Complete |
+| Duplicate chord validation | P1 | Complete |
+| Delete chord with confirmation dialog | P1 | Complete |
+| Auto-save after chord add/delete | P1 | Complete |
+| Instrument-aware diagrams (guitar vs other) | P2 | Partial |
+| Piano chord diagrams | P3 | Not Started |
+| Alternative chord voicings | P3 | Not Started |
+
+**Technical Implementation:**
+- **Skia Canvas:** React Native Skia for high-performance chord diagram rendering (`GuitarChordDiagram.tsx`)
+- **Four-Tier Chord Lookup:** Static dictionary → Algorithmic generation → Fuzzy match → Unknown
+- **Algorithmic Voicing Generator:** `data/chords/generator/` calculates playable fingerings using music theory:
+  - `music-theory.ts` - Chord formulas, intervals, note transposition
+  - `voicing-generator.ts` - Recursive backtracking to find valid fingerings (requires root + 3rd)
+  - `voicing-scorer.ts` - Ranks voicings by playability, completeness, ergonomics
+  - `fretboard.ts` - Guitar fretboard model with note positions
+- **Chord Parser:** Supports root notes (A-G), accidentals (#/b), qualities (m, 7, maj7, m7, m9, 9, 11, 13, sus2, sus4, dim, aug, 5)
+- **Auto-save:** Chord changes persist to Supabase immediately after state update
+
+**Supported Chord Types:**
+- **Triads:** major, minor, diminished, augmented
+- **Sevenths:** 7, maj7, m7, mMaj7, dim7, m7b5, aug7
+- **Extended:** 9, maj9, m9, 11, m11, 13
+- **Suspended:** sus2, sus4, 7sus2, 7sus4
+- **Other:** 6, m6, add9, madd9, 5 (power chord)
+
+**Chord Parsing Examples:**
+```
+"Am"    → A minor (root: A, quality: minor)
+"G7"    → G dominant 7th
+"Cmaj7" → C major 7th
+"Am9"   → A minor 9th (extended chord)
+"Dsus4" → D suspended 4th
+"F#m"   → F sharp minor
+"Bb"    → B flat major
+"A5"    → A power chord
+```
+
+---
+
 ## 6. Navigation Structure
 
 ### Tab Bar (Bottom Navigation)
@@ -337,6 +404,9 @@ See design_system.md for more details.
 | expo-secure-store | Encrypted storage |
 | date-fns | Date calculations |
 | react-native-reanimated | Animations |
+| @shopify/react-native-skia | Chord diagrams & graphics |
+| expo-av | Audio feedback sounds |
+| lucide-react-native | Icon library |
 
 ## Important Factors
 Based on the highly stylized, tactile "Dieter Rams" aesthetic you are building, the best version is React Native 0.76+ with the New Architecture (Fabric) enabled.
@@ -349,6 +419,8 @@ Standard React Native (even 0.76) does not support box-shadow: inset or CSS filt
 The Issue: The entire "Rams" aesthetic relies on recessed "wells" (inner shadows) and plastic textures (noise). You cannot achieve this with standard <View> styles.
 
 The Solution: You must use @shopify/react-native-skia. Skia allows you to draw canvas-like graphics (inset shadows, gradients, noise filters) with native performance.
+
+**Chord Diagrams:** Skia is also used for interactive chord diagrams, rendering guitar fretboards with precise fret positions, string markers, and finger placements at 60fps.
 
 Version Requirement: Skia runs significantly better and integrates more deeply on the New Architecture found in 0.74+.
 
@@ -398,7 +470,8 @@ Verdict: Do not use an older version (0.72 or below). The "Rams" look is too gra
 - [ ] Playback of practice recordings
 
 ### Phase 4: Content & Learning
-- [ ] Chord library with diagrams
+- [x] Chord library with diagrams (Complete - Interactive Skia-based chord diagrams with algorithmic generation)
+- [x] Manual chord add/delete (Complete - Add custom chords, delete with confirmation)
 - [ ] Scale reference library
 - [ ] Setlist creation & ordering
 - [ ] Offline mode
@@ -425,6 +498,7 @@ Verdict: Do not use an older version (0.72 or below). The "Rams" look is too gra
 | Streak Retention | Users with 7+ day streaks | > 40% of MAU |
 | Songs per User | Average songs in library | > 20 |
 | AI Analysis Usage | % of songs with video analysis | > 50% |
+| Chord Diagram Usage | % of guitar songs with chord views | > 60% |
 | Practice Frequency | Sessions per user per week | > 4 |
 
 ### Engagement Funnel
@@ -471,6 +545,7 @@ Verdict: Do not use an older version (0.72 or below). The "Rams" look is too gra
 - Keys (Piano/Keyboard)
 - Drums
 - Bass
+- Vocals
 
 ### C. Supported Genres
 - Rock
