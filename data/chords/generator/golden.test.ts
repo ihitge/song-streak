@@ -49,12 +49,13 @@ describe('generator matches static dictionary', () => {
     test('generates at least one voicing', () => {
       const generated = generateChord(name);
       expect(generated).not.toBeNull();
-      expect(generated!.voicings.length).toBeGreaterThan(0);
+      expect(generated!.chord).not.toBeNull();
+      expect(generated!.chord!.voicings.length).toBeGreaterThan(0);
     });
 
     test('generated voicings play the correct notes', () => {
       const generated = generateChord(name);
-      if (!generated) return;
+      if (!generated || !generated.chord) return;
 
       // Parse the chord to get expected notes
       const parsed = parseChordName(name);
@@ -64,7 +65,7 @@ describe('generator matches static dictionary', () => {
       const expectedIndices = new Set(expectedNotes.map(getNoteIndex));
 
       // Check each generated voicing
-      generated.voicings.forEach((voicing) => {
+      generated.chord.voicings.forEach((voicing) => {
         // Get actual notes played
         voicing.frets.forEach((fret, stringIndex) => {
           if (fret !== null) {
@@ -352,9 +353,9 @@ describe('generator playability', () => {
   commonChords.forEach((name) => {
     test(`${name} generator produces playable fret spans`, () => {
       const generated = generateChord(name);
-      if (!generated) return;
+      if (!generated || !generated.chord) return;
 
-      generated.voicings.forEach((voicing) => {
+      generated.chord.voicings.forEach((voicing) => {
         const fretted = voicing.frets.filter(
           (f): f is number => f !== null && f > 0,
         );

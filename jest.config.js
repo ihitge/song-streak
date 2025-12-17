@@ -2,6 +2,9 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  globals: {
+    __DEV__: true,
+  },
   roots: ['<rootDir>/data', '<rootDir>/utils'],
   testMatch: ['**/*.test.ts'],
   moduleNameMapper: {

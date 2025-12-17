@@ -192,7 +192,11 @@ export function getNoteIndex(note: string): number {
   if (index === -1) {
     // Try without accidentals
     const baseNote = note.charAt(0).toUpperCase();
-    return NOTES.indexOf(baseNote as NoteName);
+    const baseIndex = NOTES.indexOf(baseNote as NoteName);
+    if (baseIndex === -1 && __DEV__) {
+      console.warn(`[Chord] Unknown note: ${note}`);
+    }
+    return baseIndex >= 0 ? baseIndex : 0; // Return 0 (C) as safe fallback
   }
   return index;
 }
@@ -218,7 +222,9 @@ export function getChordNotes(root: string, quality: string): NoteName[] {
   if (!formula) {
     // Unknown quality - try to parse as combination
     // e.g., "m7b5" might not be directly mapped
-    console.warn(`Unknown chord quality: ${quality}, defaulting to major`);
+    if (__DEV__) {
+      console.warn(`[Chord] Unknown chord quality: ${quality}, defaulting to major`);
+    }
     return getChordNotes(root, 'major');
   }
 

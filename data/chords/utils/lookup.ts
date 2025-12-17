@@ -3,7 +3,11 @@
  * Provides chord lookup with fallback strategies
  */
 
-import type { ChordDefinition, ChordLookupResult } from '@/types/chords';
+import type {
+  ChordDefinition,
+  ChordFingering,
+  ChordLookupResult,
+} from '@/types/chords';
 import { GUITAR_CHORDS } from '../guitar';
 import { normalizeChordName, getDisplayName } from './normalizer';
 import { generateChord, canGenerateChord } from '../generator';
@@ -50,6 +54,12 @@ const findSimilarChords = (
   input: string,
   maxDistance: number = 2,
 ): string[] => {
+  // Validation gate: must start with valid note letter (A-G)
+  // This prevents completely invalid inputs like 'XYZ' from matching valid chords
+  if (!/^[A-Ga-g]/.test(input)) {
+    return []; // No suggestions for input that doesn't start with a valid root note
+  }
+
   const normalized = normalizeChordName(input).toLowerCase();
   const available = Object.keys(GUITAR_CHORDS);
 
@@ -104,13 +114,16 @@ export const lookupChord = (chordName: string): ChordLookupResult => {
   // This ensures extended chords like Am9, Cmaj7, etc. get generated
   // even if they're similar to simpler chords in the dictionary
   if (canGenerateChord(chordName)) {
-    const generated = generateChord(chordName);
-    if (generated && generated.voicings.length > 0) {
+    const result = generateChord(chordName);
+    if (result.chord && result.chord.voicings.length > 0) {
       return {
-        status: 'generated',
-        chord: generated,
+        status: result.isPartial ? 'partial' : 'generated',
+        chord: result.chord,
         displayName,
         isGenerated: true,
+        warning: result.isPartial
+          ? `Some notes omitted for playability: ${result.omittedNotes.join(', ')}`
+          : undefined,
       };
     }
   }
@@ -142,18 +155,31 @@ export const lookupChords = (chordNames: string[]): ChordLookupResult[] => {
 
 /**
  * Get default voicing for a chord
+ * Returns null if chord has no voicings (safety check)
  */
-export const getDefaultVoicing = (chord: ChordDefinition) => {
+export const getDefaultVoicing = (
+  chord: ChordDefinition,
+): ChordFingering | null => {
+  if (!chord.voicings || chord.voicings.length === 0) {
+    if (__DEV__) {
+      console.warn(`[Chord] ${chord.display || chord.canonical} has no voicings`);
+    }
+    return null;
+  }
   return chord.voicings[0];
 };
 
 /**
  * Check if any chords in the list have available diagrams
- * Returns true for both static dictionary and generated chords
+ * Returns true for static dictionary, generated, and partial chords
  */
 export const hasAnyDiagrams = (chordNames: string[]): boolean => {
   return chordNames.some((name) => {
     const result = lookupChord(name);
-    return result.status === 'found' || result.status === 'generated';
+    return (
+      result.status === 'found' ||
+      result.status === 'generated' ||
+      result.status === 'partial'
+    );
   });
 };

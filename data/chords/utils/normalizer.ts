@@ -101,10 +101,20 @@ export const parseChordName = (input: string): ParsedChord | null => {
       quality = 'minor';
       qualityPart = remainder.match(/^(m(?!aj)|min|-|mi)/)?.[0] || '';
     }
-    // Check for major explicit
+    // Check for major explicit (including maj7, maj9, etc.)
     else if (/^(M|maj|Maj)/.test(remainder)) {
       quality = 'major';
-      qualityPart = remainder.match(/^(M|maj|Maj)/)?.[0] || '';
+      // Check for maj7, maj9 specifically to capture full extension
+      const majExtMatch = remainder.match(/^(maj|Maj)(7|9|11|13)?/i);
+      if (majExtMatch) {
+        qualityPart = majExtMatch[0];
+        // If followed by 7, 9, etc., capture as maj7, maj9
+        if (majExtMatch[2]) {
+          extensions.push('maj' + majExtMatch[2]);
+        }
+      } else {
+        qualityPart = remainder.match(/^(M|maj|Maj)/)?.[0] || '';
+      }
     }
     // Check for diminished
     else if (/^(dim|o|°)/.test(remainder)) {
@@ -116,15 +126,25 @@ export const parseChordName = (input: string): ParsedChord | null => {
       quality = 'augmented';
       qualityPart = remainder.match(/^(aug|\+)/)?.[0] || '';
     }
-    // Check for suspended
+    // Check for suspended (sus2, sus4)
     else if (/^sus/.test(remainder)) {
       quality = 'suspended';
-      qualityPart = 'sus';
+      const susMatch = remainder.match(/^sus([24])?/);
+      qualityPart = susMatch ? susMatch[0] : 'sus';
+      // Capture the full extension (sus2 or sus4)
+      if (susMatch?.[1]) {
+        extensions.push('sus' + susMatch[1]);
+      }
     }
-    // Check for add chords
+    // Check for add chords (add9, add2)
     else if (/^add/.test(remainder)) {
       quality = 'add';
-      qualityPart = 'add';
+      const addMatch = remainder.match(/^add([29])?/);
+      qualityPart = addMatch ? addMatch[0] : 'add';
+      // Capture the full extension (add9 or add2)
+      if (addMatch?.[1]) {
+        extensions.push('add' + addMatch[1]);
+      }
     }
   }
 

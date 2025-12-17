@@ -72,20 +72,51 @@ export const ChordVisualization: React.FC<ChordVisualizationProps> = ({
     );
   }
 
-  // Get the chord definition and voicing
-  const chordDef = lookupResult.chord!;
-  const voicing =
-    chordDef.voicings[voicingIndex] || getDefaultVoicing(chordDef);
+  // Safety check: ensure chord definition exists
+  if (!lookupResult.chord) {
+    return (
+      <View style={styles.unknownContainer}>
+        <Text style={styles.chordName}>{lookupResult.displayName}</Text>
+        <Text style={styles.unknownText}>Chord data unavailable</Text>
+      </View>
+    );
+  }
+
+  // Get the chord definition and voicing with bounds checking
+  const chordDef = lookupResult.chord;
+  const safeVoicingIndex = Math.min(
+    voicingIndex,
+    Math.max(0, chordDef.voicings.length - 1),
+  );
+  const voicing = chordDef.voicings[safeVoicingIndex] || getDefaultVoicing(chordDef);
+
+  // Handle case where voicing is null (shouldn't happen but be safe)
+  if (!voicing) {
+    return (
+      <View style={styles.unknownContainer}>
+        <Text style={styles.chordName}>{lookupResult.displayName}</Text>
+        <Text style={styles.unknownText}>No voicing available</Text>
+      </View>
+    );
+  }
+
+  // Show warning for partial chords
+  const showWarning = lookupResult.status === 'partial' && lookupResult.warning;
 
   // Render guitar chord diagram
   if (instrument === 'guitar') {
     return (
-      <GuitarChordDiagram
-        fingering={voicing}
-        chordName={showChordName ? chordDef.display : undefined}
-        showFingers={showFingers}
-        size={size}
-      />
+      <View>
+        <GuitarChordDiagram
+          fingering={voicing}
+          chordName={showChordName ? chordDef.display : undefined}
+          showFingers={showFingers}
+          size={size}
+        />
+        {showWarning && (
+          <Text style={styles.warningText}>{lookupResult.warning}</Text>
+        )}
+      </View>
     );
   }
 
@@ -134,6 +165,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'LexendDecaSemiBold',
     color: Colors.vermilion,
+  },
+  warningText: {
+    fontSize: 10,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.warmGray,
+    textAlign: 'center',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
 });
 

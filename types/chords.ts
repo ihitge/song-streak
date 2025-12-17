@@ -45,11 +45,12 @@ export interface ChordDefinition {
 
 /** Chord lookup result with fallback info */
 export interface ChordLookupResult {
-  status: 'found' | 'similar' | 'generated' | 'unknown';
+  status: 'found' | 'generated' | 'partial' | 'similar' | 'unknown';
   chord?: ChordDefinition;
   suggestions?: string[]; // Similar chord names if not found
   displayName: string; // Always available for display
   isGenerated?: boolean; // True if chord was algorithmically generated
+  warning?: string; // Warning message for partial voicings or issues
 }
 
 /** Fretboard-based instruments */

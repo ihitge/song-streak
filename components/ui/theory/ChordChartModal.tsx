@@ -42,14 +42,15 @@ export const ChordChartModal: React.FC<ChordChartModalProps> = ({
   // Get chord data
   const lookupResult = lookupChord(chordName);
   const hasChord =
-    (lookupResult.status === 'found' || lookupResult.status === 'generated') &&
-    lookupResult.chord;
-  const hasMultipleVoicings =
-    hasChord && lookupResult.chord!.voicings.length > 1;
-  const totalVoicings = hasChord
-    ? lookupResult.chord?.voicings.length || 1
-    : 1;
+    (lookupResult.status === 'found' ||
+      lookupResult.status === 'generated' ||
+      lookupResult.status === 'partial') &&
+    lookupResult.chord &&
+    lookupResult.chord.voicings.length > 0;
+  const totalVoicings = hasChord ? lookupResult.chord!.voicings.length : 1;
+  const hasMultipleVoicings = hasChord && totalVoicings > 1;
   const isGenerated = lookupResult.isGenerated === true;
+  const isPartial = lookupResult.status === 'partial';
 
   // Reset voicing index when chord changes
   useEffect(() => {
@@ -105,8 +106,12 @@ export const ChordChartModal: React.FC<ChordChartModalProps> = ({
     }
   };
 
+  // Safe voicing access with bounds checking
+  const safeVoicingIndex = hasChord
+    ? Math.min(voicingIndex, Math.max(0, totalVoicings - 1))
+    : 0;
   const currentVoicing = hasChord
-    ? lookupResult.chord?.voicings[voicingIndex]
+    ? lookupResult.chord?.voicings[safeVoicingIndex] ?? null
     : null;
 
   if (!visible) return null;
@@ -204,12 +209,26 @@ export const ChordChartModal: React.FC<ChordChartModalProps> = ({
               </View>
             )}
 
+            {/* Partial Chord Warning */}
+            {isPartial && lookupResult.warning && (
+              <View style={styles.warningContainer}>
+                <Text style={styles.warningText}>{lookupResult.warning}</Text>
+              </View>
+            )}
+
             {/* Badges Row */}
             <View style={styles.badgesRow}>
               {/* Generated Badge */}
               {isGenerated && (
                 <View style={styles.generatedBadge}>
                   <Text style={styles.generatedText}>GENERATED</Text>
+                </View>
+              )}
+
+              {/* Partial Badge */}
+              {isPartial && (
+                <View style={styles.partialBadge}>
+                  <Text style={styles.partialText}>PARTIAL</Text>
                 </View>
               )}
 
@@ -365,6 +384,36 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaBold',
     fontSize: 9,
     letterSpacing: 1,
+    color: Colors.softWhite,
+  },
+  warningContainer: {
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: 'rgba(212, 160, 23, 0.1)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 160, 23, 0.3)',
+  },
+  warningText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 11,
+    color: '#B8860B',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  partialBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: '#D4A017',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  partialText: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 8,
+    letterSpacing: 1.5,
     color: Colors.softWhite,
   },
 });

@@ -517,6 +517,65 @@ describe('isOpenStringChordTone', () => {
 });
 
 // ============================================================================
+// BOUNDS CHECKING TESTS
+// ============================================================================
+
+describe('bounds checking', () => {
+  describe('getNoteAtPosition', () => {
+    test('handles negative string index gracefully', () => {
+      // Should return safe fallback 'E' instead of crashing
+      const result = getNoteAtPosition(-1, 5);
+      expect(result).toBe('E');
+    });
+
+    test('handles string index beyond 5 gracefully', () => {
+      const result = getNoteAtPosition(6, 5);
+      expect(result).toBe('E');
+    });
+
+    test('handles very large string index gracefully', () => {
+      const result = getNoteAtPosition(100, 0);
+      expect(result).toBe('E');
+    });
+  });
+
+  describe('getChordPositionsOnString', () => {
+    const chordNotes: NoteName[] = ['C', 'E', 'G'];
+
+    test('returns empty array for negative string index', () => {
+      const positions = getChordPositionsOnString(-1, chordNotes);
+      expect(positions).toEqual([]);
+    });
+
+    test('returns empty array for string index beyond 5', () => {
+      const positions = getChordPositionsOnString(6, chordNotes);
+      expect(positions).toEqual([]);
+    });
+
+    test('returns empty array for very large string index', () => {
+      const positions = getChordPositionsOnString(100, chordNotes);
+      expect(positions).toEqual([]);
+    });
+  });
+
+  describe('isOpenStringChordTone', () => {
+    const chordNotes: NoteName[] = ['C', 'E', 'G'];
+
+    test('returns false for negative string index', () => {
+      expect(isOpenStringChordTone(-1, chordNotes)).toBe(false);
+    });
+
+    test('returns false for string index beyond 5', () => {
+      expect(isOpenStringChordTone(6, chordNotes)).toBe(false);
+    });
+
+    test('returns false for very large string index', () => {
+      expect(isOpenStringChordTone(100, chordNotes)).toBe(false);
+    });
+  });
+});
+
+// ============================================================================
 // INTEGRATION / REGRESSION TESTS
 // ============================================================================
 

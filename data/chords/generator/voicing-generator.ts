@@ -305,8 +305,8 @@ export function detectBarres(
       if (fret === currentFret && startString !== -1) {
         // Continue potential barre
       } else {
-        // Check if previous was a barre
-        if (startString !== -1 && i - startString >= 2 && currentFret > 0) {
+        // Check if previous was a barre (3+ consecutive strings for true barre)
+        if (startString !== -1 && i - startString >= 3 && currentFret > 0) {
           barres.push({
             fret: currentFret,
             fromString: startString,
@@ -318,8 +318,8 @@ export function detectBarres(
         currentFret = fret;
       }
     } else {
-      // Check if previous was a barre
-      if (startString !== -1 && i - startString >= 2 && currentFret > 0) {
+      // Check if previous was a barre (3+ consecutive strings for true barre)
+      if (startString !== -1 && i - startString >= 3 && currentFret > 0) {
         barres.push({
           fret: currentFret,
           fromString: startString,
@@ -331,10 +331,10 @@ export function detectBarres(
     }
   }
 
-  // Check final stretch
+  // Check final stretch (3+ consecutive strings for true barre)
   if (
     startString !== -1 &&
-    frets.length - startString >= 2 &&
+    frets.length - startString >= 3 &&
     currentFret > 0
   ) {
     barres.push({

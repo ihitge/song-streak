@@ -994,6 +994,30 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 **Result**: Extended chords now generate proper voicings with all essential notes displayed as orange dots on the fretboard diagram.
 
+### Chord Generator Test Suite Fixes
+
+**Problem**: Tests were failing due to:
+1. `__DEV__` global not defined in Jest environment
+2. `golden.test.ts` using outdated type structure (`generated.voicings` instead of `generated.chord.voicings`)
+
+**Fixes Applied**:
+
+1. **Jest Configuration** (`jest.config.js`):
+   - Added `globals: { __DEV__: true }` to define React Native's `__DEV__` global in test environment
+
+2. **Golden Test Types** (`data/chords/generator/golden.test.ts`):
+   - Updated to use `GenerateChordResult.chord.voicings` instead of `GenerateChordResult.voicings`
+   - The `GenerateChordResult` type returns `{ chord: ChordDefinition | null, isPartial, omittedNotes }`
+
+**Test Results**: All 624 tests passing across 7 test suites:
+- `golden.test.ts` - Static dictionary validation
+- `music-theory.test.ts` - Note/interval calculations
+- `fretboard.test.ts` - Guitar fretboard mapping
+- `voicing-generator.test.ts` - Voicing generation
+- `voicing-scorer.test.ts` - Voicing quality scoring
+- `normalizer.test.ts` - Chord name normalization
+- `lookup.test.ts` - Chord lookup system
+
 ---
 
 ## Dec 16, 2025 Changes

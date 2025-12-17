@@ -114,17 +114,18 @@ describe('parseChordName', () => {
   });
 
   describe('suspended chords', () => {
-    test('Dsus4 parses correctly', () => {
+    test('Dsus4 parses correctly with sus4 extension', () => {
       const result = parseChordName('Dsus4');
       expect(result?.root).toBe('D');
       expect(result?.quality).toBe('suspended');
-      // Extensions captured separately or via quality
+      expect(result?.extensions).toContain('sus4');
     });
 
-    test('Asus2 parses correctly', () => {
+    test('Asus2 parses correctly with sus2 extension', () => {
       const result = parseChordName('Asus2');
       expect(result?.root).toBe('A');
       expect(result?.quality).toBe('suspended');
+      expect(result?.extensions).toContain('sus2');
     });
   });
 
@@ -136,12 +137,11 @@ describe('parseChordName', () => {
       expect(result?.extensions).toContain('7');
     });
 
-    test('Cmaj7 parses correctly', () => {
+    test('Cmaj7 parses correctly with maj7 extension', () => {
       const result = parseChordName('Cmaj7');
       expect(result?.root).toBe('C');
       expect(result?.quality).toBe('major');
-      // maj7 may be parsed as maj + 7
-      expect(result?.extensions).toContain('7');
+      expect(result?.extensions).toContain('maj7');
     });
 
     test('G7 parses correctly', () => {
@@ -160,20 +160,20 @@ describe('parseChordName', () => {
       expect(result?.extensions).toContain('9');
     });
 
-    test('Cmaj9 parses correctly', () => {
+    test('Cmaj9 parses correctly with maj9 extension', () => {
       const result = parseChordName('Cmaj9');
       expect(result?.root).toBe('C');
-      // maj9 parsed with 9 in extensions
-      expect(result?.extensions).toContain('9');
+      expect(result?.quality).toBe('major');
+      expect(result?.extensions).toContain('maj9');
     });
   });
 
   describe('add chords', () => {
-    test('Cadd9 parses correctly', () => {
+    test('Cadd9 parses correctly with add9 extension', () => {
       const result = parseChordName('Cadd9');
       expect(result?.root).toBe('C');
       expect(result?.quality).toBe('add');
-      // add9 captured in extensions or quality
+      expect(result?.extensions).toContain('add9');
     });
   });
 

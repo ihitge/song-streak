@@ -9,6 +9,7 @@ import {
   getChordNotes,
   QUALITY_TO_FORMULA,
   CHORD_FORMULAS,
+  getNoteIndex,
 } from './music-theory';
 import {
   generateVoicings,
@@ -17,6 +18,60 @@ import {
   detectBarres,
 } from './voicing-generator';
 import { rankVoicings, VoicingScore } from './voicing-scorer';
+
+/** Valid root notes for validation */
+const VALID_ROOTS = [
+  'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',
+];
+
+/** Maximum chord name length (prevents DoS from very long strings) */
+const MAX_CHORD_NAME_LENGTH = 50;
+
+/**
+ * Result of chord generation including partial voicing info
+ */
+export interface GenerateChordResult {
+  chord: ChordDefinition | null;
+  isPartial: boolean;
+  omittedNotes: string[];
+}
+
+/**
+ * Reduce chord notes by omitting less essential notes
+ * Priority: omit 5th first, then higher extensions
+ */
+function reduceChordNotes(
+  notes: NoteName[],
+  root: NoteName,
+): { notes: NoteName[]; omitted: string[] } {
+  if (notes.length <= 3) {
+    return { notes, omitted: [] };
+  }
+
+  const rootIndex = getNoteIndex(root);
+  const fifthIndex = (rootIndex + 7) % 12;
+
+  // First try: omit the 5th (most disposable in most chords)
+  const withoutFifth = notes.filter((n) => getNoteIndex(n) !== fifthIndex);
+  if (withoutFifth.length !== notes.length && withoutFifth.length >= 3) {
+    return { notes: withoutFifth, omitted: ['5th'] };
+  }
+
+  // Second try: keep only essential notes (root, 3rd, 7th if present)
+  // Take first 4 notes which are typically the most important
+  if (notes.length > 4) {
+    const essentialNotes = notes.slice(0, 4);
+    const omittedExtensions = notes
+      .slice(4)
+      .map((_, i) => {
+        const intervals = [9, 11, 13]; // Common extensions
+        return intervals[i] ? `${intervals[i]}th` : 'extension';
+      });
+    return { notes: essentialNotes, omitted: omittedExtensions };
+  }
+
+  return { notes, omitted: [] };
+}
 
 /**
  * Parse a chord name into root note and quality
@@ -30,10 +85,18 @@ export function parseChordName(chordName: string): {
   quality: string;
   display: string;
 } | null {
-  if (!chordName || chordName.length === 0) return null;
+  // Input validation
+  if (!chordName || typeof chordName !== 'string') return null;
+  if (chordName.length > MAX_CHORD_NAME_LENGTH) {
+    if (__DEV__) {
+      console.warn(`[Chord] Chord name too long: ${chordName.length} chars`);
+    }
+    return null;
+  }
 
   // Normalize the chord name
   const normalized = chordName.trim();
+  if (normalized.length === 0) return null;
 
   // Extract root note (with possible accidental)
   let root: string;
@@ -63,6 +126,14 @@ export function parseChordName(chordName: string): {
   };
 
   const normalizedRoot = (flatToSharp[root] || root) as NoteName;
+
+  // Validate root note
+  if (!VALID_ROOTS.includes(normalizedRoot)) {
+    if (__DEV__) {
+      console.warn(`[Chord] Invalid root note: ${root}`);
+    }
+    return null;
+  }
 
   // Extract quality
   let quality = normalized.substring(qualityStart);
@@ -173,34 +244,53 @@ function getQualityCategory(
 
 /**
  * Generate a chord definition for any chord name
- * Returns null if the chord cannot be parsed
+ * Returns GenerateChordResult with partial voicing info
  */
 export function generateChord(
   chordName: string,
   maxVoicings: number = 5,
-): ChordDefinition | null {
+): GenerateChordResult {
+  const emptyResult: GenerateChordResult = {
+    chord: null,
+    isPartial: false,
+    omittedNotes: [],
+  };
+
   // Parse the chord name
   const parsed = parseChordName(chordName);
-  if (!parsed) return null;
+  if (!parsed) return emptyResult;
 
   // Get the notes in this chord
   const chordNotes = getChordNotes(parsed.root, parsed.quality);
-  if (chordNotes.length === 0) return null;
+  if (chordNotes.length === 0) return emptyResult;
+
+  // Track partial voicing state
+  let isPartial = false;
+  let omittedNotes: string[] = [];
+  let notesToUse = chordNotes;
 
   // Generate voicing candidates with fallback for difficult chords
-  const candidates = generateVoicingsWithFallback(
-    chordNotes,
-    parsed.root,
-  );
+  let candidates = generateVoicingsWithFallback(notesToUse, parsed.root);
+
+  // If no voicings found and we have extended chord, try reducing notes
+  if (candidates.length === 0 && chordNotes.length > 3) {
+    const reduced = reduceChordNotes(chordNotes, parsed.root);
+    candidates = generateVoicingsWithFallback(reduced.notes, parsed.root);
+
+    if (candidates.length > 0) {
+      isPartial = true;
+      omittedNotes = reduced.omitted;
+      notesToUse = reduced.notes;
+    }
+  }
 
   if (candidates.length === 0) {
-    // Even with relaxed constraints, no voicings found
-    // This is very rare - create a minimal power chord as fallback
-    return null;
+    // Even with reduced notes, no voicings found
+    return emptyResult;
   }
 
   // Rank the candidates
-  const ranked = rankVoicings(candidates, chordNotes, maxVoicings);
+  const ranked = rankVoicings(candidates, notesToUse, maxVoicings);
 
   // Convert to ChordFingering format
   const voicings = ranked.map((r, i) =>
@@ -211,11 +301,15 @@ export function generateChord(
   const canonical = `${parsed.root}${parsed.quality === 'major' ? '' : parsed.quality}`.toLowerCase();
 
   return {
-    canonical,
-    display: parsed.display,
-    root: parsed.root,
-    quality: getQualityCategory(parsed.quality),
-    voicings,
+    chord: {
+      canonical,
+      display: parsed.display,
+      root: parsed.root,
+      quality: getQualityCategory(parsed.quality),
+      voicings,
+    },
+    isPartial,
+    omittedNotes,
   };
 }
 

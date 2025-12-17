@@ -29,8 +29,15 @@ let fretboardCache: Map<string, FretPosition[]> | null = null;
 
 /**
  * Get the note at a specific fretboard position
+ * Returns 'E' as fallback for invalid string index (with dev warning)
  */
 export function getNoteAtPosition(string: number, fret: number): NoteName {
+  if (string < 0 || string >= STRING_COUNT) {
+    if (__DEV__) {
+      console.warn(`[Fretboard] Invalid string index: ${string}`);
+    }
+    return 'E'; // Safe fallback
+  }
   const openNote = STANDARD_TUNING[string];
   return transposeNote(openNote, fret);
 }
@@ -94,12 +101,21 @@ export function getPositionsForNote(note: string): FretPosition[] {
 
 /**
  * Get positions on a specific string where chord notes can be played
+ * Returns empty array for invalid string index (with dev warning)
  */
 export function getChordPositionsOnString(
   stringIndex: number,
   chordNotes: NoteName[],
   maxFret: number = MAX_FRET,
 ): FretPosition[] {
+  // Bounds check for stringIndex
+  if (stringIndex < 0 || stringIndex >= STRING_COUNT) {
+    if (__DEV__) {
+      console.warn(`[Fretboard] Invalid stringIndex: ${stringIndex}`);
+    }
+    return [];
+  }
+
   const positions: FretPosition[] = [];
   const openNote = STANDARD_TUNING[stringIndex];
   const openNoteIndex = getNoteIndex(openNote);
@@ -196,11 +212,18 @@ export function getBaseFret(frets: (number | null)[]): number {
 
 /**
  * Check if the open string note is a chord tone
+ * Returns false for invalid string index (with dev warning)
  */
 export function isOpenStringChordTone(
   stringIndex: number,
   chordNotes: NoteName[],
 ): boolean {
+  if (stringIndex < 0 || stringIndex >= STRING_COUNT) {
+    if (__DEV__) {
+      console.warn(`[Fretboard] Invalid stringIndex: ${stringIndex}`);
+    }
+    return false;
+  }
   const openNote = STANDARD_TUNING[stringIndex];
   const openNoteIndex = getNoteIndex(openNote);
   return chordNotes.some((note) => getNoteIndex(note) === openNoteIndex);
