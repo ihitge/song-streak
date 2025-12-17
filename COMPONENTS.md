@@ -260,9 +260,40 @@ interface LibraryHeaderProps {
 
 ---
 
+### SongCard
+
+**Purpose**: Song display card in the library view with edit and delete actions.
+
+**Location**: `app/(tabs)/index.tsx` (inline component)
+
+**Props**:
+```typescript
+interface SongCardProps {
+  song: Song;
+  onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
+  onPress?: () => void;
+}
+```
+
+**Visual Behavior**:
+- Album artwork thumbnail with glass overlay
+- Song title and artist
+- Duration metadata
+- **Action buttons** (stacked vertically):
+  - Edit icon (Edit2) - navigates to song detail in edit mode
+  - Delete icon (Trash2) - shows confirmation dialog
+
+**Navigation Flow**:
+- Card tap → View mode (read-only)
+- Edit icon tap → Edit mode directly (`?songId=X&edit=true`)
+- Demo songs (IDs 1-5) show info alert that they cannot be edited/deleted
+
+---
+
 ### AddSongScreen
 
-**Purpose**: Screen for adding new songs, featuring a tabbed interface using `GangSwitch`.
+**Purpose**: Screen for adding new songs or viewing/editing existing songs, featuring a tabbed interface using `GangSwitch`.
 
 **Location**: `app/(tabs)/add-song.tsx`
 
@@ -270,6 +301,7 @@ interface LibraryHeaderProps {
 - **Header**: Uses `PageHeader` component for consistent branding.
 - **Tabs**: Uses `GangSwitch` with `allowDeselect={false}` to switch between 'Basics', 'Theory', and 'Lyrics'.
 - **Navigation**: Accessible via the FAB on the Library screen; integrated into the main Tab layout.
+- **Edit Mode**: When navigating with `?edit=true` param, auto-enables edit mode for the song.
 
 ---
 

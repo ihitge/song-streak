@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { Plus, Music, Clock, Trash2 } from 'lucide-react-native';
+import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
 import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
@@ -79,9 +79,10 @@ const MOCK_SONGS: Song[] = [
 // --- Components ---
 
 // Song Card (Data Cassette)
-const SongCard = ({ song, onDelete, onPress }: {
+const SongCard = ({ song, onDelete, onEdit, onPress }: {
   song: Song;
   onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
   onPress?: () => void;
 }) => {
   return (
@@ -117,16 +118,27 @@ const SongCard = ({ song, onDelete, onPress }: {
           </View>
         </View>
 
-        {/* Delete Button (temporary for testing) */}
-        {onDelete && (
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => onDelete(song.id)}
-            activeOpacity={0.7}
-          >
-            <Trash2 size={18} color={Colors.vermilion} />
-          </TouchableOpacity>
-        )}
+        {/* Action Buttons */}
+        <View style={styles.cardActions}>
+          {onEdit && (
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => onEdit(song.id)}
+              activeOpacity={0.7}
+            >
+              <Edit2 size={14} color={Colors.charcoal} />
+            </TouchableOpacity>
+          )}
+          {onDelete && (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => onDelete(song.id)}
+              activeOpacity={0.7}
+            >
+              <Trash2 size={14} color={Colors.vermilion} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </Pressable>
   );
@@ -262,12 +274,26 @@ export default function SetListScreen() {
     );
   }, [fetchSongs, playClickSound, showInfo, showConfirm, showError]);
 
-  // Handle song card press - navigate to edit song
+  // Handle song card press - navigate to view song
   const handleSongPress = useCallback(async (song: Song) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await playClickSound();
     router.push(`/add-song?songId=${song.id}`);
   }, [playClickSound, router]);
+
+  // Handle edit button press - navigate to edit song directly in edit mode
+  const handleEditSong = useCallback(async (songId: string) => {
+    // Check if it's a mock song (IDs 1-5 are mock)
+    const mockIds = ['1', '2', '3', '4', '5'];
+    if (mockIds.includes(songId)) {
+      showInfo('Info', 'Cannot edit demo songs. Only songs you added can be edited.');
+      return;
+    }
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playClickSound();
+    router.push(`/add-song?songId=${songId}&edit=true`);
+  }, [playClickSound, router, showInfo]);
 
 
   const filteredSongs = useMemo(() => {
@@ -325,6 +351,7 @@ export default function SetListScreen() {
             <SongCard
               song={item}
               onDelete={handleDeleteSong}
+              onEdit={handleEditSong}
               onPress={() => handleSongPress(item)}
             />
           )}
@@ -457,9 +484,18 @@ const styles = StyleSheet.create({
       backgroundColor: '#d0d0d0',
       borderRadius: 1.5,
   },
+  cardActions: {
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: 8,
+  },
+  editButton: {
+      padding: 8,
+      borderRadius: 6,
+      backgroundColor: 'rgba(51, 51, 51, 0.08)', // Charcoal with low opacity
+  },
   deleteButton: {
       padding: 8,
-      marginLeft: 8,
       borderRadius: 6,
       backgroundColor: 'rgba(238, 108, 77, 0.1)', // Vermilion with low opacity
   },

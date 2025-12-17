@@ -501,7 +501,7 @@ All core features implemented:
 
 **Key Addition (Phase 4):** The chord generator system can produce guitar chord diagrams for ANY chord - from simple majors to complex jazz voicings like Cmaj9 or Dm11. Uses music theory algorithms with fallback constraints for playability. Also migrated all audio from deprecated expo-av to expo-audio.
 
-**Latest Updates (Dec 17):** Theory tab UI improvements - song metrics now display in a 2x2 grid (Tuning|Key, Tempo|Time), tuning field added to song analysis, chord diagrams centered with floating delete button.
+**Latest Updates (Dec 17):** Theory tab UI improvements - song metrics now display in a 2x2 grid (Tuning|Key, Tempo|Time), tuning field added to song analysis, chord diagrams centered with floating delete button. Edit functionality moved from song detail view to song card (edit/delete icons stack vertically).
 
 **Key Addition (Phase 3):** The `useStyledAlert` hook provides app-consistent dialogs. **NEVER use native `Alert.alert()`**.
 

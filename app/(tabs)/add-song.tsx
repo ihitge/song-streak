@@ -6,7 +6,7 @@ import { Colors } from '@/constants/Colors';
 import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { TheorySection, TheoryMetricsRow, TheoryChipGroup, TheoryChordSection, AddChordModal } from '@/components/ui/theory';
-import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Edit2, Guitar } from 'lucide-react-native';
+import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Guitar } from 'lucide-react-native';
 import { FilterOption, Instrument } from '@/types/filters';
 import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
@@ -59,8 +59,8 @@ const TAB_OPTIONS: FilterOption<AddSongTab>[] = [
 const ADD_SONG_INSTRUMENT_OPTIONS = instrumentOptions.filter(opt => opt.value !== 'All');
 
 export default function AddSongScreen() {
-  // Get songId from query params (for viewing existing songs)
-  const { songId } = useLocalSearchParams<{ songId?: string }>();
+  // Get songId and edit flag from query params
+  const { songId, edit } = useLocalSearchParams<{ songId?: string; edit?: string }>();
   const isEditMode = !!songId;
   const router = useRouter();
 
@@ -106,6 +106,13 @@ export default function AddSongScreen() {
       loadExistingSong(songId);
     }
   }, [songId]);
+
+  // Auto-enable edit mode if navigating with edit=true param
+  useEffect(() => {
+    if (edit === 'true' && songId) {
+      setIsEditing(true);
+    }
+  }, [edit, songId]);
 
   const loadExistingSong = async (id: string) => {
     setIsLoadingSong(true);
@@ -555,21 +562,6 @@ export default function AddSongScreen() {
     <View style={styles.container}>
       <PageHeader />
 
-      {/* Edit button for view mode */}
-      {isEditMode && !isEditing && !isLoadingSong && (
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={async () => {
-            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            await playSound();
-            setIsEditing(true);
-          }}
-        >
-          <Edit2 size={16} color={Colors.vermilion} />
-          <Text style={styles.editButtonText}>Edit Song</Text>
-        </TouchableOpacity>
-      )}
-
       {isLoadingSong ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.vermilion} />
@@ -1018,27 +1010,6 @@ const styles = StyleSheet.create({
   textInputDisabled: {
     opacity: 0.7,
     backgroundColor: Colors.softWhite,
-  },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    marginHorizontal: 24,
-    marginTop: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: Colors.vermilion,
-    backgroundColor: 'transparent',
-  },
-  editButtonText: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 12,
-    color: Colors.vermilion,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
   },
   cancelButton: {
     paddingVertical: 12,
