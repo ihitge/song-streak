@@ -1018,6 +1018,63 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 - `normalizer.test.ts` - Chord name normalization
 - `lookup.test.ts` - Chord lookup system
 
+### Deprecation Warning Fixes
+
+**Problem**: Two deprecation warnings on app startup:
+1. `SafeAreaView has been deprecated` - React Native's SafeAreaView being removed
+2. `expo-av has been deprecated` - Will be removed in SDK 54
+
+**Fixes Applied**:
+
+1. **SafeAreaView Migration** (`components/ui/VideoPlayerModal.tsx`):
+   - Changed import from `react-native` to `react-native-safe-area-context`
+   - No API changes required - drop-in replacement
+
+2. **expo-av → expo-audio Migration** (all sound hooks):
+   - Installed `expo-audio` package
+   - Migrated 7 UI sound hooks to use `useAudioPlayer` hook:
+     - `useClickSound.ts`
+     - `useNavButtonSound.ts`
+     - `useGangSwitchSound.ts`
+     - `useFABSound.ts`
+     - `useRotaryKnobSound.ts`
+     - `useChordChartSound.ts`
+   - Migrated `useMetronomeSound.ts` to use `createAudioPlayer` (manual control for sound pooling)
+
+**API Changes (expo-av → expo-audio)**:
+```typescript
+// OLD (expo-av)
+import { Audio } from 'expo-av';
+const { sound } = await Audio.Sound.createAsync(source);
+await sound.setVolumeAsync(0.5);
+await sound.stopAsync();
+await sound.playAsync();
+
+// NEW (expo-audio)
+import { useAudioPlayer } from 'expo-audio';
+const player = useAudioPlayer(source);
+player.volume = 0.5;
+player.seekTo(0);  // Reset position (doesn't auto-reset like expo-av)
+player.play();
+```
+
+**Audio Mode Changes**:
+```typescript
+// OLD
+await Audio.setAudioModeAsync({
+  playsInSilentModeIOS: true,
+  staysActiveInBackground: false,
+});
+
+// NEW
+import { setAudioModeAsync } from 'expo-audio';
+await setAudioModeAsync({
+  playsInSilentMode: true,
+  shouldPlayInBackground: false,
+  interruptionMode: 'mixWithOthers',
+});
+```
+
 ---
 
 ## Dec 16, 2025 Changes

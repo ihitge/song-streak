@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Linking } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, ExternalLink } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';

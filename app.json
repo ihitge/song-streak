@@ -18,7 +18,9 @@
       "bundleIdentifier": "com.songstreak.app",
       "usesAppleSignIn": true,
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
     },
     "android": {
@@ -45,7 +47,8 @@
         {
           "photosPermission": "Allow Song Streak to access your photos to set your profile picture."
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

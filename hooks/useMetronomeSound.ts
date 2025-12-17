@@ -1,4 +1,4 @@
-import { Audio } from 'expo-av';
+import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { useEffect, useRef, useCallback } from 'react';
 import { MetronomeSoundType } from '@/types/metronome';
 
@@ -16,7 +16,7 @@ const hihatSound = require('@/assets/audio/metronome-hihat.wav');
 const POOL_SIZE = 4;
 
 interface SoundPool {
-  sounds: (Audio.Sound | null)[];
+  players: (AudioPlayer | null)[];
   currentIndex: number;
 }
 
@@ -92,15 +92,13 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
   const allPools = useRef<Map<MetronomeSoundType, SoundPools>>(new Map());
 
   /**
-   * Load a single sound instance
+   * Load a single audio player instance
    */
-  const loadSound = async (source: any): Promise<Audio.Sound | null> => {
+  const loadPlayer = (source: any): AudioPlayer | null => {
     try {
-      const { sound } = await Audio.Sound.createAsync(source, {
-        shouldPlay: false,
-        volume: 1.0,
-      });
-      return sound;
+      const player = createAudioPlayer(source);
+      player.volume = 1.0;
+      return player;
     } catch (error) {
       console.error('Failed to load metronome sound:', error);
       return null;
@@ -108,28 +106,27 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
   };
 
   /**
-   * Load a pool of sounds for one sound role (accent/tick/subdivision)
+   * Load a pool of players for one sound role (accent/tick/subdivision)
    */
-  const loadPool = async (source: any): Promise<SoundPool> => {
-    const promises = Array(POOL_SIZE).fill(null).map(() => loadSound(source));
-    const sounds = await Promise.all(promises);
-    return { sounds, currentIndex: 0 };
+  const loadPool = (source: any): SoundPool => {
+    const players = Array(POOL_SIZE).fill(null).map(() => loadPlayer(source));
+    return { players, currentIndex: 0 };
   };
 
   /**
-   * Unload all sounds in a pool
+   * Release all players in a pool
    */
-  const unloadPool = async (pool: SoundPool) => {
-    for (const sound of pool.sounds) {
-      if (sound) {
+  const releasePool = (pool: SoundPool) => {
+    for (const player of pool.players) {
+      if (player) {
         try {
-          await sound.unloadAsync();
+          player.remove();
         } catch (error) {
-          console.error('Failed to unload sound:', error);
+          console.error('Failed to release player:', error);
         }
       }
     }
-    pool.sounds = [];
+    pool.players = [];
     pool.currentIndex = 0;
   };
 
@@ -146,11 +143,10 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
 
       try {
         // Configure audio mode for metronome
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: true,
-          shouldDuckAndroid: false,
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: true,
+          interruptionMode: 'duckOthers',
         });
 
         if (!mounted) return;
@@ -163,13 +159,13 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
 
           const sources = getSoundSources(type);
 
-          const accentPool = await loadPool(sources.accent);
+          const accentPool = loadPool(sources.accent);
           if (!mounted) return;
 
-          const tickPool = await loadPool(sources.tick);
+          const tickPool = loadPool(sources.tick);
           if (!mounted) return;
 
-          const subdivisionPool = await loadPool(sources.subdivision);
+          const subdivisionPool = loadPool(sources.subdivision);
           if (!mounted) return;
 
           allPools.current.set(type, {
@@ -193,9 +189,9 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
     return () => {
       mounted = false;
       allPools.current.forEach((pools) => {
-        unloadPool(pools.accent);
-        unloadPool(pools.tick);
-        unloadPool(pools.subdivision);
+        releasePool(pools.accent);
+        releasePool(pools.tick);
+        releasePool(pools.subdivision);
       });
       allPools.current.clear();
     };
@@ -208,21 +204,22 @@ export function useMetronomeSound(options: UseMetronomeSoundOptions = {}): UseMe
    */
   const playFromPool = useCallback(
     (pool: SoundPool) => {
-      const sounds = pool.sounds;
-      if (sounds.length === 0) return;
+      const players = pool.players;
+      if (players.length === 0) return;
 
       const currentIndex = pool.currentIndex;
-      const sound = sounds[currentIndex];
-      if (!sound) return;
+      const player = players[currentIndex];
+      if (!player) return;
 
-      // Fire and forget - seek to start then play, no awaiting
-      sound.setPositionAsync(0).then(() => {
-        sound.playAsync();
-      }).catch(() => {
+      // Fire and forget - seek to start then play
+      try {
+        player.seekTo(0);
+        player.play();
+      } catch {
         // Silent catch - don't block on errors
-      });
+      }
 
-      // Move to next sound in pool immediately (round-robin)
+      // Move to next player in pool immediately (round-robin)
       pool.currentIndex = (currentIndex + 1) % POOL_SIZE;
     },
     []
