@@ -74,24 +74,26 @@ export const TheoryChordSection: React.FC<TheoryChordSectionProps> = ({
 
             return (
               <View key={`${chord}-${index}`} style={styles.diagramCard}>
-                {canShowDiagram ? (
-                  <GuitarChordDiagram
-                    fingering={fingering}
-                    chordName={lookupResult.displayName}
-                    size="small"
-                  />
-                ) : (
-                  <View style={styles.fallbackContainer}>
-                    <Text style={styles.chordNameFallback}>
-                      {lookupResult.displayName}
-                    </Text>
-                    {!isGuitar && (
-                      <Text style={styles.nodiagramText}>
-                        Diagram not available for {instrument}
+                <View style={styles.diagramWrapper}>
+                  {canShowDiagram ? (
+                    <GuitarChordDiagram
+                      fingering={fingering}
+                      chordName={lookupResult.displayName}
+                      size="medium"
+                    />
+                  ) : (
+                    <View style={styles.fallbackContainer}>
+                      <Text style={styles.chordNameFallback}>
+                        {lookupResult.displayName}
                       </Text>
-                    )}
-                  </View>
-                )}
+                      {!isGuitar && (
+                        <Text style={styles.nodiagramText}>
+                          Diagram not available for {instrument}
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </View>
 
                 {/* Delete button */}
                 {editable && onDeleteChord && (
@@ -101,7 +103,7 @@ export const TheoryChordSection: React.FC<TheoryChordSectionProps> = ({
                     activeOpacity={0.7}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <Trash2 size={18} color={Colors.vermilion} strokeWidth={2} />
+                    <Trash2 size={14} color={Colors.vermilion} strokeWidth={2} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -147,13 +149,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   diagramCard: {
-    flexDirection: 'row',
+    position: 'relative',
+    flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: Colors.softWhite,
     borderRadius: 12,
     padding: 8,
-    paddingRight: 16,
     // Industrial Play bevel
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.8)',
@@ -165,6 +166,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
+  },
+  diagramWrapper: {
+    width: '100%',
+    alignItems: 'center',
   },
   fallbackContainer: {
     padding: 20,
@@ -189,9 +194,13 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   deleteButton: {
-    padding: 8,
-    borderRadius: 8,
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    padding: 6,
+    borderRadius: 6,
     backgroundColor: 'rgba(238, 108, 77, 0.1)',
+    zIndex: 1,
   },
   addButton: {
     flexDirection: 'row',

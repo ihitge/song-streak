@@ -39,9 +39,9 @@
 | `InsetShadowOverlay` | **Recessed depth effect via edge gradients** | `components/skia/primitives/InsetShadowOverlay.tsx` |
 | `SurfaceTextureOverlay` | **Noise/grain texture for dust/scratches on glass** | `components/skia/primitives/SurfaceTextureOverlay.tsx` |
 | `TheorySection` | **Section container with label + alloy content box** | `components/ui/theory/TheorySection.tsx` |
-| `TheoryMetricsRow` | **3-column display for Key, Tempo, Time Signature** | `components/ui/theory/TheoryMetricsRow.tsx` |
+| `TheoryMetricsRow` | **2x2 grid display for Tuning, Key, Tempo, Time Signature** | `components/ui/theory/TheoryMetricsRow.tsx` |
 | `TheoryChipGroup` | **Labeled chip container for chords/scales/techniques** | `components/ui/theory/TheoryChipGroup.tsx` |
-| `TheoryChordSection` | **Interactive chord chips with add/delete + diagram modal** | `components/ui/theory/TheoryChordSection.tsx` |
+| `TheoryChordSection` | **Chord diagrams with floating delete button (top-right)** | `components/ui/theory/TheoryChordSection.tsx` |
 | `ChordChartModal` | **Full-screen chord diagram modal** | `components/ui/theory/ChordChartModal.tsx` |
 | `AddChordModal` | **Modal for manually adding chords** | `components/ui/theory/chords/AddChordModal.tsx` |
 | `GuitarChordDiagram` | **Skia-based guitar chord visualization** | `components/ui/theory/chords/GuitarChordDiagram.tsx` |
@@ -1094,10 +1094,13 @@ interface TheorySectionProps {
 ```
 
 **TheoryMetricsRow** (`components/ui/theory/TheoryMetricsRow.tsx`)
-- 3-column display for Key, Tempo, Time Signature
-- Each metric shows icon + label + value
+- 2x2 grid display for Tuning, Key, Tempo, Time Signature
+- Row 1: Tuning | Key
+- Row 2: Tempo | Time
+- Left-aligned, compact layout
 ```typescript
 interface TheoryMetricsRowProps {
+  tuning: string;      // Guitar/bass tuning (default: "Standard")
   keyValue: string;
   tempo: string;
   timeSignature: string;

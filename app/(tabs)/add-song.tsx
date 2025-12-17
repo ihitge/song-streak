@@ -34,6 +34,7 @@ interface InstrumentAnalysisData {
   title: string;
   artist: string;
   theoryData: {
+    tuning: string;
     key: string;
     tempo: string;
     timeSignature: string;
@@ -129,6 +130,7 @@ export default function AddSongScreen() {
         title: data.title,
         artist: data.artist,
         theoryData: {
+          tuning: data.tuning || 'Standard',
           key: data.key || 'Unknown',
           tempo: data.tempo || 'Unknown',
           timeSignature: data.time_signature || '4/4',
@@ -330,6 +332,7 @@ export default function AddSongScreen() {
         instrument: currentInstrument,
         video_url: currentData.videoUrl,
         artwork_url: artwork.artworkUrl || null,
+        tuning: currentData.theoryData.tuning,
         key: currentData.theoryData.key,
         tempo: currentData.theoryData.tempo,
         time_signature: currentData.theoryData.timeSignature,
@@ -396,6 +399,7 @@ export default function AddSongScreen() {
         artist: artist,
         instrument: currentInstrument,
         video_url: currentData?.videoUrl || videoUrl,
+        tuning: currentData?.theoryData?.tuning,
         key: currentData?.theoryData?.key,
         tempo: currentData?.theoryData?.tempo,
         time_signature: currentData?.theoryData?.timeSignature,
@@ -459,6 +463,7 @@ export default function AddSongScreen() {
             title: songTitle,
             artist: artist,
             theoryData: {
+              tuning: 'Standard',
               key: '',
               tempo: '',
               timeSignature: '4/4',
@@ -753,9 +758,10 @@ export default function AddSongScreen() {
             <ScrollView style={styles.theoryContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.theoryScrollContent}>
               {instrumentData[currentInstrument]?.analyzed ? (
                 <>
-                  {/* SONG METRICS - Key, Tempo, Time Signature */}
+                  {/* SONG METRICS - Tuning, Key, Tempo, Time Signature */}
                   <TheorySection label="SONG METRICS">
                     <TheoryMetricsRow
+                      tuning={instrumentData[currentInstrument]?.theoryData.tuning || 'Standard'}
                       keyValue={instrumentData[currentInstrument]?.theoryData.key || 'Unknown'}
                       tempo={instrumentData[currentInstrument]?.theoryData.tempo || 'Unknown'}
                       timeSignature={instrumentData[currentInstrument]?.theoryData.timeSignature || '4/4'}

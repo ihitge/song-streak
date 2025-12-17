@@ -8,6 +8,7 @@ export interface GeminiAnalysisResponse {
   artist: string;
   instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
   theoryData: {
+    tuning: string;
     key: string;
     tempo: string;
     timeSignature: string;
@@ -64,6 +65,10 @@ const extractSongTheoryFunction = {
       theoryData: {
         type: 'object',
         properties: {
+          tuning: {
+            type: 'string',
+            description: 'The guitar/bass tuning (e.g., "Standard", "Drop D", "Half Step Down", "DADGAD"). Default to "Standard" if not mentioned.',
+          },
           key: {
             type: 'string',
             description: 'The musical key of the song (e.g., "A Minor", "G Major")',
@@ -87,7 +92,7 @@ const extractSongTheoryFunction = {
             description: 'Scales used in the song (e.g., ["A Minor Pentatonic", "A Natural Minor"])',
           },
         },
-        required: ['key', 'tempo', 'timeSignature', 'chords', 'scales'],
+        required: ['tuning', 'key', 'tempo', 'timeSignature', 'chords', 'scales'],
       },
       practiceData: {
         type: 'object',
@@ -294,6 +299,7 @@ Analyze the video title, description, audio content, and any visible chord diagr
           artist: args.artist || 'Unknown',
           instrument: args.instrument || 'Guitar',
           theoryData: {
+            tuning: args.theoryData?.tuning || 'Standard',
             key: args.theoryData?.key || 'Unknown',
             tempo: args.theoryData?.tempo || 'Unknown',
             timeSignature: args.theoryData?.timeSignature || '4/4',
@@ -330,6 +336,7 @@ Analyze the video title, description, audio content, and any visible chord diagr
           artist: parsed.artist || 'Unknown',
           instrument: parsed.instrument || 'Guitar',
           theoryData: {
+            tuning: parsed.theoryData?.tuning || parsed.tuning || 'Standard',
             key: parsed.theoryData?.key || parsed.key || 'Unknown',
             tempo: parsed.theoryData?.tempo || parsed.tempo || 'Unknown',
             timeSignature: parsed.theoryData?.timeSignature || parsed.timeSignature || '4/4',
@@ -367,6 +374,7 @@ export function getMockGeminiResponse(): GeminiAnalysisResponse {
     artist: 'Sample Artist',
     instrument: 'Guitar',
     theoryData: {
+      tuning: 'Standard',
       key: 'A Minor',
       tempo: '120 BPM',
       timeSignature: '4/4',

@@ -1,7 +1,7 @@
 # 🎵 Song Streak - Project Status
 
 **Last Updated:** December 17, 2025
-**Status:** ✅ **PHASE 4 COMPLETE - Chord Generator System**
+**Status:** ✅ **PHASE 4 COMPLETE - Chord Generator System + Theory UI Improvements**
 
 ---
 
@@ -164,6 +164,20 @@ Test 3: Multiple Instruments
 - [x] expo-av → expo-audio migration for all sound hooks
 - [x] 7 UI sound hooks migrated (`useClickSound`, `useNavButtonSound`, etc.)
 - [x] `useMetronomeSound` migrated with sound pooling pattern preserved
+
+### Theory Tab UI Improvements
+- [x] **Song Metrics 2x2 Grid**: Reorganized from 3-column to 2x2 layout
+  - Row 1: Tuning | Key
+  - Row 2: Tempo | Time
+  - Left-aligned, compact design
+- [x] **Tuning Field**: Added tuning to song analysis (defaults to "Standard")
+  - Gemini API extracts tuning from video tutorials
+  - Database column added (`songs.tuning`)
+  - Full data flow: API → UI → Save → Load
+- [x] **Chord Diagram Layout**:
+  - Delete button floats top-right of card
+  - Chord diagram centered and enlarged (medium size)
+  - GuitarChordDiagram padding made symmetric for proper centering
 
 ---
 
@@ -486,6 +500,8 @@ All core features implemented:
 - ✅ **Deprecation warnings resolved (SafeAreaView, expo-av)**
 
 **Key Addition (Phase 4):** The chord generator system can produce guitar chord diagrams for ANY chord - from simple majors to complex jazz voicings like Cmaj9 or Dm11. Uses music theory algorithms with fallback constraints for playability. Also migrated all audio from deprecated expo-av to expo-audio.
+
+**Latest Updates (Dec 17):** Theory tab UI improvements - song metrics now display in a 2x2 grid (Tuning|Key, Tempo|Time), tuning field added to song analysis, chord diagrams centered with floating delete button.
 
 **Key Addition (Phase 3):** The `useStyledAlert` hook provides app-consistent dialogs. **NEVER use native `Alert.alert()`**.
 
