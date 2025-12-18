@@ -988,7 +988,48 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 ---
 
-*Last updated: Dec 17, 2025*
+*Last updated: Dec 18, 2025*
+
+## Dec 18, 2025 Changes
+
+### Root Note Highlighting in Chord Diagrams
+
+**Enhancement**: Root notes are now visually distinguished in chord diagrams.
+
+**Implementation** (`components/ui/theory/chords/GuitarChordDiagram.tsx`):
+
+1. **New `rootNote` prop**: Accepts the root note of the chord (e.g., 'C', 'F#', 'Bb')
+
+2. **Music theory helpers added**:
+   - `normalizeNote()` - Converts flats to sharps for comparison (Db → C#)
+   - `getNoteAtPosition()` - Calculates note at any string/fret position
+   - `isRootNote()` - Compares notes with enharmonic handling
+
+3. **Color scheme**:
+   - Root notes: `Colors.moss` (green)
+   - Other fretted notes: `Colors.vermilion` (orange)
+   - Root open strings: `Colors.moss` (green stroke)
+   - Other open strings: `Colors.charcoal` (dark stroke)
+
+4. **Chord name alignment**: Left-aligned with fretboard edge (previously centered)
+
+**Usage**:
+```typescript
+<GuitarChordDiagram
+  fingering={voicing}
+  chordName="Am7"
+  rootNote="A"        // NEW: Highlights A notes in green
+  showFingers={true}
+  size="medium"
+/>
+```
+
+**Files Updated**:
+- `GuitarChordDiagram.tsx` - Core implementation
+- `ChordVisualization.tsx` - Passes `rootNote={chordDef.root}`
+- `TheoryChordSection.tsx` - Passes `rootNote={lookupResult.chord?.root}`
+
+---
 
 ## Dec 17, 2025 Changes
 
@@ -1024,7 +1065,7 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
    - Referenced non-existent `sound-click-07.mp3`
    - Fixed: Uses `sound-shared-click.mp3`
 
-**Result**: Extended chords now generate proper voicings with all essential notes displayed as orange dots on the fretboard diagram.
+**Result**: Extended chords now generate proper voicings with all essential notes displayed on the fretboard diagram. Root notes are highlighted in green (moss), other notes in orange (vermilion).
 
 ### Chord Generator Test Suite Fixes
 

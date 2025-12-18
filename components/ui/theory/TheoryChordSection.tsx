@@ -79,6 +79,7 @@ export const TheoryChordSection: React.FC<TheoryChordSectionProps> = ({
                     <GuitarChordDiagram
                       fingering={fingering}
                       chordName={lookupResult.displayName}
+                      rootNote={lookupResult.chord?.root}
                       size="medium"
                     />
                   ) : (

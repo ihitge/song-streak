@@ -37,9 +37,39 @@ const CANVAS_HEIGHT = PADDING.top + FRETBOARD_HEIGHT + PADDING.bottom;
 // String tuning labels (low E to high e)
 const STRING_LABELS = ['E', 'A', 'D', 'G', 'B', 'e'];
 
+// Standard tuning open string notes (low E to high e)
+const OPEN_STRINGS = ['E', 'A', 'D', 'G', 'B', 'E'];
+
+// Chromatic scale for note calculation
+const CHROMATIC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+// Normalize note name (convert flats to sharps for comparison)
+const normalizeNote = (note: string): string => {
+  const flatToSharp: Record<string, string> = {
+    'Db': 'C#', 'Eb': 'D#', 'Fb': 'E', 'Gb': 'F#',
+    'Ab': 'G#', 'Bb': 'A#', 'Cb': 'B',
+  };
+  return flatToSharp[note] || note;
+};
+
+// Get the note at a specific string/fret position
+const getNoteAtPosition = (stringIndex: number, fret: number, baseFret: number = 1): string => {
+  const openNote = OPEN_STRINGS[stringIndex];
+  const openIndex = CHROMATIC.indexOf(openNote);
+  // For fret 0 (open string), no offset; otherwise add baseFret offset
+  const actualFret = fret === 0 ? 0 : fret + baseFret - 1;
+  return CHROMATIC[(openIndex + actualFret) % 12];
+};
+
+// Check if a note matches the root note (handles enharmonics)
+const isRootNote = (note: string, rootNote: string): boolean => {
+  return normalizeNote(note) === normalizeNote(rootNote);
+};
+
 interface GuitarChordDiagramProps {
   fingering: ChordFingering;
   chordName?: string;
+  rootNote?: string; // Root note of the chord (e.g., 'C', 'F#', 'Bb')
   showFingers?: boolean;
   size?: 'small' | 'medium' | 'large';
 }
@@ -47,6 +77,7 @@ interface GuitarChordDiagramProps {
 export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
   fingering,
   chordName,
+  rootNote,
   showFingers = true,
   size = 'medium',
 }) => {
@@ -103,10 +134,10 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
   return (
     <View style={[styles.container, { width: scaledWidth, height: scaledHeight }]}>
       <Canvas style={{ width: scaledWidth, height: scaledHeight }}>
-        {/* Chord name at top */}
+        {/* Chord name at top (left-aligned with fretboard) */}
         {chordName && (
           <Text
-            x={scaledWidth / 2 - chordNameFont.measureText(chordName).width / 2}
+            x={PADDING.left * scale}
             y={20 * scale}
             text={chordName}
             font={chordNameFont}
@@ -180,6 +211,9 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
             );
           } else if (fret === 0) {
             // Open string - O marker
+            // Check if this open string is the root note
+            const openStringNote = getNoteAtPosition(stringIndex, 0, baseFret);
+            const isRoot = rootNote && isRootNote(openStringNote, rootNote);
             return (
               <Circle
                 key={`open-${stringIndex}`}
@@ -188,7 +222,7 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
                 r={5 * scale}
                 style="stroke"
                 strokeWidth={1.5 * scale}
-                color={Colors.moss}
+                color={isRoot ? Colors.moss : Colors.charcoal}
               />
             );
           }
@@ -234,6 +268,11 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
           const y = getDotY(fret);
           const finger = fingering.fingers?.[stringIndex];
 
+          // Check if this position plays the root note
+          const noteAtPosition = getNoteAtPosition(stringIndex, fret, baseFret);
+          const isRoot = rootNote && isRootNote(noteAtPosition, rootNote);
+          const dotColor = isRoot ? Colors.moss : Colors.vermilion;
+
           return (
             <React.Fragment key={`dot-${stringIndex}`}>
               {/* Finger dot */}
@@ -241,7 +280,7 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
                 cx={x}
                 cy={y}
                 r={DOT_RADIUS * scale}
-                color={Colors.vermilion}
+                color={dotColor}
               />
 
               {/* Finger number (inside dot) */}

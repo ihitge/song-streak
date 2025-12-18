@@ -110,6 +110,7 @@ export const ChordVisualization: React.FC<ChordVisualizationProps> = ({
         <GuitarChordDiagram
           fingering={voicing}
           chordName={showChordName ? chordDef.display : undefined}
+          rootNote={chordDef.root}
           showFingers={showFingers}
           size={size}
         />

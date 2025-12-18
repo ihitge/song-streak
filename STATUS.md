@@ -1,6 +1,6 @@
 # 🎵 Song Streak - Project Status
 
-**Last Updated:** December 17, 2025
+**Last Updated:** December 18, 2025
 **Status:** ✅ **PHASE 4 COMPLETE - Chord Generator System + Theory UI Improvements**
 
 ---
@@ -178,6 +178,14 @@ Test 3: Multiple Instruments
   - Delete button floats top-right of card
   - Chord diagram centered and enlarged (medium size)
   - GuitarChordDiagram padding made symmetric for proper centering
+- [x] **Root Note Highlighting** (Dec 18):
+  - Root notes colored green (moss) instead of orange (vermilion)
+  - Open strings that are root notes also colored green
+  - Added music theory helpers: `normalizeNote`, `getNoteAtPosition`, `isRootNote`
+  - Handles enharmonic equivalents (C# = Db, etc.)
+- [x] **Chord Name Left-Alignment** (Dec 18):
+  - Chord names (e.g., "Am7") now left-aligned with fretboard edge
+  - Previously centered, now aligned for better visual hierarchy
 
 ---
 
@@ -501,7 +509,9 @@ All core features implemented:
 
 **Key Addition (Phase 4):** The chord generator system can produce guitar chord diagrams for ANY chord - from simple majors to complex jazz voicings like Cmaj9 or Dm11. Uses music theory algorithms with fallback constraints for playability. Also migrated all audio from deprecated expo-av to expo-audio.
 
-**Latest Updates (Dec 17):** Theory tab UI improvements - song metrics now display in a 2x2 grid (Tuning|Key, Tempo|Time), tuning field added to song analysis, chord diagrams centered with floating delete button. Edit functionality moved from song detail view to song card (edit/delete icons stack vertically).
+**Latest Updates (Dec 18):** Chord diagram enhancements - root notes now highlighted in green (moss) for both fretted positions and open strings, chord names left-aligned with fretboard. Added music theory helpers for note calculation and enharmonic handling.
+
+**Previous Updates (Dec 17):** Theory tab UI improvements - song metrics now display in a 2x2 grid (Tuning|Key, Tempo|Time), tuning field added to song analysis, chord diagrams centered with floating delete button. Edit functionality moved from song detail view to song card (edit/delete icons stack vertically).
 
 **Key Addition (Phase 3):** The `useStyledAlert` hook provides app-consistent dialogs. **NEVER use native `Alert.alert()`**.
 
