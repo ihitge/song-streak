@@ -125,7 +125,76 @@ const handlePress = async () => {
 3. If new component needed, follow existing patterns
 4. **For interactive components**: Always add audio + haptic feedback using the pattern above
 5. Document new components in `COMPONENTS.md`
-6. Test in browser (user must verify - Claude cannot browser test)
+6. Browser testing: Claude can now use Playwright MCP for automated browser testing
+
+---
+
+## Browser Testing with Playwright MCP
+
+Claude now has access to automated browser testing via Playwright MCP server. This enables full end-to-end testing without manual user intervention.
+
+### Setup
+
+The Playwright MCP server is configured and ready to use:
+- **Server script**: `mcp-server-playwright.js`
+- **Command to run**: `npm run mcp:playwright`
+- **Config location**: `~/.claude/mcp-config.json`
+
+### Available Browser Testing Tools
+
+Claude can use these browser automation capabilities:
+
+| Tool | Purpose | Example |
+|------|---------|---------|
+| `navigate` | Navigate to a URL | Navigate to `http://localhost:3000` |
+| `screenshot` | Capture page screenshot | Save screenshot to `/tmp/screenshot.png` |
+| `click` | Click elements | Click button with selector `#submit-btn` |
+| `fill` | Fill form inputs | Fill email input with user data |
+| `getPageContent` | Extract visible text | Get all text from page body |
+| `getHTML` | Get HTML structure | Inspect component HTML |
+| `waitForElement` | Wait for element to appear | Wait 5 seconds for modal |
+| `evaluateScript` | Execute JavaScript | Run custom logic in page context |
+| `close` | Cleanup browser | Close browser after tests |
+
+### Testing Workflow
+
+When testing UI changes or new features:
+
+1. Start your dev server: `npm start` or `npm run web`
+2. Request Claude to test the feature using browser automation
+3. Claude will:
+   - Navigate to the URL
+   - Interact with UI elements
+   - Take screenshots as evidence
+   - Verify page content and structure
+   - Assert on expected behavior
+
+### Example Browser Test Request
+
+```
+"Add a new song to the library and verify it appears in the list.
+Show me screenshots of:
+1. The initial library page
+2. The + Add Song modal
+3. The song successfully added to the library"
+```
+
+Claude will automatically:
+1. Navigate to the app
+2. Click the + Add Song button
+3. Take screenshot of modal
+4. Fill in form fields
+5. Submit the form
+6. Take screenshot of updated library
+7. Verify the new song appears in the list
+
+### Important Notes
+
+- **Local dev server required**: Browser tests only work against a running local server (http://localhost:3000 or similar)
+- **Headless testing**: Tests run in headless Chrome (no visible browser)
+- **Screenshots**: Claude saves evidence to `/tmp/` for inspection
+- **Viewport**: Fixed 1280x720 for consistent results
+- **No real user interaction**: Tests are automated; haptic/audio feedback cannot be verified this way
 
 ---
 

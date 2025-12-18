@@ -10,7 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:chords": "jest --testPathPatterns=chords"
+    "test:chords": "jest --testPathPatterns=chords",
+    "mcp:playwright": "node mcp-server-playwright.js"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -56,9 +57,11 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
     "jest": "^30.2.0",
+    "playwright": "^1.57.0",
     "react-test-renderer": "19.1.0",
     "ts-jest": "^29.4.6",
     "typescript": "~5.9.2"
