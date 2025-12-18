@@ -231,7 +231,42 @@ showConfirm(
 
 ---
 
+## Browser Testing Capabilities (Playwright MCP)
+
+Claude can now perform **full automated browser testing** for this project. This means:
+
+✅ **What Claude CAN Do**:
+- Navigate to http://localhost:8081 (or your dev server port)
+- Click buttons, fill forms, submit data
+- Take screenshots as visual evidence
+- Extract and verify page content
+- Test complete user flows end-to-end
+- Wait for async content to load
+- Inspect page structure and HTML
+- Run custom JavaScript in page context
+
+✅ **When Testing**:
+- Always ensure dev server is running (`npm run web`)
+- Provide clear test requests with expected outcomes
+- Review screenshot evidence provided by Claude
+- Mark test tasks as completed when results are verified
+
+⚠️ **Limitations**:
+- Local dev server only (http://localhost:8081, not production)
+- Headless browser (no visible window)
+- Fixed 1280x720 viewport (desktop only)
+- Cannot test OAuth/Apple Sign-in flows
+- Cannot verify haptic/audio feedback directly
+
+📖 **See Also**:
+- [QUICK_TEST_REFERENCE.md](QUICK_TEST_REFERENCE.md) - Quick patterns & examples
+- [BROWSER_TESTING_GUIDE.md](BROWSER_TESTING_GUIDE.md) - Comprehensive guide
+- [PLAYWRIGHT_MCP_SETUP.md](PLAYWRIGHT_MCP_SETUP.md) - Technical setup
+
+---
+
 **GOLDEN RULES**:
 - Never make assumptions. Never get lazy. Never hallucinate. Never take the easy route. Always engineer for scalability and the long-term view. Ask when unsure.
 - Every interaction should feel tactile: visual + haptic + audio feedback.
 - **NEVER use native Alert.alert() - always use useStyledAlert hook.**
+- **Browser testing with Playwright MCP is now available** - use it to verify UI changes with confidence

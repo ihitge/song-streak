@@ -68,7 +68,6 @@ const isRootNote = (note: string, rootNote: string): boolean => {
 
 interface GuitarChordDiagramProps {
   fingering: ChordFingering;
-  chordName?: string;
   rootNote?: string; // Root note of the chord (e.g., 'C', 'F#', 'Bb')
   showFingers?: boolean;
   size?: 'small' | 'medium' | 'large';
@@ -76,7 +75,6 @@ interface GuitarChordDiagramProps {
 
 export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
   fingering,
-  chordName,
   rootNote,
   showFingers = true,
   size = 'medium',
@@ -89,10 +87,6 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
   const fingerFont = useFont(
     require('@/assets/fonts/LexendDeca-Bold.ttf'),
     11,
-  );
-  const chordNameFont = useFont(
-    require('@/assets/fonts/LexendDeca-Bold.ttf'),
-    16,
   );
   const fretNumberFont = useFont(
     require('@/assets/fonts/LexendDeca-SemiBold.ttf'),
@@ -123,7 +117,7 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
   };
 
   // Show loading state while fonts are loading
-  if (!labelFont || !fingerFont || !chordNameFont || !fretNumberFont) {
+  if (!labelFont || !fingerFont || !fretNumberFont) {
     return (
       <View style={[styles.container, styles.loadingContainer, { width: scaledWidth, height: scaledHeight }]}>
         <ActivityIndicator size="small" color={Colors.vermilion} />
@@ -134,17 +128,6 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
   return (
     <View style={[styles.container, { width: scaledWidth, height: scaledHeight }]}>
       <Canvas style={{ width: scaledWidth, height: scaledHeight }}>
-        {/* Chord name at top (left-aligned with fretboard) */}
-        {chordName && (
-          <Text
-            x={PADDING.left * scale}
-            y={20 * scale}
-            text={chordName}
-            font={chordNameFont}
-            color={Colors.charcoal}
-          />
-        )}
-
         {/* Base fret indicator (for barre/movable chords) */}
         {showBaseFret && (
           <Text

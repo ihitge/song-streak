@@ -1,3 +1,39 @@
+# Development Notes & Future Features
+
+## Browser Testing Now Available ✅
+
+**Updated**: December 18, 2025
+
+Claude Code can now perform **full automated browser testing** via Playwright MCP for this project. This means:
+
+✅ **New Testing Workflow**:
+- No more "user must test in browser" disclaimers
+- Can navigate the app and test features
+- Screenshots provide visual evidence
+- Complete user flows can be verified
+- Test tasks can be marked complete with confidence
+
+📖 **How to Use**:
+1. Start dev server: `npm run web`
+2. Ask Claude to test: *"Navigate to http://localhost:8081, test [feature], take screenshots, verify [expected result]"*
+3. Claude will test automatically and report with evidence
+
+📚 **Documentation**:
+- [QUICK_TEST_REFERENCE.md](QUICK_TEST_REFERENCE.md) - Quick patterns & examples
+- [BROWSER_TESTING_GUIDE.md](BROWSER_TESTING_GUIDE.md) - Comprehensive guide
+- [PLAYWRIGHT_MCP_SETUP.md](PLAYWRIGHT_MCP_SETUP.md) - Technical details
+- [MCP_TESTING_VERIFIED.md](MCP_TESTING_VERIFIED.md) - Verification report
+
+**Benefits for Development**:
+- Test new features before committing
+- Verify UI rendering and layout
+- Test form interaction and validation
+- Regression test existing features
+- Capture screenshots for design verification
+- Speed up development cycle
+
+---
+
 # Future Features
 
 ## 1. Setlist Flow (Transition Gaps)

@@ -74,11 +74,15 @@ export const TheoryChordSection: React.FC<TheoryChordSectionProps> = ({
 
             return (
               <View key={`${chord}-${index}`} style={styles.diagramCard}>
+                {/* Chord name label (positioned like trash icon on opposite side) */}
+                <Text style={styles.chordNameLabel}>
+                  {lookupResult.displayName}
+                </Text>
+
                 <View style={styles.diagramWrapper}>
                   {canShowDiagram ? (
                     <GuitarChordDiagram
                       fingering={fingering}
-                      chordName={lookupResult.displayName}
                       rootNote={lookupResult.chord?.root}
                       size="medium"
                     />
@@ -193,6 +197,15 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaRegular',
     color: Colors.graphite,
     fontStyle: 'italic',
+  },
+  chordNameLabel: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    fontFamily: 'LexendDecaBold',
+    fontSize: 16,
+    color: Colors.charcoal,
+    zIndex: 1,
   },
   deleteButton: {
     position: 'absolute',
