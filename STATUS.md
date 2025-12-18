@@ -186,6 +186,11 @@ Test 3: Multiple Instruments
 - [x] **Chord Name Left-Alignment** (Dec 18):
   - Chord names (e.g., "Am7") now left-aligned with fretboard edge
   - Previously centered, now aligned for better visual hierarchy
+- [x] **Algorithmic Fingering Generation** (Dec 18):
+  - Chords not in static dictionary (e.g., Fm, Cm, Gm) now show finger numbers
+  - `generateFingers()` function assigns fingers based on fret positions
+  - Barre chords: finger 1 assigned to all barre positions
+  - Non-barre frets: fingers 2-4 assigned by fret order (lower frets first)
 
 ---
 
@@ -509,7 +514,7 @@ All core features implemented:
 
 **Key Addition (Phase 4):** The chord generator system can produce guitar chord diagrams for ANY chord - from simple majors to complex jazz voicings like Cmaj9 or Dm11. Uses music theory algorithms with fallback constraints for playability. Also migrated all audio from deprecated expo-av to expo-audio.
 
-**Latest Updates (Dec 18):** Chord diagram enhancements - root notes now highlighted in green (moss) for both fretted positions and open strings, chord names left-aligned with fretboard. Added music theory helpers for note calculation and enharmonic handling.
+**Latest Updates (Dec 18):** Chord diagram enhancements - root notes now highlighted in green (moss) for both fretted positions and open strings, chord names left-aligned with fretboard. Added music theory helpers for note calculation and enharmonic handling. Algorithmic chord generator now includes heuristic finger assignments (finger 1 for barres, fingers 2-4 for remaining frets sorted by position).
 
 **Previous Updates (Dec 17):** Theory tab UI improvements - song metrics now display in a 2x2 grid (Tuning|Key, Tempo|Time), tuning field added to song analysis, chord diagrams centered with floating delete button. Edit functionality moved from song detail view to song card (edit/delete icons stack vertically).
 

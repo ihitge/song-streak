@@ -165,6 +165,48 @@ export function parseChordName(chordName: string): {
 }
 
 /**
+ * Generate heuristic finger assignments for a chord voicing
+ * Assigns finger 1 to barre positions, then 2-4 to remaining frets by position
+ */
+function generateFingers(
+  frets: (number | null)[],
+  barres?: BarrePosition[],
+): (number | null)[] {
+  const fingers: (number | null)[] = frets.map(() => null);
+
+  // If barre chord, assign finger 1 to all barre positions
+  if (barres && barres.length > 0) {
+    const barre = barres[0];
+    for (let i = barre.fromString; i <= barre.toString; i++) {
+      if (frets[i] === barre.fret) {
+        fingers[i] = 1;
+      }
+    }
+  }
+
+  // Collect non-barre fretted positions (exclude open strings and muted)
+  const frettedPositions: { string: number; fret: number }[] = [];
+  frets.forEach((fret, string) => {
+    if (fret !== null && fret > 0 && fingers[string] === null) {
+      frettedPositions.push({ string, fret });
+    }
+  });
+
+  // Sort by fret (lower first), then by string (lower strings first for ergonomics)
+  frettedPositions.sort((a, b) => a.fret - b.fret || a.string - b.string);
+
+  // Assign fingers 2, 3, 4 to remaining positions
+  let nextFinger = barres && barres.length > 0 ? 2 : 1;
+  for (const pos of frettedPositions) {
+    if (nextFinger <= 4) {
+      fingers[pos.string] = nextFinger++;
+    }
+  }
+
+  return fingers;
+}
+
+/**
  * Convert a VoicingCandidate to a ChordFingering
  */
 function candidateToFingering(
@@ -205,6 +247,7 @@ function candidateToFingering(
     id: `gen-${index}`,
     name,
     frets: candidate.frets,
+    fingers: generateFingers(candidate.frets, barrePositions),
     barres: barrePositions.length > 0 ? barrePositions : undefined,
     baseFret: candidate.baseFret > 1 ? candidate.baseFret : undefined,
     difficulty,

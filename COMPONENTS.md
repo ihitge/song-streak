@@ -1013,6 +1013,22 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 4. **Chord name alignment**: Left-aligned with fretboard edge (previously centered)
 
+### Algorithmic Fingering Generation (Dec 18)
+
+**Enhancement**: Chords generated algorithmically (not in static dictionary) now include finger numbers.
+
+**Implementation** (`data/chords/generator/index.ts`):
+
+1. **New `generateFingers()` function**: Assigns fingers based on fret positions and barre detection
+
+2. **Algorithm**:
+   - If barre chord: finger 1 assigned to all positions covered by the barre
+   - Remaining fretted positions: collected and sorted by fret (lower first), then by string
+   - Fingers 2, 3, 4 assigned in order to sorted positions
+   - Open strings and muted strings return `null`
+
+3. **Affected chords**: Any chord not in the static 21-chord dictionary (Fm, Cm, Gm, Bbm, etc.)
+
 **Usage**:
 ```typescript
 <GuitarChordDiagram

@@ -84,6 +84,10 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
     require('@/assets/fonts/LexendDeca-SemiBold.ttf'),
     10,
   );
+  const muteFont = useFont(
+    require('@/assets/fonts/LexendDeca-Bold.ttf'),
+    18,
+  );
   const fingerFont = useFont(
     require('@/assets/fonts/LexendDeca-Bold.ttf'),
     11,
@@ -117,7 +121,7 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
   };
 
   // Show loading state while fonts are loading
-  if (!labelFont || !fingerFont || !fretNumberFont) {
+  if (!labelFont || !muteFont || !fingerFont || !fretNumberFont) {
     return (
       <View style={[styles.container, styles.loadingContainer, { width: scaledWidth, height: scaledHeight }]}>
         <ActivityIndicator size="small" color={Colors.vermilion} />
@@ -181,14 +185,15 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
           const y = (PADDING.top - 18) * scale;
 
           if (fret === null) {
-            // Muted string - X marker
+            // Muted string - X marker (sized to match open string circle)
+            // y offset of ~7 centers 18px text vertically with circle at y
             return (
               <Text
                 key={`mute-${stringIndex}`}
-                x={x - 5 * scale}
-                y={y + 4 * scale}
+                x={x - 7 * scale}
+                y={y + 7 * scale}
                 text="×"
-                font={labelFont}
+                font={muteFont}
                 color={Colors.lobsterPink}
               />
             );
@@ -266,10 +271,10 @@ export const GuitarChordDiagram: React.FC<GuitarChordDiagramProps> = ({
                 color={dotColor}
               />
 
-              {/* Finger number (inside dot) */}
+              {/* Finger number (centered inside dot) */}
               {showFingers && finger && finger > 0 && (
                 <Text
-                  x={x - 4 * scale}
+                  x={x - 3 * scale}
                   y={y + 4 * scale}
                   text={String(finger)}
                   font={fingerFont}
