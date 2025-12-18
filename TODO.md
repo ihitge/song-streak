@@ -48,11 +48,28 @@
 
 ---
 
+## 5. Apple Submission & Compliance
+
+**Action Items:**
+- **Secure Gemini API**: Move API key and analysis logic to Supabase Edge Functions to prevent client-side exposure.
+- **Account Deletion**: Add mandatory "Delete Account" button in Support tab with cascading deletion of user data.
+- **Social Auth Verification**: Ensure Apple and Google Sign-In are fully configured for Production (production bundle identifiers and client IDs).
+- **Branding Audit**: Standardize app name spelling ("Song Streak") across all UI elements and metadata.
+- **Legal Requirements**: Replace placeholder Privacy Policy and Terms of Service URLs with live, hosted documents.
+- **Final Assets**: Replace generic Expo images with high-resolution app icon, adaptive icons, and splash screen.
+- **Metadata Polish**: Finalize versioning (1.0.0) and descriptive permission strings (Camera/Media) in `app.json`.
+
+---
+
 ## Priority Summary
 
 | Feature | Complexity | Impact |
 |---------|------------|--------|
+| Secure Gemini API | Medium | Critical |
+| Account Deletion | Low | Critical |
+| Legal/Compliance | Low | Critical |
 | Tempo Match | Low | High |
+| Final Assets | Low | High |
 | Decay Tracker | Medium | High |
 | Global Transpose | Medium | Medium |
 | Setlist Transitions | High | Medium |
