@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { HelpCircle, Shield, FileText, Info, LogOut, ChevronRight } from 'lucide-react-native';
+import { HelpCircle, Shield, FileText, Info, LogOut, ChevronRight, Trash2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 import { useSignOut } from '@/hooks/useSignOut';
 import { useClickSound } from '@/hooks/useClickSound';
+import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 
 interface SupportRowProps {
   icon: React.ReactNode;
@@ -44,6 +45,7 @@ const SupportRow: React.FC<SupportRowProps> = ({ icon, label, onPress, isLast })
 export const SupportTab: React.FC = () => {
   const { handleSignOut } = useSignOut();
   const { playSound } = useClickSound();
+  const { deleteAccount, isDeleting } = useAccountDeletion();
   const appVersion = Constants.expoConfig?.version || '1.0.0';
 
   const handleHelpPress = () => {
@@ -52,13 +54,17 @@ export const SupportTab: React.FC = () => {
   };
 
   const handlePrivacyPress = () => {
-    // Placeholder - would open privacy policy
-    Linking.openURL('https://example.com/privacy');
+    Linking.openURL('https://www.songstreak.app/privacy');
   };
 
   const handleTermsPress = () => {
-    // Placeholder - would open terms of service
-    Linking.openURL('https://example.com/terms');
+    Linking.openURL('https://www.songstreak.app/terms');
+  };
+
+  const handleDeleteAccountPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await playSound();
+    deleteAccount();
   };
 
   const handleAboutPress = () => {
@@ -102,6 +108,19 @@ export const SupportTab: React.FC = () => {
         </View>
       </View>
 
+      {/* Danger Zone */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionLabel, styles.dangerLabel]}>DANGER ZONE</Text>
+        <View style={styles.card}>
+          <SupportRow
+            icon={<Trash2 size={20} color={Colors.vermilion} />}
+            label={isDeleting ? 'Deleting...' : 'Delete Account'}
+            onPress={handleDeleteAccountPress}
+            isLast
+          />
+        </View>
+      </View>
+
       {/* App Version */}
       <View style={styles.versionContainer}>
         <Text style={styles.versionLabel}>VERSION</Text>
@@ -140,6 +159,9 @@ const styles = StyleSheet.create({
     color: Colors.warmGray,
     letterSpacing: 2,
     marginLeft: 4,
+  },
+  dangerLabel: {
+    color: Colors.vermilion,
   },
   card: {
     backgroundColor: Colors.alloy,

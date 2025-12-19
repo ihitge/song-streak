@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec, Line, Fill } from '@shopify/react-native-skia';
-import Animated, { Keyframe } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
+import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight } from '@/constants/Animations';
 import { useClickSound } from '@/hooks/useClickSound';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
@@ -14,42 +15,6 @@ import type { FrequencyTunerProps } from '@/types/filters';
 type TunerVariant = 'dark' | 'light';
 
 const TUNER_HEIGHT = 44; // Increased from 38px
-
-// --- Glitch Animations ---
-
-// Enter from Right (Next)
-const EnterFromRight = new Keyframe({
-  0: { transform: [{ translateX: 20 }], opacity: 0 },
-  20: { transform: [{ translateX: 15 }], opacity: 0.5 },
-  40: { transform: [{ translateX: 10 }], opacity: 0.1 }, // flicker
-  60: { transform: [{ translateX: 5 }], opacity: 0.9 },
-  80: { transform: [{ translateX: 2 }], opacity: 0.4 },
-  100: { transform: [{ translateX: 0 }], opacity: 1 },
-}).duration(250);
-
-// Exit to Left (Next)
-const ExitToLeft = new Keyframe({
-  0: { transform: [{ translateX: 0 }], opacity: 1 },
-  40: { transform: [{ translateX: -10 }], opacity: 0.5 },
-  100: { transform: [{ translateX: -20 }], opacity: 0 },
-}).duration(200);
-
-// Enter from Left (Prev)
-const EnterFromLeft = new Keyframe({
-  0: { transform: [{ translateX: -20 }], opacity: 0 },
-  20: { transform: [{ translateX: -15 }], opacity: 0.5 },
-  40: { transform: [{ translateX: -10 }], opacity: 0.1 }, // flicker
-  60: { transform: [{ translateX: -5 }], opacity: 0.9 },
-  80: { transform: [{ translateX: -2 }], opacity: 0.4 },
-  100: { transform: [{ translateX: 0 }], opacity: 1 },
-}).duration(250);
-
-// Exit to Right (Prev)
-const ExitToRight = new Keyframe({
-  0: { transform: [{ translateX: 0 }], opacity: 1 },
-  40: { transform: [{ translateX: 10 }], opacity: 0.5 },
-  100: { transform: [{ translateX: 20 }], opacity: 0 },
-}).duration(200);
 
 
 export const FrequencyTuner = <T extends string>({

@@ -7,10 +7,9 @@
 Welcome to **Song Streak**. We are committed to protecting your personal data and your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application ("Song Streak" or the "App"), in accordance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.
 
 ## 2. Who is the Data Controller?
-For the purposes of the UK GDPR, the developer of Song Streak is the "Data Controller". 
-[Insert Your Name/Business Name]  
-[Insert Your Contact Email]  
-[Insert Your UK Address - Optional for draft]
+For the purposes of the UK GDPR, the developer of Song Streak is the "Data Controller".
+Adriaan Hitge
+ihitge@gmail.com
 
 ## 3. Data We Collect
 We collect information that allows you to manage your music repertoire and track practice progress.
@@ -51,7 +50,7 @@ You have the following rights:
 *   **Right to Portability**: Request a copy of your data in a structured format.
 *   **Right to Withdraw Consent**: Where processing is based on consent.
 
-To exercise these rights, please contact us at [Insert Contact Email].
+To exercise these rights, please contact us at ihitge@gmail.com.
 
 ## 9. Children’s Privacy
 Song Streak is not intended for children under the age of 13. We do not knowingly collect personal data from children under 13.
@@ -61,4 +60,4 @@ We may update our Privacy Policy from time to time. We will notify you of any ch
 
 ## 11. Contact Us
 If you have any questions about this Privacy Policy or our data practices, please contact:
-[Insert Contact Email]
+ihitge@gmail.com

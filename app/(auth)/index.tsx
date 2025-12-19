@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { Mail, Lock, User } from 'lucide-react-native';
@@ -231,6 +232,29 @@ export default function AuthScreen() {
                 </Text>
               )}
             </TouchableOpacity>
+
+            {/* Legal Links (Required by Apple for Registration) */}
+            {isRegistering && (
+              <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.legalContainer}>
+                <Text style={styles.legalText}>
+                  By registering, you agree to our{' '}
+                  <Text
+                    style={styles.legalLink}
+                    onPress={() => Linking.openURL('https://www.songstreak.app/terms')}
+                  >
+                    Terms of Service
+                  </Text>
+                  {' '}and{' '}
+                  <Text
+                    style={styles.legalLink}
+                    onPress={() => Linking.openURL('https://www.songstreak.app/privacy')}
+                  >
+                    Privacy Policy
+                  </Text>
+                  .
+                </Text>
+              </Animated.View>
+            )}
 
             <Text style={styles.sysVersion}>SYS. VER 2.4.0</Text>
           </View>
@@ -464,5 +488,20 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'LexendDecaRegular',
     color: '#a0a0a0',
+  },
+  legalContainer: {
+    marginBottom: 16,
+    paddingHorizontal: 8,
+  },
+  legalText: {
+    fontSize: 11,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.graphite,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  legalLink: {
+    color: Colors.vermilion,
+    textDecorationLine: 'underline',
   },
 });

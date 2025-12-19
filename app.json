@@ -20,7 +20,10 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "audio"
-        ]
+        ],
+        "NSCameraUsageDescription": "Song Streak needs camera access to take a photo for your profile picture.",
+        "NSPhotoLibraryUsageDescription": "Song Streak needs access to your photos to set your profile picture.",
+        "NSMicrophoneUsageDescription": "Song Streak uses the microphone for audio features during practice sessions."
       }
     },
     "android": {

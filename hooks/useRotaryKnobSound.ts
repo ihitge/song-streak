@@ -1,39 +1,11 @@
-import { useAudioPlayer, setAudioModeAsync } from 'expo-audio';
-import { useEffect } from 'react';
-import { useSettingsContext } from '@/ctx/SettingsContext';
+/**
+ * useRotaryKnobSound - Rotary knob detent sound
+ * Used for rotary controls (genre selector)
+ */
+
+import { useUISound, AudioSources } from './useUISound';
 import { UI_VOLUMES } from '@/constants/Audio';
 
 export function useRotaryKnobSound() {
-  const { settings } = useSettingsContext();
-  const player = useAudioPlayer(require('@/assets/audio/sound-rotary-knob.wav'));
-
-  useEffect(() => {
-    // Configure audio mode for ambient sound mixing
-    setAudioModeAsync({
-      playsInSilentMode: true,
-      shouldPlayInBackground: false,
-      interruptionMode: 'mixWithOthers',
-    });
-  }, []);
-
-  const playSound = async () => {
-    // Respect sound settings
-    if (!settings.soundEnabled) return;
-
-    if (!player) {
-      console.warn('Sound not loaded yet');
-      return;
-    }
-
-    try {
-      // Set normalized volume, seek to start, and play
-      player.volume = UI_VOLUMES.rotaryKnob;
-      player.seekTo(0);
-      player.play();
-    } catch (error) {
-      console.error('Failed to play sound:', error);
-    }
-  };
-
-  return { playSound };
+  return useUISound(AudioSources.rotaryKnob, UI_VOLUMES.rotaryKnob);
 }

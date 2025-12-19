@@ -1,10 +1,11 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, Keyframe } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
+import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight } from '@/constants/Animations';
 import { useRotaryKnobSound } from '@/hooks/useRotaryKnobSound';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
@@ -12,38 +13,6 @@ import type { RotaryKnobProps } from '@/types/filters';
 
 const KNOB_SIZE = 44; // Increased from 38px
 const READOUT_HEIGHT = 44; // Increased from 38px
-
-// --- Glitch Animations (Adapted from FrequencyTuner) ---
-
-const EnterFromRight = new Keyframe({
-  0: { transform: [{ translateX: 20 }], opacity: 0 },
-  20: { transform: [{ translateX: 15 }], opacity: 0.5 },
-  40: { transform: [{ translateX: 10 }], opacity: 0.1 }, // flicker
-  60: { transform: [{ translateX: 5 }], opacity: 0.9 },
-  80: { transform: [{ translateX: 2 }], opacity: 0.4 },
-  100: { transform: [{ translateX: 0 }], opacity: 1 },
-}).duration(250);
-
-const ExitToLeft = new Keyframe({
-  0: { transform: [{ translateX: 0 }], opacity: 1 },
-  40: { transform: [{ translateX: -10 }], opacity: 0.5 },
-  100: { transform: [{ translateX: -20 }], opacity: 0 },
-}).duration(200);
-
-const EnterFromLeft = new Keyframe({
-  0: { transform: [{ translateX: -20 }], opacity: 0 },
-  20: { transform: [{ translateX: -15 }], opacity: 0.5 },
-  40: { transform: [{ translateX: -10 }], opacity: 0.1 }, // flicker
-  60: { transform: [{ translateX: -5 }], opacity: 0.9 },
-  80: { transform: [{ translateX: -2 }], opacity: 0.4 },
-  100: { transform: [{ translateX: 0 }], opacity: 1 },
-}).duration(250);
-
-const ExitToRight = new Keyframe({
-  0: { transform: [{ translateX: 0 }], opacity: 1 },
-  40: { transform: [{ translateX: 10 }], opacity: 0.5 },
-  100: { transform: [{ translateX: 20 }], opacity: 0 },
-}).duration(200);
 
 
 export const RotaryKnob = <T extends string>({

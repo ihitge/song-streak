@@ -55,6 +55,8 @@
 | `useSignOut` | Centralized sign-out logic with error handling | N/A | `hooks/useSignOut.ts` |
 | `useSettings` | App settings (dark mode, sound enabled) | N/A | `hooks/useSettings.ts` |
 | `useStyledAlert` | **Styled alert system (replaces native Alert.alert)** | N/A | `hooks/useStyledAlert.tsx` |
+| `useAccountDeletion` | **Account deletion with confirmation (Apple requirement)** | N/A | `hooks/useAccountDeletion.ts` |
+| `useUISound` | **Base hook for all UI sounds (consolidated)** | configurable | `hooks/useUISound.ts` |
 | `useNavButtonSound` | Audio feedback for NavButton (large nav) | sound-nav-button.wav | `hooks/useNavButtonSound.ts` |
 | `useGangSwitchSound` | Audio feedback for GangSwitch (small filters) | sound-gang-switch.wav | `hooks/useGangSwitchSound.ts` |
 | `useRotaryKnobSound` | Audio feedback for RotaryKnob (genre selector) | sound-rotary-knob.wav | `hooks/useRotaryKnobSound.ts` |
@@ -67,6 +69,29 @@
 | `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
 | `useMetronome` | Core metronome logic with drift-corrected timing | N/A | `hooks/useMetronome.ts` |
 | `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | metronome-*.wav, sound-click-*.wav | `hooks/useMetronomeSound.ts` |
+
+### Utilities
+
+| Utility | Purpose | Location |
+|---------|---------|----------|
+| `logger` | Development-only logging (silent in production) | `utils/logger.ts` |
+| `feedback` | Haptic + sound feedback utilities | `utils/feedback.ts` |
+| `auth` | Supabase authentication helpers | `utils/auth.ts` |
+
+### Constants
+
+| Constant | Purpose | Location |
+|----------|---------|----------|
+| `Colors` | Design system color tokens | `constants/Colors.ts` |
+| `Animations` | Shared animation keyframes (glitch effects) | `constants/Animations.ts` |
+| `UI_VOLUMES` | Sound volume levels per component | `constants/Audio.ts` |
+
+### Data
+
+| Data | Purpose | Location |
+|------|---------|----------|
+| `MOCK_SONGS` | Demo songs for development | `data/mockSongs.ts` |
+| `isMockSong()` | Check if a song is demo data | `data/mockSongs.ts` |
 
 ---
 
@@ -988,7 +1013,7 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 ---
 
-*Last updated: Dec 18, 2025*
+*Last updated: Dec 19, 2025*
 
 ## Dec 18, 2025 Changes
 

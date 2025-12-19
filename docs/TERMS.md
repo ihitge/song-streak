@@ -46,4 +46,4 @@ We reserve the right to modify these Terms at any time. We will notify you of ch
 
 ## 12. Contact Us
 For any questions regarding these Terms, please contact:
-[Insert Contact Email]
+ihitge@gmail.com
