@@ -1,6 +1,6 @@
 # 🎵 Song Streak - Project Status
 
-**Last Updated:** December 18, 2025
+**Last Updated:** December 20, 2025
 **Status:** ✅ **PHASE 4 COMPLETE - Chord Generator System + Theory UI Improvements**
 
 ---
@@ -10,6 +10,33 @@
 Song Streak is a music learning companion app that helps users track songs they're learning to play, organized by instrument, difficulty, and practice progress.
 
 This document shows the current implementation status and what's ready to test.
+
+### Related Projects
+
+| Project | Description | Location |
+|---------|-------------|----------|
+| **Song Streak App** | React Native mobile app (Expo) | This repository |
+| **[Marketing Site](../song-streak-site/)** | Landing page at [songstreak.app](https://songstreak.app) | `../song-streak-site/` |
+
+---
+
+## 🎯 Latest Updates (December 20, 2025)
+
+### Legal Compliance - COMPLETE ✅
+- Privacy Policy fully rewritten (14 sections, UK GDPR + EU GDPR + CCPA compliant)
+- Terms of Service fully rewritten (16 sections, Apple App Store compliant)
+- All third-party services documented (Supabase, Google Sign-In, Apple Sign-In, Gemini AI, iTunes API, Lyrics APIs)
+- Account deletion rights documented per Apple requirements
+- Band collaboration data sharing disclosed
+- Device permissions documented (Camera, Photo Library, Microphone)
+
+### Marketing Site Content - COMPLETE ✅
+- Landing page copy rewritten with benefit-focused content
+- AI video analysis explained clearly
+- Algorithmic chord generation differentiated from competitors
+- Drift-corrected metronome positioning
+- Practice tracking with achievements highlighted
+- FAQ updated with objection-handling questions
 
 ---
 

@@ -1,5 +1,14 @@
 # Claude Instructions for Song Streak
 
+## Related Projects
+
+| Project | Description | Location |
+|---------|-------------|----------|
+| **Song Streak App** | React Native mobile app (Expo) | This repository |
+| **[Marketing Site](../song-streak-site/)** | Landing page at [songstreak.app](https://songstreak.app) | `../song-streak-site/` |
+
+---
+
 ## Component-First Development
 
 **Before creating ANY new UI element, ALWAYS check `COMPONENTS.md` first.**

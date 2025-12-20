@@ -91,9 +91,13 @@ Claude Code can now perform **full automated browser testing** via Playwright MC
 - **Account Deletion**: Add mandatory "Delete Account" button in Support tab with cascading deletion of user data.
 - **Social Auth Verification**: Ensure Apple and Google Sign-In are fully configured for Production (production bundle identifiers and client IDs).
 - **Branding Audit**: Standardize app name spelling ("Song Streak") across all UI elements and metadata.
-- **Legal Requirements [CRITICAL]**: Replace placeholder Privacy Policy and Terms of Service URLs with live, hosted documents.
+- **Legal Requirements [CRITICAL]**: ✅ **COMPLETED** - Privacy Policy and Terms of Service fully rewritten and aligned with app.
+    - Privacy Policy: 14 sections, UK GDPR + EU GDPR + CCPA compliant
+    - Terms of Service: 16 sections, Apple App Store compliant (account deletion rights)
+    - All third-party services documented (Supabase, Google Sign-In, Apple Sign-In, Gemini AI, iTunes API, Lyrics APIs)
     - **Sign-Up Screen**: Add "By registering, you agree to..." text with links in `app/(auth)/index.tsx`.
     - **Support Tab**: Update `components/ui/account/SupportTab.tsx` with live links for App Store reviewers.
+    - **Before Launch**: Replace `[DEVELOPER_NAME]`, `[DEVELOPER_EMAIL]`, `[DEVELOPER_COUNTRY]` placeholders in legal docs.
 - **Final Assets**: Replace generic Expo images with high-resolution app icon, adaptive icons, and splash screen.
 - **Metadata Polish**: Finalize versioning (1.0.0) and descriptive permission strings (Camera/Media) in `app.json`.
 
