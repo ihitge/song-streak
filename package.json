@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
+    "@playwright/mcp": "^0.0.52",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
     "jest": "^30.2.0",
