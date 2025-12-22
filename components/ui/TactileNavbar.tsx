@@ -15,7 +15,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'songs', icon: 'music', label: 'Songs', route: '/' },
-  { name: 'setlists', icon: 'list', label: 'Setlists', route: '/setlists' },
+  { name: 'tuner', icon: 'bullseye', label: 'Tuner', route: '/tuner' },
   { name: 'metronome', icon: 'play', label: 'Metronome', route: '/timing' },
   { name: 'streaks', icon: 'bolt', label: 'Streaks', route: '/streaks' },
 ];
