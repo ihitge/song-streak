@@ -29,7 +29,7 @@
 | Page header with filters | `LibraryHeader` (uses PageHeader) |
 | Navigation button | `NavButton` |
 | Selection Switch | `GangSwitch` |
-| Tuner Control | `FrequencyTuner` |
+| Filter/Tuner Control | `FrequencyTuner` |
 | Rotary Control | `RotaryKnob` |
 | Bottom navigation | `TactileNavbar` |
 | **Alert/Error/Success dialogs** | `useStyledAlert` hook |
@@ -38,6 +38,10 @@
 | Practice complete modal | `PracticeCompleteModal` |
 | Achievement celebration | `AchievementModal` |
 | Video player | `VideoPlayerModal` |
+| **Guitar tuner meter** | `TunerMeter` |
+| **Guitar tuner note display** | `TunerNoteDisplay` |
+| **Guitar tuner string selector** | `TunerStringSelector` |
+| **Guitar tuner controls** | `TunerControls` |
 
 ### Hooks
 
@@ -54,6 +58,9 @@
 | Setlist management | `useSetlists` |
 | Practice tracking | `usePracticeData` |
 | Debounced search | `useSearch` |
+| **Guitar tuner state machine** | `useTunerMachine` |
+| Pitch detection (pitchy) | `usePitchDetection` |
+| Microphone audio streaming | `useAudioSession` |
 
 ### Design Tokens
 

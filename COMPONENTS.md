@@ -32,6 +32,10 @@
 | `MetronomeControls` | Time signature and subdivision controls | `components/ui/metronome/MetronomeControls.tsx` |
 | `MetronomePanel` | **Composite: VU meter + BPM + session timer** | `components/ui/metronome/MetronomePanel.tsx` |
 | `TransportControls` | Play/pause/reset/log buttons for metronome | `components/ui/metronome/TransportControls.tsx` |
+| `TunerMeter` | Visual meter showing pitch deviation (-50 to +50 cents) | `components/ui/tuner/TunerMeter.tsx` |
+| `TunerNoteDisplay` | Note display with frequency, deviation, and guidance | `components/ui/tuner/TunerNoteDisplay.tsx` |
+| `TunerStringSelector` | Row of 6 guitar string buttons with LED indicators | `components/ui/tuner/TunerStringSelector.tsx` |
+| `TunerControls` | Start/Stop button and signal strength meter | `components/ui/tuner/TunerControls.tsx` |
 | `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
 | `InsetWindow` | **Reusable Skia inset window (dark/light variants)** | `components/ui/InsetWindow.tsx` |
 | `LEDIndicator` | **Skeuomorphic LED with metal bezel and bloom** | `components/skia/primitives/LEDIndicator.tsx` |
@@ -69,6 +73,9 @@
 | `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
 | `useMetronome` | Core metronome logic with drift-corrected timing | N/A | `hooks/useMetronome.ts` |
 | `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | metronome-*.wav, sound-click-*.wav | `hooks/useMetronomeSound.ts` |
+| `useTunerMachine` | **Guitar tuner state machine with pitch detection** | N/A | `hooks/tuner/useTunerMachine.ts` |
+| `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | N/A | `hooks/tuner/usePitchDetection.ts` |
+| `useAudioSession` | Web Audio API microphone streaming | N/A | `hooks/tuner/useAudioSession.ts` |
 
 ### Utilities
 
@@ -85,6 +92,7 @@
 | `Colors` | Design system color tokens | `constants/Colors.ts` |
 | `Animations` | Shared animation keyframes (glitch effects) | `constants/Animations.ts` |
 | `UI_VOLUMES` | Sound volume levels per component | `constants/Audio.ts` |
+| `TunerConfig` | Audio, YIN, volume, and tuning thresholds for tuner | `constants/TunerConfig.ts` |
 
 ### Data
 
@@ -1370,3 +1378,203 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 - Moved subdivision control into MetronomePanel header
 - Fixed metronome sound race condition (load all sounds upfront)
 - Added metronome drum samples: metronome-snare.wav, metronome-kick.wav, metronome-hihat.wav
+
+---
+
+## Guitar Tuner Components (Dec 22, 2025)
+
+### Overview
+
+Real-time guitar tuner using the **pitchy** library (MIT licensed) with McLeod Pitch Method for accurate pitch detection. Supports standard guitar tuning (E2-E4, 82Hz-330Hz).
+
+### TunerMeter
+
+**Purpose**: Visual meter showing pitch deviation from target note.
+
+**Location**: `components/ui/tuner/TunerMeter.tsx`
+
+**Props**:
+```typescript
+interface TunerMeterProps {
+  cents: number | null;        // Deviation in cents (-50 to +50)
+  direction: TuningDirection;  // 'flat' | 'sharp' | 'perfect' | null
+  isInTune: boolean;           // Whether currently in tune
+  isActive: boolean;           // Whether tuner is listening
+}
+```
+
+**Visual Behavior**:
+- Animated needle that moves based on cents deviation
+- Color-coded feedback: green (in tune), yellow (close), red (off)
+- Center zone indicator that glows when in tune
+- Tick marks at 5-cent intervals
+- "♭ FLAT" and "SHARP ♯" direction labels
+
+### TunerNoteDisplay
+
+**Purpose**: Large display showing detected note, frequency, and tuning guidance.
+
+**Location**: `components/ui/tuner/TunerNoteDisplay.tsx`
+
+**Props**:
+```typescript
+interface TunerNoteDisplayProps {
+  detectedString: GuitarString | null;
+  frequency: number | null;      // Hz
+  cents: number | null;          // Deviation from target
+  direction: TuningDirection;
+  status: TunerStatus;
+  isInTune: boolean;
+}
+```
+
+**Visual Behavior**:
+- Status indicator with LED dot (idle/detecting/in tune)
+- Large note name (64px) with octave
+- String label (e.g., "Low E (6th String)")
+- Frequency display in Hz
+- Deviation display in cents (color-coded)
+- Tuning guidance arrows (↑ tighten / ↓ loosen)
+
+### TunerStringSelector
+
+**Purpose**: Row of 6 buttons for guitar strings with auto-detection.
+
+**Location**: `components/ui/tuner/TunerStringSelector.tsx`
+
+**Props**:
+```typescript
+interface TunerStringSelectorProps {
+  detectedString: GuitarString | null;
+  isInTune: boolean;
+  onStringSelect?: (string: GuitarString) => void;
+  isActive: boolean;
+}
+```
+
+**Visual Behavior**:
+- 6 tactile buttons (strings 6-1: E2, A2, D3, G3, B3, E4)
+- Auto-highlights detected string (charcoal background)
+- LED indicator appears on detected string
+- LED turns green when in tune
+- Audio + haptic feedback on press
+
+### TunerControls
+
+**Purpose**: Start/Stop button and signal strength meter.
+
+**Location**: `components/ui/tuner/TunerControls.tsx`
+
+**Props**:
+```typescript
+interface TunerControlsProps {
+  status: TunerStatus;
+  signalStrength: number;      // 0-1 normalized
+  hasPermission: boolean;
+  permissionStatus: string;
+  onStart: () => void;
+  onStop: () => void;
+}
+```
+
+**Visual Behavior**:
+- Large START/STOP button (vermilion when active)
+- Signal strength meter (5 bars)
+- Permission status indicator
+
+### useTunerMachine Hook
+
+**Purpose**: Central state machine managing all tuner functionality.
+
+**Location**: `hooks/tuner/useTunerMachine.ts`
+
+**Returns**:
+```typescript
+interface TunerHookReturn {
+  // State
+  status: TunerStatus;              // 'idle' | 'initializing' | 'listening' | 'detecting' | 'in_tune'
+  detectedString: GuitarString | null;
+  frequency: number | null;
+  cents: number | null;
+  direction: TuningDirection;
+  isInTune: boolean;
+  signalStrength: number;
+  hasPermission: boolean;
+  permissionStatus: string;
+
+  // Actions
+  start: () => void;
+  stop: () => void;
+}
+```
+
+**Usage**:
+```typescript
+import { useTunerMachine } from '@/hooks/tuner';
+
+function TunerScreen() {
+  const tuner = useTunerMachine();
+
+  return (
+    <>
+      <TunerNoteDisplay
+        detectedString={tuner.detectedString}
+        frequency={tuner.frequency}
+        cents={tuner.cents}
+        direction={tuner.direction}
+        status={tuner.status}
+        isInTune={tuner.isInTune}
+      />
+      <TunerMeter
+        cents={tuner.cents}
+        direction={tuner.direction}
+        isInTune={tuner.isInTune}
+        isActive={tuner.status !== 'idle'}
+      />
+      <TunerStringSelector
+        detectedString={tuner.detectedString}
+        isInTune={tuner.isInTune}
+        isActive={tuner.status !== 'idle'}
+      />
+      <TunerControls
+        status={tuner.status}
+        signalStrength={tuner.signalStrength}
+        hasPermission={tuner.hasPermission}
+        permissionStatus={tuner.permissionStatus}
+        onStart={tuner.start}
+        onStop={tuner.stop}
+      />
+    </>
+  );
+}
+```
+
+### Configuration
+
+**Location**: `constants/TunerConfig.ts`
+
+| Config | Purpose |
+|--------|---------|
+| `AUDIO_CONFIG` | Sample rate (44.1kHz), buffer sizes, FFT size |
+| `YIN_CONFIG` | Pitch detection thresholds and frequency range |
+| `VOLUME_THRESHOLD` | Noise gating thresholds for signal detection |
+| `TUNING_CONFIG` | In-tune tolerance (±5 cents), stability timing |
+
+### Guitar String Definitions
+
+**Location**: `types/tuner.ts`
+
+```typescript
+export const GUITAR_STRINGS = {
+  E2: { name: 'E', note: 'E2', frequency: 82.41, stringNumber: 6, fullName: 'Low E' },
+  A2: { name: 'A', note: 'A2', frequency: 110.0, stringNumber: 5, fullName: 'A' },
+  D3: { name: 'D', note: 'D3', frequency: 146.83, stringNumber: 4, fullName: 'D' },
+  G3: { name: 'G', note: 'G3', frequency: 196.0, stringNumber: 3, fullName: 'G' },
+  B3: { name: 'B', note: 'B3', frequency: 246.94, stringNumber: 2, fullName: 'B' },
+  E4: { name: 'E', note: 'E4', frequency: 329.63, stringNumber: 1, fullName: 'High E' },
+} as const;
+```
+
+### Licensing
+
+The tuner uses **pitchy v4.1.0** (MIT licensed) for pitch detection, which is fully compatible with commercial/App Store distribution.
