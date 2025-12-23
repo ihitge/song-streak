@@ -6,7 +6,7 @@ import { Colors } from '@/constants/Colors';
 import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { TheorySection, TheoryMetricsRow, TheoryChipGroup, TheoryChordSection, AddChordModal } from '@/components/ui/theory';
-import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Guitar } from 'lucide-react-native';
+import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Guitar, Headphones } from 'lucide-react-native';
 import { FilterOption, Instrument } from '@/types/filters';
 import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
@@ -18,6 +18,7 @@ import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { AchievementGrid } from '@/components/ui/practice/AchievementGrid';
 import { AchievementModal } from '@/components/ui/practice/AchievementModal';
 import { PracticeCompleteModal } from '@/components/ui/practice/PracticeCompleteModal';
+import { PracticePlayerModal } from '@/components/ui/practice/PracticePlayerModal';
 import { usePracticeData } from '@/hooks/usePracticeData';
 import { Achievement } from '@/types/practice';
 import { instrumentOptions } from '@/config/filterOptions';
@@ -88,8 +89,10 @@ export default function AddSongScreen() {
   const [achievementModalVisible, setAchievementModalVisible] = useState(false);
   const [practiceCompleteModalVisible, setPracticeCompleteModalVisible] = useState(false);
   const [addChordModalVisible, setAddChordModalVisible] = useState(false);
+  const [practicePlayerModalVisible, setPracticePlayerModalVisible] = useState(false);
   const [lastPracticeSeconds, setLastPracticeSeconds] = useState(0);
   const [newlyUnlockedAchievements, setNewlyUnlockedAchievements] = useState<Achievement[]>([]);
+  const [practiceNotes, setPracticeNotes] = useState('');
   const { playSound } = useClickSound();
   const { showError, showSuccess, showWarning, showInfo, showConfirm } = useStyledAlert();
 
@@ -849,6 +852,30 @@ export default function AddSongScreen() {
                 />
               )}
 
+              {/* Practice Player Button */}
+              <TouchableOpacity
+                style={styles.practicePlayerButton}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  await playSound();
+                  setPracticePlayerModalVisible(true);
+                }}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={[Colors.charcoal, '#1a1a1a']}
+                  style={styles.practicePlayerButtonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                >
+                  <Headphones size={20} color={Colors.vermilion} />
+                  <View style={styles.practicePlayerButtonText}>
+                    <Text style={styles.practicePlayerButtonTitle}>PRACTICE PLAYER</Text>
+                    <Text style={styles.practicePlayerButtonSubtitle}>Slow down audio without changing pitch</Text>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
+
               {/* Message for new songs */}
               {!songId && (
                 <View style={styles.saveFirstMessage}>
@@ -931,6 +958,15 @@ export default function AddSongScreen() {
         onClose={() => setAddChordModalVisible(false)}
         onSubmit={handleAddChord}
         existingChords={instrumentData[currentInstrument]?.theoryData.chords || []}
+      />
+
+      {/* Practice Player Modal */}
+      <PracticePlayerModal
+        visible={practicePlayerModalVisible}
+        onClose={() => setPracticePlayerModalVisible(false)}
+        songTitle={songTitle || 'Practice Player'}
+        initialNotes={practiceNotes}
+        onNotesChange={(notes) => setPracticeNotes(notes)}
       />
     </View>
   );
@@ -1230,5 +1266,40 @@ const styles = StyleSheet.create({
     fontFamily: 'LexendDecaSemiBold',
     color: Colors.vermilion,
     letterSpacing: 1,
+  },
+  // Practice Player Button Styles
+  practicePlayerButton: {
+    width: '100%',
+    marginTop: 8,
+    shadowColor: Colors.ink,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  practicePlayerButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderStyle: 'solid',
+  },
+  practicePlayerButtonText: {
+    flex: 1,
+    gap: 2,
+  },
+  practicePlayerButtonTitle: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 13,
+    color: Colors.softWhite,
+    letterSpacing: 1,
+  },
+  practicePlayerButtonSubtitle: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 11,
+    color: Colors.graphite,
   },
 });

@@ -4,7 +4,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
-import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
+import { InsetShadowOverlay } from '@/components/skia/primitives/InsetShadowOverlay';
+import { SurfaceTextureOverlay } from '@/components/skia/primitives/SurfaceTextureOverlay';
 
 interface RamsTapeCounterDisplayProps {
   seconds: number;

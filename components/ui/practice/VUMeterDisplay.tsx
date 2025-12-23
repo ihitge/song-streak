@@ -5,7 +5,7 @@ import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { ACHIEVEMENTS, formatPracticeTime, calculateProgress } from '@/types/practice';
 import { InsetWindow } from '@/components/ui/InsetWindow';
-import { LEDIndicator } from '@/components/skia/primitives';
+import { LEDIndicator } from '@/components/skia/primitives/LEDIndicator';
 
 /**
  * VU Meter mode

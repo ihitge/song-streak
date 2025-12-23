@@ -37,6 +37,8 @@
 | `TunerStringSelector` | Row of 6 guitar string buttons with LED indicators | `components/ui/tuner/TunerStringSelector.tsx` |
 | `TunerControls` | Start/Stop button and signal strength meter | `components/ui/tuner/TunerControls.tsx` |
 | `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
+| `PracticePlayerModal` | **Audio playback with speed/pitch control** | `components/ui/practice/PracticePlayerModal.tsx` |
+| `PlaybackControls` | Speed slider and playback transport | `components/ui/practice/PlaybackControls.tsx` |
 | `InsetWindow` | **Reusable Skia inset window (dark/light variants)** | `components/ui/InsetWindow.tsx` |
 | `LEDIndicator` | **Skeuomorphic LED with metal bezel and bloom** | `components/skia/primitives/LEDIndicator.tsx` |
 | `GlassOverlay` | **Skia-based glass effect overlay (glare, specular highlight, bezel)** | `components/ui/GlassOverlay.tsx` |
@@ -73,6 +75,7 @@
 | `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
 | `useMetronome` | Core metronome logic with drift-corrected timing | N/A | `hooks/useMetronome.ts` |
 | `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | metronome-*.wav, sound-click-*.wav | `hooks/useMetronomeSound.ts` |
+| `usePracticePlayer` | **Audio playback with speed control (pitch preserved)** | N/A | `hooks/usePracticePlayer.ts` |
 | `useTunerMachine` | **Guitar tuner state machine with pitch detection** | N/A | `hooks/tuner/useTunerMachine.ts` |
 | `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | N/A | `hooks/tuner/usePitchDetection.ts` |
 | `useAudioSession` | Web Audio API microphone streaming | N/A | `hooks/tuner/useAudioSession.ts` |
@@ -1578,3 +1581,186 @@ export const GUITAR_STRINGS = {
 ### Licensing
 
 The tuner uses **pitchy v4.1.0** (MIT licensed) for pitch detection, which is fully compatible with commercial/App Store distribution.
+
+---
+
+## Practice Player Components (Dec 23, 2025)
+
+### Overview
+
+Practice Player feature allows users to upload audio files and slow them down without changing pitch, similar to songscription.ai. Uses `expo-av` with `setRateAsync(rate, shouldCorrectPitch: true)` for pitch-preserved speed control.
+
+### PracticePlayerModal
+
+**Purpose**: Full-featured audio player modal with speed control for practicing along with recordings.
+
+**Location**: `components/ui/practice/PracticePlayerModal.tsx`
+
+**Props**:
+```typescript
+interface PracticePlayerModalProps {
+  visible: boolean;
+  onClose: () => void;
+  initialAudioUrl?: string;    // Pre-loaded audio URL (for saved songs)
+  initialNotes?: string;       // Pre-loaded practice notes
+  onNotesChange?: (notes: string) => void;
+}
+```
+
+**Features**:
+- File picker for audio files (MP3, WAV, M4A, AIFF)
+- Playback controls (play/pause, seek)
+- Speed slider (50% - 100% - 150%) with pitch preservation
+- Collapsible practice notes section
+- File info display (name, size)
+- Industrial Play aesthetic (dark theme, vermilion accents)
+
+**Usage**:
+```typescript
+import { PracticePlayerModal } from '@/components/ui/practice';
+
+<PracticePlayerModal
+  visible={practicePlayerModalVisible}
+  onClose={() => setPracticePlayerModalVisible(false)}
+  initialNotes={practiceNotes}
+  onNotesChange={setPracticeNotes}
+/>
+```
+
+### PlaybackControls
+
+**Purpose**: Transport and speed control component for audio playback.
+
+**Location**: `components/ui/practice/PlaybackControls.tsx`
+
+**Props**:
+```typescript
+interface PlaybackControlsProps {
+  isPlaying: boolean;
+  isLoading: boolean;
+  currentTime: number;         // Seconds
+  duration: number;            // Seconds
+  playbackSpeed: number;       // 0.5 to 1.5
+  onPlayPause: () => void;
+  onSeek: (position: number) => void;
+  onSpeedChange: (speed: number) => void;
+}
+```
+
+**Visual Behavior**:
+- Timeline slider with current position indicator
+- Time display (current / total) in MM:SS format
+- Large play/pause button with vermilion accent
+- Speed control slider with labeled stops (50%, 75%, 100%, 125%, 150%)
+- Disabled state when no audio loaded
+
+### usePracticePlayer Hook
+
+**Purpose**: Manages audio playback with speed control and pitch preservation.
+
+**Location**: `hooks/usePracticePlayer.ts`
+
+**Returns**:
+```typescript
+interface PracticePlayerState {
+  isLoaded: boolean;
+  isPlaying: boolean;
+  isLoading: boolean;
+  duration: number;            // Total duration in seconds
+  currentTime: number;         // Current position in seconds
+  playbackSpeed: number;       // 0.5 to 1.5 (default: 1.0)
+  error: string | null;
+}
+
+interface PracticePlayerActions {
+  loadAudio: (uri: string) => Promise<void>;
+  play: () => Promise<void>;
+  pause: () => Promise<void>;
+  togglePlayback: () => Promise<void>;
+  seekTo: (seconds: number) => Promise<void>;
+  setSpeed: (speed: number) => Promise<void>;
+  unload: () => Promise<void>;
+}
+```
+
+**Key Feature - Pitch Preservation**:
+```typescript
+// Speed change without pitch shift
+await sound.setRateAsync(speed, true); // shouldCorrectPitch = true
+```
+
+**Usage**:
+```typescript
+import { usePracticePlayer } from '@/hooks/usePracticePlayer';
+
+function PracticeScreen() {
+  const player = usePracticePlayer();
+
+  const handleFileSelect = async (uri: string) => {
+    await player.loadAudio(uri);
+  };
+
+  return (
+    <PlaybackControls
+      isPlaying={player.isPlaying}
+      isLoading={player.isLoading}
+      currentTime={player.currentTime}
+      duration={player.duration}
+      playbackSpeed={player.playbackSpeed}
+      onPlayPause={player.togglePlayback}
+      onSeek={player.seekTo}
+      onSpeedChange={player.setSpeed}
+    />
+  );
+}
+```
+
+### Types
+
+**Location**: `types/practicePlayer.ts`
+
+```typescript
+export interface PracticePlayerState {
+  isLoaded: boolean;
+  isPlaying: boolean;
+  isLoading: boolean;
+  duration: number;
+  currentTime: number;
+  playbackSpeed: number;
+  error: string | null;
+}
+
+// Song type extended with practice fields
+export interface Song {
+  // ... existing fields
+  practiceAudioUrl?: string;   // URL to uploaded practice audio
+  practiceNotes?: string;      // User's practice notes
+}
+```
+
+### Web Compatibility (Skia Fallbacks)
+
+The Practice Player and related components work on web thanks to CSS-based fallback files:
+
+| Component | Native (Skia) | Web (CSS) |
+|-----------|---------------|-----------|
+| `InsetWindow` | `InsetWindow.tsx` | `InsetWindow.web.tsx` |
+| `LEDIndicator` | `LEDIndicator.tsx` | `LEDIndicator.web.tsx` |
+| `InsetShadowOverlay` | `InsetShadowOverlay.tsx` | `InsetShadowOverlay.web.tsx` |
+| `SurfaceTextureOverlay` | `SurfaceTextureOverlay.tsx` | `SurfaceTextureOverlay.web.tsx` |
+| `GlassOverlay` | `GlassOverlay.tsx` | `GlassOverlay.web.tsx` |
+| `FrequencyTuner` | `FrequencyTuner.tsx` | `FrequencyTuner.web.tsx` |
+| `RotaryKnob` | `RotaryKnob.tsx` | `RotaryKnob.web.tsx` |
+
+**Important**: Use direct imports (not barrel exports) for platform-specific resolution:
+```typescript
+// ✅ CORRECT - Direct import enables .web.tsx resolution
+import { LEDIndicator } from '@/components/skia/primitives/LEDIndicator';
+
+// ❌ WRONG - Barrel import doesn't resolve .web.tsx properly
+import { LEDIndicator } from '@/components/skia/primitives';
+```
+
+---
+
+*Last updated: Dec 23, 2025*

@@ -10,6 +10,10 @@ export interface Song {
   instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
   genres: Exclude<Genre, 'All'>[];
   artwork?: string;
+  /** Practice audio file URL (for slow-down practice) */
+  practiceAudioUrl?: string;
+  /** User's practice notes for this song */
+  practiceNotes?: string;
 }
 
 // Minimal song data for search suggestions
