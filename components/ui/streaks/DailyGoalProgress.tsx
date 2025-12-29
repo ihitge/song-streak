@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressText: {
-    fontFamily: 'LexendDeca-Regular',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 13,
     color: Colors.graphite,
   },
   percentText: {
-    fontFamily: 'LexendDeca-Medium',
+    fontFamily: 'LexendDecaMedium',
     fontSize: 13,
     color: Colors.warmGray,
   },

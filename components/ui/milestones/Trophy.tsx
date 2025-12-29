@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontFamily: 'LexendDeca-Medium',
+    fontFamily: 'LexendDecaMedium',
     fontSize: 10,
     color: Colors.graphite,
     textAlign: 'center',

@@ -67,11 +67,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontFamily: 'LexendDeca-Medium',
-    fontSize: 14,
-    color: Colors.graphite,
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 9,
+    color: Colors.warmGray,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 2,
   },
   optionsContainer: {
     flexDirection: 'row',
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   optionText: {
-    fontFamily: 'LexendDeca-Medium',
+    fontFamily: 'LexendDecaMedium',
     fontSize: 14,
     color: Colors.graphite,
   },

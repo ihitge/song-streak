@@ -115,9 +115,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   caseTitle: {
-    fontFamily: 'LexendDeca-Bold',
-    fontSize: 18,
-    color: Colors.softWhite,
+    fontFamily: 'LexendDecaBold',
+    fontSize: 14,
+    color: Colors.ink,
     marginBottom: 4,
   },
   shelf: {
@@ -139,15 +139,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   shelfTitle: {
-    fontFamily: 'LexendDeca-SemiBold',
-    fontSize: 14,
-    color: Colors.graphite,
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 9,
+    color: Colors.warmGray,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 2,
   },
   shelfCount: {
-    fontFamily: 'LexendDeca-Medium',
-    fontSize: 12,
+    fontFamily: 'LexendDecaMedium',
+    fontSize: 10,
     color: Colors.warmGray,
   },
   trophyRow: {

@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)',
   },
   monthLabel: {
-    fontFamily: 'LexendDeca-SemiBold',
+    fontFamily: 'LexendDecaSemiBold',
     fontSize: 16,
     color: Colors.softWhite,
   },
@@ -197,10 +197,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   weekdayLabel: {
-    fontFamily: 'LexendDeca-Medium',
-    fontSize: 11,
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 9,
     color: Colors.warmGray,
     textTransform: 'uppercase',
+    letterSpacing: 2,
   },
   grid: {
     gap: 4,
@@ -234,7 +235,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   dayNumber: {
-    fontFamily: 'LexendDeca-Regular',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 12,
     color: Colors.graphite,
     zIndex: 1,
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
   },
   dayNumberToday: {
     color: Colors.softWhite,
-    fontFamily: 'LexendDeca-Bold',
+    fontFamily: 'LexendDecaBold',
   },
   dayNumberGoalMet: {
     color: Colors.softWhite,
@@ -257,8 +258,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   legendLabel: {
-    fontFamily: 'LexendDeca-Regular',
-    fontSize: 11,
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 10,
     color: Colors.warmGray,
   },
   legendSquares: {

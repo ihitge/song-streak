@@ -58,12 +58,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   streakNumber: {
-    fontFamily: 'LexendDeca-Bold',
+    fontFamily: 'LexendDecaBold',
     fontSize: 48,
     lineHeight: 56,
   },
   streakLabel: {
-    fontFamily: 'LexendDeca-Regular',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 18,
     color: Colors.graphite,
   },
@@ -74,12 +74,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   secondaryLabel: {
-    fontFamily: 'LexendDeca-Regular',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 14,
     color: Colors.warmGray,
   },
   secondaryValue: {
-    fontFamily: 'LexendDeca-Medium',
+    fontFamily: 'LexendDecaMedium',
     fontSize: 14,
     color: Colors.graphite,
   },

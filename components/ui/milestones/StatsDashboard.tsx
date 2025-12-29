@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   cardValue: {
-    fontFamily: 'LexendDeca-Bold',
+    fontFamily: 'LexendDecaBold',
     fontSize: 22,
     color: Colors.softWhite,
   },
@@ -145,11 +145,11 @@ const styles = StyleSheet.create({
     color: Colors.vermilion,
   },
   cardLabel: {
-    fontFamily: 'LexendDeca-Regular',
-    fontSize: 11,
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 9,
     color: Colors.warmGray,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 2,
   },
 
   // Compact styles
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   compactValue: {
-    fontFamily: 'LexendDeca-SemiBold',
+    fontFamily: 'LexendDecaSemiBold',
     fontSize: 14,
     color: Colors.graphite,
   },

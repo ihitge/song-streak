@@ -98,12 +98,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: 'LexendDeca-Medium',
+    fontFamily: 'LexendDecaMedium',
     fontSize: 14,
     color: Colors.softWhite,
   },
   percentage: {
-    fontFamily: 'LexendDeca-Bold',
+    fontFamily: 'LexendDecaBold',
     fontSize: 14,
     color: Colors.vermilion,
   },
@@ -136,12 +136,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   currentValue: {
-    fontFamily: 'LexendDeca-Medium',
+    fontFamily: 'LexendDecaMedium',
     fontSize: 12,
     color: Colors.graphite,
   },
   targetValue: {
-    fontFamily: 'LexendDeca-Regular',
+    fontFamily: 'LexendDecaRegular',
     fontSize: 12,
     color: Colors.warmGray,
   },
