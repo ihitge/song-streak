@@ -115,16 +115,16 @@ export const PracticeTimer: React.FC<PracticeTimerProps> = ({
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Complete button - only show if onComplete provided or not compact */}
-        {!compact && (
+        {/* Complete button - show when onComplete is provided */}
+        {onComplete && (
           <TouchableOpacity
             style={[styles.secondaryButton, seconds === 0 && styles.buttonDisabled]}
             onPress={handleComplete}
             activeOpacity={0.8}
             disabled={seconds === 0}
           >
-            <View style={[styles.secondaryButtonInner, seconds > 0 && styles.completeButtonActive]}>
-              <Check size={20} color={seconds > 0 ? Colors.moss : Colors.graphite} />
+            <View style={[styles.secondaryButtonInner, compact && styles.secondaryButtonInnerCompact, seconds > 0 && styles.completeButtonActive]}>
+              <Check size={compact ? 16 : 20} color={seconds > 0 ? Colors.moss : Colors.graphite} />
             </View>
           </TouchableOpacity>
         )}
