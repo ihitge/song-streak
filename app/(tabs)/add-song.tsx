@@ -19,8 +19,14 @@ import { AchievementGrid } from '@/components/ui/practice/AchievementGrid';
 import { AchievementModal } from '@/components/ui/practice/AchievementModal';
 import { PracticeCompleteModal } from '@/components/ui/practice/PracticeCompleteModal';
 import { PracticePlayerModal } from '@/components/ui/practice/PracticePlayerModal';
+import { SkillTree } from '@/components/ui/mastery';
+import { MilestoneModal } from '@/components/ui/milestones';
+import { DailyGoalModal } from '@/components/ui/streaks';
 import { usePracticeData } from '@/hooks/usePracticeData';
+import { useSongMastery } from '@/hooks/useSongMastery';
 import { Achievement } from '@/types/practice';
+import { LifetimeMilestone } from '@/types/milestones';
+import { StreakUpdateResult } from '@/types/streak';
 import { instrumentOptions } from '@/config/filterOptions';
 import { analyzeVideoWithGemini, getMockGeminiResponse } from '@/utils/gemini';
 import { fetchAlbumArtwork } from '@/utils/artwork';
@@ -93,6 +99,9 @@ export default function AddSongScreen() {
   const [lastPracticeSeconds, setLastPracticeSeconds] = useState(0);
   const [newlyUnlockedAchievements, setNewlyUnlockedAchievements] = useState<Achievement[]>([]);
   const [practiceNotes, setPracticeNotes] = useState('');
+  // Celebration modal states
+  const [dailyGoalModalVisible, setDailyGoalModalVisible] = useState(false);
+  const [lastStreakUpdate, setLastStreakUpdate] = useState<StreakUpdateResult | null>(null);
   const { playSound } = useClickSound();
   const { showError, showSuccess, showWarning, showInfo, showConfirm } = useStyledAlert();
 
@@ -102,6 +111,14 @@ export default function AddSongScreen() {
     unlockedAchievementIds,
     logPracticeSession,
   } = usePracticeData(songId);
+
+  // Song mastery hook - skill tree progress
+  const {
+    masteryState,
+    getNodeStatus,
+    getCompletedNodeIds,
+    checkTheoryProgress,
+  } = useSongMastery(songId, practiceSeconds);
 
   // Load existing song data when songId is provided
   useEffect(() => {
@@ -828,12 +845,24 @@ export default function AddSongScreen() {
                     return;
                   }
                   try {
-                    const newAchievements = await logPracticeSession(seconds);
+                    const { newAchievements, streakUpdate } = await logPracticeSession(seconds);
+
+                    // Store streak update for modals
+                    setLastStreakUpdate(streakUpdate);
+                    setLastPracticeSeconds(seconds);
+
+                    // Priority order for celebration modals:
+                    // 1. Per-song achievements (most specific)
+                    // 2. Daily goal met (first time today)
+                    // 3. Simple practice complete
+
                     if (newAchievements.length > 0) {
                       setNewlyUnlockedAchievements(newAchievements);
                       setAchievementModalVisible(true);
+                    } else if (streakUpdate?.goal_met_today) {
+                      // Show daily goal modal if goal was just met
+                      setDailyGoalModalVisible(true);
                     } else {
-                      setLastPracticeSeconds(seconds);
                       setPracticeCompleteModalVisible(true);
                     }
                   } catch (error) {
@@ -842,6 +871,22 @@ export default function AddSongScreen() {
                   }
                 }}
               />
+
+              {/* Skill Tree - Song Mastery Progress */}
+              {songId && masteryState && (
+                <View style={styles.skillTreeContainer}>
+                  <SkillTree
+                    songId={songId}
+                    completedNodeIds={getCompletedNodeIds()}
+                    starRating={masteryState.starRating}
+                    size="compact"
+                    getNodeStatus={getNodeStatus}
+                    onNodePress={(node) => {
+                      console.log('Node pressed:', node.title, node.description);
+                    }}
+                  />
+                </View>
+              )}
 
               {/* Achievement badges */}
               {songId && (
@@ -950,6 +995,15 @@ export default function AddSongScreen() {
         visible={practiceCompleteModalVisible}
         seconds={lastPracticeSeconds}
         onClose={() => setPracticeCompleteModalVisible(false)}
+      />
+
+      {/* Daily Goal Met Modal */}
+      <DailyGoalModal
+        visible={dailyGoalModalVisible}
+        goalMinutes={30}
+        practiceMinutes={Math.ceil(lastPracticeSeconds / 60)}
+        currentStreak={lastStreakUpdate?.current_streak ?? 0}
+        onClose={() => setDailyGoalModalVisible(false)}
       />
 
       {/* Add Chord Modal */}
@@ -1168,6 +1222,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 20,
     paddingBottom: 20,
+  },
+  skillTreeContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
   },
   saveFirstMessage: {
     backgroundColor: Colors.alloy,

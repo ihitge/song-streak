@@ -53,6 +53,23 @@
 | `GuitarChordDiagram` | **Skia-based guitar chord visualization** | `components/ui/theory/chords/GuitarChordDiagram.tsx` |
 | `ChordVisualization` | **Unified chord diagram wrapper (multi-instrument)** | `components/ui/theory/chords/ChordVisualization.tsx` |
 | `ChordChip` | **Tappable chord chip with diagram indicator + delete** | `components/ui/theory/chords/ChordChip.tsx` |
+| `StreakFlame` | **Animated streak flame (evolves with streak days)** | `components/ui/streaks/StreakFlame.tsx` |
+| `StreakStats` | Current/longest streak display | `components/ui/streaks/StreakStats.tsx` |
+| `StreakFreezeIndicator` | Snowflake icons for streak freezes | `components/ui/streaks/StreakFreezeIndicator.tsx` |
+| `DailyGoalProgress` | Today's progress bar toward goal | `components/ui/streaks/DailyGoalProgress.tsx` |
+| `DailyGoalSelector` | 15/30/60 min goal selector | `components/ui/streaks/DailyGoalSelector.tsx` |
+| `StreakCalendar` | **GitHub-style practice calendar** | `components/ui/streaks/StreakCalendar.tsx` |
+| `SkillTree` | **Radial 3-path mastery visualization** | `components/ui/mastery/SkillTree.tsx` |
+| `SkillNode` | Individual skill tree node | `components/ui/mastery/SkillNode.tsx` |
+| `MiniSkillTree` | Compact 3-star mastery display | `components/ui/mastery/MiniSkillTree.tsx` |
+| `StarRating` | 0-3 star rating display | `components/ui/mastery/StarRating.tsx` |
+| `Trophy` | **Individual trophy with tier styling** | `components/ui/milestones/Trophy.tsx` |
+| `TrophyCase` | **Trophy shelves by category** | `components/ui/milestones/TrophyCase.tsx` |
+| `MilestoneProgress` | Progress bar to next milestone | `components/ui/milestones/MilestoneProgress.tsx` |
+| `StatsDashboard` | **2x2 grid of global stats** | `components/ui/milestones/StatsDashboard.tsx` |
+| `DailyGoalModal` | **Celebration: daily goal achieved** | `components/ui/streaks/DailyGoalModal.tsx` |
+| `MilestoneModal` | **Celebration: lifetime trophy unlock** | `components/ui/milestones/MilestoneModal.tsx` |
+| `StreakMilestoneModal` | **Celebration: streak milestone reached** | `components/ui/streaks/StreakMilestoneModal.tsx` |
 
 ### Hooks
 
@@ -79,6 +96,11 @@
 | `useTunerMachine` | **Guitar tuner state machine with pitch detection** | N/A | `hooks/tuner/useTunerMachine.ts` |
 | `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | N/A | `hooks/tuner/usePitchDetection.ts` |
 | `useAudioSession` | Web Audio API microphone streaming | N/A | `hooks/tuner/useAudioSession.ts` |
+| `useStreakData` | **Daily streak management & goal tracking** | N/A | `hooks/useStreakData.ts` |
+| `useStreakCalendar` | Calendar data with month navigation | N/A | `hooks/useStreakCalendar.ts` |
+| `useSongMastery` | **Per-song skill tree progress** | N/A | `hooks/useSongMastery.ts` |
+| `useGlobalStats` | **Lifetime stats aggregation** | N/A | `hooks/useGlobalStats.ts` |
+| `useMilestones` | **Lifetime milestone tracking** | N/A | `hooks/useMilestones.ts` |
 
 ### Utilities
 
@@ -473,6 +495,81 @@ interface PracticeCompleteModalProps {
   onClose: () => void;
 }
 ```
+
+---
+
+### DailyGoalModal
+
+**Purpose**: Celebration modal shown when user meets their daily practice goal.
+
+**Location**: `components/ui/streaks/DailyGoalModal.tsx`
+
+**Props**:
+```typescript
+interface DailyGoalModalProps {
+  visible: boolean;
+  goalMinutes?: number;      // Daily goal in minutes (default: 30)
+  practiceMinutes?: number;  // Practice completed in minutes
+  currentStreak: number;     // Current streak days
+  onClose: () => void;
+}
+```
+
+**Features**:
+- Animated check mark celebration
+- Shows extra practice bonus (if exceeded goal)
+- Streak day count display
+- Motivational messages based on streak length
+- Green theme for goal achievement
+
+---
+
+### MilestoneModal
+
+**Purpose**: Celebration modal for lifetime trophy/milestone unlocks.
+
+**Location**: `components/ui/milestones/MilestoneModal.tsx`
+
+**Props**:
+```typescript
+interface MilestoneModalProps {
+  visible: boolean;
+  milestones: LifetimeMilestone[];  // Newly unlocked milestones
+  onClose: () => void;
+}
+```
+
+**Features**:
+- Displays one or more unlocked trophies
+- Tier-based glow effects (bronze → diamond)
+- Pulsing shine animation
+- Motivational messages per category
+- Button color matches highest tier
+
+---
+
+### StreakMilestoneModal
+
+**Purpose**: Celebration modal for reaching streak milestones (7, 14, 30, etc. days).
+
+**Location**: `components/ui/streaks/StreakMilestoneModal.tsx`
+
+**Props**:
+```typescript
+interface StreakMilestoneModalProps {
+  visible: boolean;
+  streakDays: number;       // Current streak count
+  freezeEarned?: boolean;   // Show freeze earned badge
+  onClose: () => void;
+}
+```
+
+**Features**:
+- Animated streak flame display
+- Pulsing flame animation
+- Streak freeze earned badge (if applicable)
+- Color changes based on streak level (ember → inferno)
+- Motivational messages for each milestone
 
 ---
 
@@ -1763,4 +1860,468 @@ import { LEDIndicator } from '@/components/skia/primitives';
 
 ---
 
-*Last updated: Dec 23, 2025*
+## Gamification System (Dec 29, 2025)
+
+### Overview
+
+Complete practice gamification system featuring three interconnected features:
+1. **Streak Flame** - Daily practice chain visualization with evolving flames
+2. **Song Mastery** - RPG-style skill tree per song (Theory/Technique/Performance paths)
+3. **Lifetime Milestones** - Trophy case with achievements across all songs
+
+### Streak Components
+
+#### StreakFlame
+
+**Purpose**: Animated flame visualization that evolves based on streak length.
+
+**Location**: `components/ui/streaks/StreakFlame.tsx` (Native) / `StreakFlame.web.tsx` (Web)
+
+**Props**:
+```typescript
+interface StreakFlameProps {
+  streakDays: number;     // Current streak length
+  size?: number;          // Flame size (default: 100)
+  animated?: boolean;     // Enable animations (default: true)
+}
+```
+
+**Visual Behavior**:
+| Level | Days | Color | Animation |
+|-------|------|-------|-----------|
+| Ember | 1-7 | Orange | Subtle flicker |
+| Flame | 8-30 | Red-orange + sparks | Pronounced flicker |
+| Blaze | 31-100 | Blue-white | Wave motion |
+| Inferno | 100+ | Purple | Multi-layer spiral |
+
+#### StreakStats
+
+**Purpose**: Current and longest streak display with flame level indicator.
+
+**Location**: `components/ui/streaks/StreakStats.tsx`
+
+**Props**:
+```typescript
+interface StreakStatsProps {
+  currentStreak: number;
+  longestStreak: number;
+  flameLevel: FlameLevel;
+  isActive: boolean;
+}
+```
+
+#### StreakFreezeIndicator
+
+**Purpose**: Snowflake icons showing available streak freezes (max 3).
+
+**Location**: `components/ui/streaks/StreakFreezeIndicator.tsx`
+
+**Props**:
+```typescript
+interface StreakFreezeIndicatorProps {
+  available: number;      // 0-3 freezes available
+  size?: number;          // Icon size (default: 20)
+}
+```
+
+#### DailyGoalProgress
+
+**Purpose**: Progress bar showing today's practice toward daily goal.
+
+**Location**: `components/ui/streaks/DailyGoalProgress.tsx`
+
+**Props**:
+```typescript
+interface DailyGoalProgressProps {
+  currentMinutes: number;
+  goalMinutes: number;
+  goalMet: boolean;
+}
+```
+
+#### DailyGoalSelector
+
+**Purpose**: Selector for daily practice goal (15/30/60 minutes).
+
+**Location**: `components/ui/streaks/DailyGoalSelector.tsx`
+
+**Props**:
+```typescript
+interface DailyGoalSelectorProps {
+  selectedMinutes: DailyGoalMinutes;  // 15 | 30 | 60
+  onSelect: (minutes: DailyGoalMinutes) => void;
+}
+```
+
+#### StreakCalendar
+
+**Purpose**: GitHub-style contribution calendar showing practice history.
+
+**Location**: `components/ui/streaks/StreakCalendar.tsx`
+
+**Props**:
+```typescript
+interface StreakCalendarProps {
+  currentMonth: Date;
+  calendarData: Map<string, DailyPracticeLog>;
+  onPreviousMonth: () => void;
+  onNextMonth: () => void;
+  dailyGoalMinutes: number;
+}
+```
+
+**Visual Behavior**:
+- Color intensity based on practice percentage (25%/50%/75%/100%+)
+- Streak freeze days shown with snowflake icon
+- Month navigation with haptic feedback
+
+### Song Mastery Components
+
+#### SkillTree
+
+**Purpose**: Radial 3-path skill tree visualization for song mastery.
+
+**Location**: `components/ui/mastery/SkillTree.tsx`
+
+**Props**:
+```typescript
+interface SkillTreeProps {
+  masteryData: SongMasteryProgress | null;
+  song: Song;
+  practiceSeconds: number;
+  compact?: boolean;       // Mini version for song cards (default: false)
+  onNodePress?: (node: MasteryNode) => void;
+}
+```
+
+**Visual Behavior**:
+- 3 paths at 120° angles: Theory (left), Technique (center-right), Performance (right)
+- 5 nodes per path, radiating outward
+- Skia-based connecting lines with glow effects
+- Nodes animate on unlock
+
+#### SkillNode
+
+**Purpose**: Individual skill tree node with locked/unlocked/completed states.
+
+**Location**: `components/ui/mastery/SkillNode.tsx`
+
+**Props**:
+```typescript
+interface SkillNodeProps {
+  node: MasteryNode;
+  status: NodeStatus;      // 'locked' | 'unlocked' | 'completed'
+  progress?: number;       // 0-100 for technique nodes
+  compact?: boolean;
+  onPress?: () => void;
+}
+```
+
+**Visual Behavior**:
+- Locked: Grayscale, padlock icon
+- Unlocked: Gold border, path color fill
+- Completed: Full color with glow, checkmark badge
+
+#### MiniSkillTree
+
+**Purpose**: Compact 3-star display for song cards showing path completion.
+
+**Location**: `components/ui/mastery/MiniSkillTree.tsx`
+
+**Props**:
+```typescript
+interface MiniSkillTreeProps {
+  starRating: number;      // 0-3 stars
+  theoryComplete: boolean;
+  techniqueComplete: boolean;
+  performanceComplete: boolean;
+}
+```
+
+#### StarRating
+
+**Purpose**: 0-3 star display for overall song mastery.
+
+**Location**: `components/ui/mastery/StarRating.tsx`
+
+**Props**:
+```typescript
+interface StarRatingProps {
+  rating: number;          // 0-3 stars
+  size?: number;           // Star size (default: 24)
+  showLabel?: boolean;     // Show "X/3" label
+}
+```
+
+### Lifetime Milestone Components
+
+#### Trophy
+
+**Purpose**: Individual trophy display with tier styling and unlock state.
+
+**Location**: `components/ui/milestones/Trophy.tsx`
+
+**Props**:
+```typescript
+interface TrophyProps {
+  milestone: LifetimeMilestone;
+  unlocked: boolean;
+  progress: number;        // 0-100
+  compact?: boolean;
+  onPress?: () => void;
+}
+```
+
+**Visual Behavior**:
+- 5 tier colors: Bronze, Silver, Gold, Platinum, Diamond
+- Locked: Grayscale silhouette
+- Unlocked: Full metallic color with shine
+- Skia gradients for metallic effect (native)
+
+#### TrophyCase
+
+**Purpose**: Trophy shelves organized by category.
+
+**Location**: `components/ui/milestones/TrophyCase.tsx`
+
+**Props**:
+```typescript
+interface TrophyCaseProps {
+  stats: UserGlobalStats;
+  unlockedIds: string[];
+  onTrophyPress?: (milestone: LifetimeMilestone) => void;
+  compact?: boolean;
+}
+```
+
+**Visual Behavior**:
+- 4 shelves: Practice Time, Songs Mastered, Practice Streaks, Genre Mastery
+- Horizontal scrolling per shelf
+- Shelf progress counter (e.g., "3 / 6")
+- Wood grain shelf edge effect
+
+#### MilestoneProgress
+
+**Purpose**: Progress bar toward next milestone in category.
+
+**Location**: `components/ui/milestones/MilestoneProgress.tsx`
+
+**Props**:
+```typescript
+interface MilestoneProgressProps {
+  milestone: LifetimeMilestone;
+  currentValue: number;
+  progress: number;        // 0-100
+}
+```
+
+#### StatsDashboard
+
+**Purpose**: 2x2 grid showing global practice statistics.
+
+**Location**: `components/ui/milestones/StatsDashboard.tsx`
+
+**Props**:
+```typescript
+interface StatsDashboardProps {
+  stats: UserGlobalStats;
+  totalMilestones?: number;
+  unlockedMilestones?: number;
+  compact?: boolean;
+}
+```
+
+**Visual Behavior**:
+- Grid cells: Total Practice, Songs Mastered, Current Streak, Trophies
+- Icon + value + label per cell
+- Streak cell highlights when active (vermilion border)
+
+### Gamification Hooks
+
+| Hook | Purpose | Location |
+|------|---------|----------|
+| `useStreakData` | Daily streak management, goal tracking | `hooks/useStreakData.ts` |
+| `useStreakCalendar` | Calendar data with month navigation | `hooks/useStreakCalendar.ts` |
+| `useSongMastery` | Per-song skill tree progress | `hooks/useSongMastery.ts` |
+| `useGlobalStats` | Lifetime stats aggregation | `hooks/useGlobalStats.ts` |
+| `useMilestones` | Lifetime milestone tracking | `hooks/useMilestones.ts` |
+
+#### useStreakData
+
+**Returns**:
+```typescript
+interface UseStreakDataReturn {
+  streakData: UserStreak | null;
+  todayProgress: DailyPracticeLog | null;
+  flameLevel: FlameLevel;
+  dailyGoalProgress: number;      // 0-100
+  todayGoalMet: boolean;
+  isActive: boolean;
+  updateDailyGoal: (minutes: DailyGoalMinutes) => Promise<void>;
+  recordPractice: (minutes: number) => Promise<StreakUpdateResult | null>;
+  refresh: () => Promise<void>;
+  isLoading: boolean;
+}
+```
+
+#### useSongMastery
+
+**Returns**:
+```typescript
+interface UseSongMasteryReturn {
+  masteryData: SongMasteryProgress | null;
+  nodes: Map<string, { node: MasteryNode; status: NodeStatus }>;
+  starRating: number;             // 0-3
+  isLoading: boolean;
+  refresh: () => Promise<void>;
+}
+```
+
+#### useGlobalStats
+
+**Returns**:
+```typescript
+interface UseGlobalStatsReturn {
+  stats: UserGlobalStats | null;
+  isLoading: boolean;
+  refresh: () => Promise<void>;
+}
+
+interface UserGlobalStats {
+  total_practice_seconds: number;
+  songs_mastered: number;         // 1hr+ each
+  current_streak: number;
+  genres_practiced: Map<string, number>;
+  weekly_practice: number[];      // Last 7 days in minutes
+}
+```
+
+#### useMilestones
+
+**Returns**:
+```typescript
+interface UseMilestonesReturn {
+  unlockedIds: string[];
+  isLoading: boolean;
+  refresh: () => Promise<void>;
+  checkForNew: (stats: UserGlobalStats) => LifetimeMilestone[];
+}
+```
+
+### Types
+
+| Type File | Contents |
+|-----------|----------|
+| `types/streak.ts` | `FlameLevel`, `UserStreak`, `DailyPracticeLog`, flame helpers |
+| `types/mastery.ts` | `MasteryPath`, `MasteryNode`, `NodeStatus`, technique thresholds |
+| `types/milestones.ts` | `LifetimeMilestone`, `MilestoneTier`, `MilestoneCategory`, ALL_MILESTONES |
+
+### Flame Levels
+
+| Level | Days | Colors | Key |
+|-------|------|--------|-----|
+| Ember | 1-7 | `#FF6B00`, `#FF8C00` | Starting fire |
+| Flame | 8-30 | `#FF4500`, `#FF0000` | Building heat |
+| Blaze | 31-100 | `#4169E1`, `#00BFFF` | Blue flame |
+| Inferno | 100+ | `#9400D3`, `#FF00FF` | Purple fury |
+
+### Milestone Tiers
+
+| Tier | Color | Examples |
+|------|-------|----------|
+| Bronze | `#CD7F32` | 1hr practice, 1 song mastered |
+| Silver | `#C0C0C0` | 10hr practice, 5 songs mastered |
+| Gold | `#FFD700` | 50hr practice, 25 songs mastered |
+| Platinum | `#E5E4E2` | 100hr practice, 50 songs mastered |
+| Diamond | `#B9F2FF` | 1000hr practice, 100 songs mastered |
+
+### Database Tables
+
+| Table | Purpose |
+|-------|---------|
+| `user_streaks` | Current/longest streak, daily goal, freezes |
+| `daily_practice_logs` | Per-day practice minutes, goal met status |
+| `song_mastery_progress` | Per-song skill tree node completion |
+| `lifetime_milestones` | Milestone definitions (seeded) |
+| `user_lifetime_milestones` | User's unlocked milestones |
+
+**Migration**: `docs/migrations/001_gamification_system.sql`
+
+---
+
+### Celebration Modals
+
+#### DailyGoalModal
+
+**Purpose**: Celebration modal shown when user meets their daily practice goal.
+
+**Location**: `components/ui/streaks/DailyGoalModal.tsx`
+
+**Props**:
+```typescript
+interface DailyGoalModalProps {
+  visible: boolean;
+  goalMinutes?: number;      // Daily goal (default: 30)
+  practiceMinutes?: number;  // Practice completed (default: 0)
+  currentStreak: number;     // Current streak days
+  onClose: () => void;
+}
+```
+
+**Visual Behavior**:
+- Animated check mark with spring animation
+- Shows goal achievement with target icon
+- Extra practice bonus badge (if exceeded goal)
+- Current streak display with flame styling
+- Motivational messages based on streak length
+- Green moss theme throughout
+
+#### MilestoneModal
+
+**Purpose**: Celebration modal for lifetime trophy/milestone unlocks.
+
+**Location**: `components/ui/milestones/MilestoneModal.tsx`
+
+**Props**:
+```typescript
+interface MilestoneModalProps {
+  visible: boolean;
+  milestones: LifetimeMilestone[];  // Newly unlocked milestones
+  onClose: () => void;
+}
+```
+
+**Visual Behavior**:
+- Displays one or more unlocked trophies
+- Tier-based glow effects (bronze → diamond)
+- Pulsing shine animation on trophy icons
+- Category label with icon
+- Motivational messages per milestone category
+- Button color matches highest tier unlocked
+
+#### StreakMilestoneModal
+
+**Purpose**: Celebration modal for reaching streak milestones (7, 14, 30, 60, 90, 180, 365 days).
+
+**Location**: `components/ui/streaks/StreakMilestoneModal.tsx`
+
+**Props**:
+```typescript
+interface StreakMilestoneModalProps {
+  visible: boolean;
+  streakDays: number;       // Current streak count
+  freezeEarned?: boolean;   // Show freeze earned badge
+  onClose: () => void;
+}
+```
+
+**Visual Behavior**:
+- Animated flame with pulse effect
+- Streak count display with fire emoji
+- Freeze earned badge (snowflake icon, shows when applicable)
+- Color scheme evolves with streak level (ember → inferno)
+- Motivational messages for each milestone tier
+
+---
+
+*Last updated: Dec 29, 2025*

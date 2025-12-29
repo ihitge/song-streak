@@ -384,3 +384,17 @@ CREATE POLICY "Band members can view setlist songs" ON songs FOR SELECT
 -- 16. setlist_songs references songs from any band member's library
 -- 17. Songs deleted from library are automatically removed from setlists (CASCADE)
 -- 18. difficulty field in songs table is DEPRECATED and no longer used in UI (kept for backward compatibility)
+
+-- ============================================================================
+-- ADDITIONAL MIGRATIONS
+-- ============================================================================
+-- For gamification features (Streak Flame, Song Mastery, Lifetime Milestones),
+-- see: docs/migrations/001_gamification_system.sql
+--
+-- Tables added by gamification migration:
+-- - user_streaks: Daily practice goals and streak counts
+-- - daily_practice_logs: Aggregated practice per day for calendar view
+-- - streak_freeze_history: Tracks when streak freezes are earned/used
+-- - song_mastery_progress: RPG skill tree progress per song
+-- - lifetime_milestones: Global achievement definitions
+-- - user_lifetime_milestones: Tracks unlocked global achievements

@@ -141,7 +141,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
       <InsetWindow
         variant="light"
         borderRadius={compact ? 8 : 12}
-        style={[styles.meterFace, compact && styles.meterFaceCompact]}
+        style={compact ? { ...styles.meterFace, ...styles.meterFaceCompact } : styles.meterFace}
         showGlassOverlay
       >
         {/* Scale arc background */}

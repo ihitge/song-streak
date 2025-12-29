@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { UserAchievement, PracticeSession, checkForNewAchievements, Achievement } from '@/types/practice';
+import { StreakUpdateResult } from '@/types/streak';
 
 interface PracticeData {
   totalSeconds: number;
@@ -9,8 +10,13 @@ interface PracticeData {
   error: string | null;
 }
 
+interface LogPracticeResult {
+  newAchievements: Achievement[];
+  streakUpdate: StreakUpdateResult | null;
+}
+
 interface UsePracticeDataReturn extends PracticeData {
-  logPracticeSession: (seconds: number) => Promise<Achievement[]>;
+  logPracticeSession: (seconds: number) => Promise<LogPracticeResult>;
   refresh: () => Promise<void>;
 }
 
@@ -79,11 +85,11 @@ export function usePracticeData(songId: string | undefined): UsePracticeDataRetu
   }, [loadPracticeData]);
 
   /**
-   * Log a practice session and check for new achievements
-   * Returns array of newly unlocked achievements
+   * Log a practice session, update streak, and check for new achievements
+   * Returns newly unlocked achievements and streak update result
    */
-  const logPracticeSession = useCallback(async (seconds: number): Promise<Achievement[]> => {
-    if (!songId || seconds <= 0) return [];
+  const logPracticeSession = useCallback(async (seconds: number): Promise<LogPracticeResult> => {
+    if (!songId || seconds <= 0) return { newAchievements: [], streakUpdate: null };
 
     try {
       // Get current user
@@ -110,7 +116,29 @@ export function usePracticeData(songId: string | undefined): UsePracticeDataRetu
 
       if (updateError) throw updateError;
 
-      // 3. Check for new achievements
+      // 3. Update daily streak (convert seconds to minutes)
+      const practiceMinutes = Math.ceil(seconds / 60);
+      const today = new Date().toISOString().split('T')[0];
+
+      let streakUpdate: StreakUpdateResult | null = null;
+      try {
+        const { data: streakData, error: streakError } = await supabase.rpc('update_user_streak', {
+          p_user_id: user.id,
+          p_practice_date: today,
+          p_practice_minutes: practiceMinutes,
+        });
+
+        if (streakError) {
+          console.warn('Error updating streak:', streakError);
+        } else {
+          streakUpdate = streakData as StreakUpdateResult;
+        }
+      } catch (streakErr) {
+        // Non-fatal: log but don't fail the whole operation
+        console.warn('Failed to update streak:', streakErr);
+      }
+
+      // 4. Check for new per-song achievements
       const newAchievements = checkForNewAchievements(newTotal, unlockedAchievementIds);
 
       if (newAchievements.length > 0) {
@@ -137,7 +165,7 @@ export function usePracticeData(songId: string | undefined): UsePracticeDataRetu
       // Update total seconds
       setTotalSeconds(newTotal);
 
-      return newAchievements;
+      return { newAchievements, streakUpdate };
     } catch (err) {
       console.error('Error logging practice session:', err);
       throw err;
