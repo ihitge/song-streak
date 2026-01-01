@@ -777,6 +777,8 @@ export default function AddSongScreen() {
                       keyValue={instrumentData[currentInstrument]?.theoryData.key || 'Unknown'}
                       tempo={instrumentData[currentInstrument]?.theoryData.tempo || 'Unknown'}
                       timeSignature={instrumentData[currentInstrument]?.theoryData.timeSignature || '4/4'}
+                      songTitle={instrumentData[currentInstrument]?.title}
+                      artist={instrumentData[currentInstrument]?.artist}
                     />
                   </TheorySection>
 
