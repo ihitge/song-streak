@@ -119,9 +119,11 @@ export const DIATONIC_CHORDS_MINOR = [
  * Parse a key string into root note and quality
  * e.g., "C Major" -> { root: "C", quality: "major" }
  * e.g., "F# Minor" -> { root: "F#", quality: "minor" }
+ * e.g., "D (Drop D Tuning)" -> { root: "D", quality: "major" }
  */
 export function parseKey(keyString: string): { root: string; quality: 'major' | 'minor' } {
-  const normalized = keyString.trim();
+  // Remove parenthetical annotations like "(Drop D Tuning)"
+  let normalized = keyString.trim().replace(/\s*\([^)]*\)/g, '').trim();
 
   // Check for minor
   if (normalized.toLowerCase().includes('minor') || normalized.toLowerCase().includes('min') || normalized.endsWith('m')) {
@@ -267,26 +269,57 @@ export function getDiatonicChordPositions(root: string, quality: 'major' | 'mino
   const rootIndex = getCircleIndex(root);
 
   if (quality === 'major') {
+    // Circle of Fifths positions for major key diatonic chords:
+    //
+    // For C Major: I=C, ii=Dm, iii=Em, IV=F, V=G, vi=Am, vii°=B°
+    //
+    // The MINOR ring at each position shows the relative minor of that major key.
+    // So to find a minor chord's position, we find where that minor appears.
+    //
+    // Circle positions relative to tonic (each step = one fifth):
+    // I   = rootIndex (tonic major)
+    // IV  = rootIndex - 1 (one fifth down = counter-clockwise)
+    // V   = rootIndex + 1 (one fifth up = clockwise)
+    // vii°= rootIndex + 5 (five fifths up: C→G→D→A→E→B)
+    //
+    // Minor chords appear in the MINOR ring at specific positions:
+    // ii  = rootIndex - 1 (Dm is relative minor of F, F is at rootIndex-1)
+    // iii = rootIndex + 1 (Em is relative minor of G, G is at rootIndex+1)
+    // vi  = rootIndex (Am is relative minor of C, C is at rootIndex)
+    //
     return [
       { index: rootIndex, roman: 'I', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[rootIndex] },
       { index: (rootIndex + 1) % 12, roman: 'V', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 1) % 12] },
-      { index: (rootIndex + 2) % 12, roman: 'ii', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 2) % 12] },
       { index: (rootIndex + 11) % 12, roman: 'IV', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 11) % 12] },
-      { index: (rootIndex + 10) % 12, roman: 'vii°', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 10) % 12] },
-      // vi is at relative minor position
-      { index: rootIndex, roman: 'vi', chordRoot: CIRCLE_OF_FIFTHS_MINOR[rootIndex] },
-      // iii
+      { index: (rootIndex + 5) % 12, roman: 'vii°', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 5) % 12] },
+      // Minor chords - appear in MINOR ring at relative major positions
+      { index: (rootIndex + 11) % 12, roman: 'ii', chordRoot: CIRCLE_OF_FIFTHS_MINOR[(rootIndex + 11) % 12] },
       { index: (rootIndex + 1) % 12, roman: 'iii', chordRoot: CIRCLE_OF_FIFTHS_MINOR[(rootIndex + 1) % 12] },
+      { index: rootIndex, roman: 'vi', chordRoot: CIRCLE_OF_FIFTHS_MINOR[rootIndex] },
     ];
   } else {
-    // Minor key diatonic positions
+    // Minor key diatonic positions (natural minor):
+    //
+    // For A minor: i=Am, ii°=Bdim, III=C, iv=Dm, v=Em, VI=F, VII=G
+    //
+    // Minor scale relationships to circle:
+    // i   = rootIndex (tonic minor)
+    // iv  = rootIndex - 1 (one fifth down: Dm is relative of F, F is at Am's -1)
+    // v   = rootIndex + 1 (one fifth up: Em is relative of G, but v is minor)
+    // III = rootIndex (relative major: C is at same position as Am)
+    // VI  = rootIndex - 1 (F is one fifth below C, so at rootIndex - 1)
+    // VII = rootIndex + 1 (G is one fifth above C, so at rootIndex + 1)
+    // ii° = rootIndex + 5 (B is 5 fifths up from E, but ii° is diminished)
+    //
     return [
       { index: rootIndex, roman: 'i', chordRoot: CIRCLE_OF_FIFTHS_MINOR[rootIndex] },
-      { index: (rootIndex + 1) % 12, roman: 'v', chordRoot: CIRCLE_OF_FIFTHS_MINOR[(rootIndex + 1) % 12] },
       { index: (rootIndex + 11) % 12, roman: 'iv', chordRoot: CIRCLE_OF_FIFTHS_MINOR[(rootIndex + 11) % 12] },
+      { index: (rootIndex + 1) % 12, roman: 'v', chordRoot: CIRCLE_OF_FIFTHS_MINOR[(rootIndex + 1) % 12] },
       { index: rootIndex, roman: 'III', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[rootIndex] },
       { index: (rootIndex + 11) % 12, roman: 'VI', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 11) % 12] },
-      { index: (rootIndex + 10) % 12, roman: 'VII', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 10) % 12] },
+      { index: (rootIndex + 1) % 12, roman: 'VII', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 1) % 12] },
+      // ii° is diminished, based on the 2nd scale degree (B in Am)
+      { index: (rootIndex + 5) % 12, roman: 'ii°', chordRoot: CIRCLE_OF_FIFTHS_MAJOR[(rootIndex + 5) % 12] },
     ];
   }
 }
