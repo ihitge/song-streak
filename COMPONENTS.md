@@ -1132,7 +1132,7 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 ---
 
-*Last updated: Dec 19, 2025*
+*Last updated: Jan 1, 2026*
 
 ## Dec 18, 2025 Changes
 
@@ -2421,11 +2421,34 @@ MODES                   // All 7 modes with scale patterns and descriptions
 **Functions**:
 ```typescript
 parseKey(keyString)              // "C Major" → { root: "C", quality: "major" }
+                                 // Also handles "D (Drop D Tuning)" → { root: "D", quality: "major" }
 getCircleIndex(root)             // "G" → 1 (position in circle)
 getKeyRotation(root)             // Rotation angle to position key at top
 getScaleNotes(root, mode)        // ["C", "D", "E", "F", "G", "A", "B"]
 getRelatedKeys(root, quality)    // { tonic, dominant, subdominant, relative, parallel }
+getDiatonicChordPositions(root, quality)  // Returns all 7 diatonic chords with circle positions
 getEnharmonic(note)              // "C#" → "Db"
+```
+
+**Diatonic Chord Mapping** (Circle of Fifths positions):
+```
+Major Key (e.g., C Major):
+  I   = rootIndex      → C  (tonic)
+  ii  = rootIndex - 1  → Dm (MINOR ring, relative of F)
+  iii = rootIndex + 1  → Em (MINOR ring, relative of G)
+  IV  = rootIndex - 1  → F  (subdominant)
+  V   = rootIndex + 1  → G  (dominant)
+  vi  = rootIndex      → Am (MINOR ring, relative of C)
+  vii°= rootIndex + 5  → B  (5 fifths clockwise)
+
+Minor Key (e.g., A minor):
+  i   = rootIndex      → Am (tonic)
+  ii° = rootIndex + 5  → B° (diminished)
+  III = rootIndex      → C  (relative major)
+  iv  = rootIndex - 1  → Dm
+  v   = rootIndex + 1  → Em
+  VI  = rootIndex - 1  → F
+  VII = rootIndex + 1  → G
 ```
 
 ### Usage
