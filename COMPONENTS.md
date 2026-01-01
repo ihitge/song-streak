@@ -45,8 +45,10 @@
 | `InsetShadowOverlay` | **Recessed depth effect via edge gradients** | `components/skia/primitives/InsetShadowOverlay.tsx` |
 | `SurfaceTextureOverlay` | **Noise/grain texture for dust/scratches on glass** | `components/skia/primitives/SurfaceTextureOverlay.tsx` |
 | `TheorySection` | **Section container with label + alloy content box** | `components/ui/theory/TheorySection.tsx` |
-| `TheoryMetricsRow` | **2x2 grid display for Tuning, Key, Tempo, Time Signature** | `components/ui/theory/TheoryMetricsRow.tsx` |
+| `TheoryMetricsRow` | **2x2 grid display for Tuning, Key, Tempo, Time Signature. Tap Key to open Circle of Fifths** | `components/ui/theory/TheoryMetricsRow.tsx` |
 | `TheoryChipGroup` | **Labeled chip container for chords/scales/techniques** | `components/ui/theory/TheoryChipGroup.tsx` |
+| `CircleOfFifths` | **Interactive rotatable circle of fifths visualization (Skia)** | `components/ui/theory/CircleOfFifths.tsx` |
+| `CircleOfFifthsModal` | **Modal wrapper for Circle of Fifths with mode selector** | `components/ui/theory/CircleOfFifthsModal.tsx` |
 | `TheoryChordSection` | **Chord diagrams with floating delete button (top-right)** | `components/ui/theory/TheoryChordSection.tsx` |
 | `ChordChartModal` | **Full-screen chord diagram modal** | `components/ui/theory/ChordChartModal.tsx` |
 | `AddChordModal` | **Modal for manually adding chords** | `components/ui/theory/chords/AddChordModal.tsx` |
@@ -70,6 +72,15 @@
 | `DailyGoalModal` | **Celebration: daily goal achieved** | `components/ui/streaks/DailyGoalModal.tsx` |
 | `MilestoneModal` | **Celebration: lifetime trophy unlock** | `components/ui/milestones/MilestoneModal.tsx` |
 | `StreakMilestoneModal` | **Celebration: streak milestone reached** | `components/ui/streaks/StreakMilestoneModal.tsx` |
+| `ReelToReelRecorder` | **Full skeuomorphic voice recorder** | `components/ui/recorder/ReelToReelRecorder.tsx` |
+| `TapeReel` | Animated spinning tape reel (Skia) | `components/ui/recorder/TapeReel.tsx` |
+| `TapePath` | Animated tape line between reels | `components/ui/recorder/TapePath.tsx` |
+| `RecorderVUMeter` | Dual stereo VU meter display | `components/ui/recorder/RecorderVUMeter.tsx` |
+| `TapeCounter` | Mechanical flip time counter | `components/ui/recorder/TapeCounter.tsx` |
+| `SpeedSelector` | SLOW/NORMAL/FAST speed picker | `components/ui/recorder/SpeedSelector.tsx` |
+| `RecorderTransportControls` | 5-button transport (REC/STOP/PLAY/REW/FF) | `components/ui/recorder/TransportControls.tsx` |
+| `VoiceMemosList` | List of voice memos with playback | `components/ui/recorder/VoiceMemosList.tsx` |
+| `VoiceMemoModal` | **Modal containing recorder + library** | `components/ui/modals/VoiceMemoModal.tsx` |
 
 ### Hooks
 
@@ -2324,4 +2335,206 @@ interface StreakMilestoneModalProps {
 
 ---
 
-*Last updated: Dec 29, 2025*
+## Circle of Fifths Widget (Jan 1, 2026)
+
+### Overview
+
+Interactive Circle of Fifths music theory tool accessible from the Theory tab by tapping the Key metric. Features draggable rotation, tap-to-select keys, all 7 modes, and related key information.
+
+### CircleOfFifths
+
+**Purpose**: Core circular visualization showing major keys (outer ring) and relative minor keys (inner ring) with interactive rotation.
+
+**Location**: `components/ui/theory/CircleOfFifths.tsx` (Native/Skia) / `CircleOfFifths.web.tsx` (Web/SVG)
+
+**Props**:
+```typescript
+interface CircleOfFifthsProps {
+  selectedKey: string;           // e.g., "C Major", "Am"
+  mode?: ModeName;               // 'ionian' | 'dorian' | 'phrygian' | etc.
+  onKeySelect?: (key: string, quality: 'major' | 'minor') => void;
+  size?: number;                 // Circle diameter (default: 340)
+}
+```
+
+**Visual Behavior**:
+- **Outer ring**: 12 major keys in alloy-colored segments
+- **Inner ring**: 12 relative minor keys in darker segments
+- **Selected key**: Vermilion (major) or lobsterPink (minor) highlight with glow
+- **Center well**: Dark recessed display showing selected key name
+- **Bezel**: Charcoal ring simulating metal housing
+- **LED indicator**: Vermilion dot at top marking 12 o'clock position
+
+**Interaction**:
+- **Drag to rotate**: Pan gesture rotates entire circle smoothly with spring physics
+- **Tap to select**: Tap any segment to select that key
+- **Haptic + audio feedback** on every interaction
+
+### CircleOfFifthsModal
+
+**Purpose**: Full-screen modal containing Circle of Fifths with mode selector, scale info, and related keys display.
+
+**Location**: `components/ui/theory/CircleOfFifthsModal.tsx`
+
+**Props**:
+```typescript
+interface CircleOfFifthsModalProps {
+  visible: boolean;
+  onClose: () => void;
+  songKey: string;               // Initial key from analyzed song
+  songTitle?: string;
+  artist?: string;
+}
+```
+
+**Features**:
+- **Header**: "CIRCLE OF FIFTHS" title with song info subtitle
+- **Mode selector**: GangSwitch for all 7 modes (Lydian → Locrian)
+- **Circle visualization**: Interactive CircleOfFifths component
+- **Info panel**: Scale notes, mode character description, related keys (IV-I-V)
+- **Reset button**: Returns to song's original key
+- **Song key badge**: Shows original analyzed key at bottom
+
+**Mode Options**:
+| Mode | Character |
+|------|-----------|
+| Lydian | Bright, dreamy |
+| Major/Ionian | Happy, resolved |
+| Mixolydian | Bluesy, dominant |
+| Dorian | Minor with bright 6th |
+| Natural Minor/Aeolian | Sad, dark |
+| Phrygian | Spanish, exotic |
+| Locrian | Diminished, unstable |
+
+### Music Theory Utilities
+
+**Location**: `utils/musicTheory.ts`
+
+**Constants**:
+```typescript
+CIRCLE_OF_FIFTHS_MAJOR  // ['C', 'G', 'D', 'A', 'E', 'B', 'F#/Gb', 'Db', 'Ab', 'Eb', 'Bb', 'F']
+CIRCLE_OF_FIFTHS_MINOR  // ['Am', 'Em', 'Bm', 'F#m', 'C#m', 'G#m', 'D#m/Ebm', 'Bbm', 'Fm', 'Cm', 'Gm', 'Dm']
+KEY_SIGNATURES          // Number of sharps/flats per key
+MODES                   // All 7 modes with scale patterns and descriptions
+```
+
+**Functions**:
+```typescript
+parseKey(keyString)              // "C Major" → { root: "C", quality: "major" }
+getCircleIndex(root)             // "G" → 1 (position in circle)
+getKeyRotation(root)             // Rotation angle to position key at top
+getScaleNotes(root, mode)        // ["C", "D", "E", "F", "G", "A", "B"]
+getRelatedKeys(root, quality)    // { tonic, dominant, subdominant, relative, parallel }
+getEnharmonic(note)              // "C#" → "Db"
+```
+
+### Usage
+
+The Circle of Fifths is accessed by tapping the **Key** metric in the Theory tab of any analyzed song:
+
+```typescript
+// TheoryMetricsRow automatically includes the modal
+<TheoryMetricsRow
+  tuning="Standard"
+  keyValue="G Major"           // Tap this to open Circle of Fifths
+  tempo="120 BPM"
+  timeSignature="4/4"
+  songTitle="Wonderwall"
+  artist="Oasis"
+/>
+```
+
+### Web Compatibility
+
+The Circle of Fifths uses platform-specific implementations:
+- **Native (iOS/Android)**: Skia Canvas with gesture handlers
+- **Web**: SVG with CSS transforms and pointer events
+
+Both provide identical functionality with haptic feedback (where available) and audio feedback.
+
+**Platform-Specific Files**:
+| Component | Native | Web |
+|-----------|--------|-----|
+| `CircleOfFifths` | `CircleOfFifths.tsx` (Skia) | `CircleOfFifths.web.tsx` (SVG) |
+| `CircleOfFifthsModal` | `CircleOfFifthsModal.tsx` | `CircleOfFifthsModal.web.tsx` |
+| `TheoryMetricsRow` | `TheoryMetricsRow.tsx` | `TheoryMetricsRow.web.tsx` |
+
+---
+
+## Chord Diagram Components
+
+### GuitarChordDiagram
+
+**Skia-based guitar chord visualization** with root note highlighting.
+
+```tsx
+import { GuitarChordDiagram } from '@/components/ui/theory/chords';
+
+<GuitarChordDiagram
+  fingering={voicing}
+  chordName="Am7"
+  rootNote="A"        // Highlights A notes in green
+  showFingers={true}
+  size="medium"       // "small" | "medium" | "large"
+/>
+```
+
+### ChordVisualization
+
+**Unified wrapper** for instrument-specific chord diagrams with chord lookup.
+
+```tsx
+import { ChordVisualization } from '@/components/ui/theory/chords';
+
+<ChordVisualization
+  chord="Am7"
+  instrument="guitar"
+  voicingIndex={0}
+  showFingers={true}
+  size="medium"
+  showChordName={true}
+/>
+```
+
+### TheoryChordSection
+
+**Container for chord diagrams** with add/delete functionality.
+
+```tsx
+import { TheoryChordSection } from '@/components/ui/theory';
+
+<TheoryChordSection
+  label="HARMONY"
+  chords={['Am', 'G', 'C', 'F']}
+  instrument="guitar"
+  editable={true}
+  onAddChord={() => setAddModalVisible(true)}
+  onDeleteChord={(chord) => handleDelete(chord)}
+/>
+```
+
+### Web Compatibility (Chord Diagrams)
+
+Chord diagram components use platform-specific implementations to work around Skia's `useFont` hook not functioning properly on web:
+
+- **Native (iOS/Android)**: Skia Canvas with custom font rendering
+- **Web**: react-native-svg with SVG text elements
+
+**Platform-Specific Files**:
+| Component | Native | Web |
+|-----------|--------|-----|
+| `GuitarChordDiagram` | `GuitarChordDiagram.tsx` (Skia) | `GuitarChordDiagram.web.tsx` (SVG) |
+| `ChordVisualization` | `ChordVisualization.tsx` | `ChordVisualization.web.tsx` |
+| `TheoryChordSection` | `TheoryChordSection.tsx` | `TheoryChordSection.web.tsx` |
+
+**Barrel Exports**:
+- `components/ui/theory/index.ts` - Native exports
+- `components/ui/theory/index.web.ts` - Web exports (auto-resolved by bundler)
+- `components/ui/theory/chords/index.ts` - Native chord exports
+- `components/ui/theory/chords/index.web.ts` - Web chord exports
+
+Both platforms provide identical visual output with the same chord fingering data.
+
+---
+
+*Last updated: Jan 1, 2026*

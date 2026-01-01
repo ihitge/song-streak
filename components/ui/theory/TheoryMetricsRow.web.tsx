@@ -4,7 +4,8 @@ import { Music, Clock, Hash, Guitar, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { useClickSound } from '@/hooks/useClickSound';
-import { CircleOfFifthsModal } from './CircleOfFifthsModal';
+// Explicitly import web version
+import { CircleOfFifthsModal } from './CircleOfFifthsModal.web';
 
 interface TheoryMetricsRowProps {
   tuning: string;

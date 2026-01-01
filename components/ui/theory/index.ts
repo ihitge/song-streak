@@ -4,6 +4,10 @@ export { TheoryChipGroup } from './TheoryChipGroup';
 export { TheoryChordSection } from './TheoryChordSection';
 export { ChordChartModal } from './ChordChartModal';
 
+// Circle of Fifths
+export { CircleOfFifths } from './CircleOfFifths';
+export { CircleOfFifthsModal } from './CircleOfFifthsModal';
+
 // Chord visualization components
 export {
   GuitarChordDiagram,
