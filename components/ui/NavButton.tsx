@@ -3,6 +3,7 @@ import { Pressable, Text, View, StyleSheet } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as Haptics from 'expo-haptics';
 import { useNavButtonSound } from '@/hooks/useNavButtonSound';
+import { Colors } from '@/constants/Colors';
 
 interface NavButtonProps {
   iconName: React.ComponentProps<typeof FontAwesome>['name'];
@@ -24,7 +25,13 @@ export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive,
   };
 
   return (
-    <Pressable onPress={handlePress} style={styles.buttonContainer}>
+    <Pressable
+      onPress={handlePress}
+      style={styles.buttonContainer}
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isActive }}
+    >
       {/* The Well (Outer Recess) */}
       <View style={styles.well}>
         {/* The Cap (Physical Key) */}
@@ -40,7 +47,8 @@ export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive,
           <FontAwesome
             name={iconName}
             size={24}
-            color={isActive ? '#ea5428' : '#555'} // Change icon color to orange when active
+            color={isActive ? Colors.vermilion : Colors.charcoal}
+            accessibilityElementsHidden={true}
           />
         </View>
       </View>
@@ -59,7 +67,7 @@ const styles = StyleSheet.create({
     width: 80, // w-20 (80px)
     height: 80, // h-20 (80px)
     borderRadius: 12, // rounded-xl
-    backgroundColor: '#d6d6d6', // darker grey background
+    backgroundColor: Colors.alloy, // darker grey background
     justifyContent: 'center',
     alignItems: 'center',
     // Heavy inner shadow: shadow-[inset_0_3px_8px_rgba(0,0,0,0.15)]
@@ -80,7 +88,7 @@ const styles = StyleSheet.create({
   },
   capInactive: {
     // Gradient white-to-grey - using a subtle color for now, RN doesn't do gradients easily in StyleSheet
-    backgroundColor: '#f0f0f0', // Placeholder for gradient
+    backgroundColor: Colors.softWhite, // Placeholder for gradient
     transform: [{ translateY: -2 }], // -translate-y-[2px]
     // Drop shadow
     shadowColor: 'rgba(0,0,0,0.2)',
@@ -108,12 +116,12 @@ const styles = StyleSheet.create({
     right: 5, // Adjust positioning
   },
   ledInactive: {
-    backgroundColor: '#cccccc', // Dead Grey
+    backgroundColor: Colors.alloy, // Dead Grey
   },
   ledActive: {
-    backgroundColor: '#ea5428', // Glowing Orange
+    backgroundColor: Colors.vermilion, // Glowing Orange
     // Blur shadow
-    shadowColor: '#ea5428',
+    shadowColor: Colors.vermilion,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 5,
@@ -125,6 +133,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 2,
     marginTop: 5,
-    color: '#333',
+    color: Colors.charcoal,
   },
 });

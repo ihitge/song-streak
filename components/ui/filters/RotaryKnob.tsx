@@ -171,11 +171,17 @@ export const RotaryKnob = <T extends string>({
             style={styles.touchTargetLeft}
             onPress={() => cycle(-1)}
             disabled={disabled}
+            accessibilityLabel={`Previous ${label.toLowerCase()}`}
+            accessibilityRole="button"
+            accessibilityHint={`Rotate knob left to previous ${label.toLowerCase()} option`}
           />
           <Pressable
             style={styles.touchTargetRight}
             onPress={() => cycle(1)}
             disabled={disabled}
+            accessibilityLabel={`Next ${label.toLowerCase()}`}
+            accessibilityRole="button"
+            accessibilityHint={`Rotate knob right to next ${label.toLowerCase()} option`}
           />
         </View>
       </View>

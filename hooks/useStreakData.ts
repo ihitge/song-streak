@@ -156,7 +156,8 @@ export function useStreakData(): UseStreakDataReturn {
   // Derived values
   const flameLevel = getFlameLevel(streakData?.current_streak || 0);
 
-  const dailyGoalProgress = streakData && todayProgress
+  // Guard against division by zero if daily_goal_minutes is 0 or null
+  const dailyGoalProgress = streakData && todayProgress && streakData.daily_goal_minutes > 0
     ? Math.min(100, Math.round((todayProgress.total_minutes / streakData.daily_goal_minutes) * 100))
     : 0;
 

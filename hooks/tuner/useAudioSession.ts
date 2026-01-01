@@ -58,6 +58,9 @@ export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessi
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const rafRef = useRef<number | null>(null);
 
+  // Pre-allocated buffer to avoid memory leak (was allocating 44 Float32Arrays/sec)
+  const audioBufferRef = useRef<Float32Array | null>(null);
+
   // Cleanup function
   const cleanup = useCallback(() => {
     if (rafRef.current) {
@@ -187,15 +190,18 @@ export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessi
       processor.onaudioprocess = (event) => {
         const inputBuffer = event.inputBuffer.getChannelData(0);
 
-        // Create a copy of the buffer (original is recycled)
-        const buffer = new Float32Array(inputBuffer.length);
-        buffer.set(inputBuffer);
+        // Reuse pre-allocated buffer to prevent memory leak
+        // (was creating ~44 new Float32Arrays per second, causing OOM after 30-60s)
+        if (!audioBufferRef.current || audioBufferRef.current.length !== inputBuffer.length) {
+          audioBufferRef.current = new Float32Array(inputBuffer.length);
+        }
+        audioBufferRef.current.set(inputBuffer);
 
         // Calculate volume in dB
-        const volumeDb = calculateVolumeDb(buffer);
+        const volumeDb = calculateVolumeDb(audioBufferRef.current);
 
         // Send to callback
-        callbacks.onAudioData(buffer, volumeDb);
+        callbacks.onAudioData(audioBufferRef.current, volumeDb);
       };
 
       // Connect analyser to processor, processor to destination (required for it to work)

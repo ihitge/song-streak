@@ -83,11 +83,16 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
       setCurrentSubdivisionTick(subTick);
 
       // Haptic feedback on beats (not subdivisions)
+      // Wrap in try-catch to prevent crash on devices with haptics disabled
       if (isBeat) {
-        if (isDownbeat) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        } else {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        try {
+          if (isDownbeat) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          } else {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        } catch {
+          // Haptics may fail on simulator or unsupported devices - ignore
         }
       }
 
@@ -309,8 +314,12 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     const clampedBpm = Math.min(BPM_MAX, Math.max(BPM_MIN, calculatedBpm));
     setBpmState(clampedBpm);
 
-    // Haptic feedback
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Haptic feedback - wrap in try-catch for safety
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {
+      // Haptics may fail on simulator or unsupported devices - ignore
+    }
 
     return clampedBpm;
   }, []);

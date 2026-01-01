@@ -133,11 +133,12 @@ export function useBands(): UseBandsReturn {
       const maxAttempts = 5;
 
       while (attempts < maxAttempts) {
+        // Use maybeSingle() instead of single() - returns null instead of throwing PGRST116
         const { data: existing } = await supabase
           .from('bands')
           .select('id')
           .eq('join_code', joinCode)
-          .single();
+          .maybeSingle();
 
         if (!existing) break;
         joinCode = generateJoinCode();
@@ -201,13 +202,13 @@ export function useBands(): UseBandsReturn {
         throw new Error('Invalid join code');
       }
 
-      // Check if already a member
+      // Check if already a member - use maybeSingle() to avoid PGRST116 error
       const { data: existing } = await supabase
         .from('band_members')
         .select('id')
         .eq('band_id', band.id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         throw new Error('You are already a member of this band');
@@ -348,12 +349,13 @@ export function useBands(): UseBandsReturn {
       const maxAttempts = 5;
 
       while (attempts < maxAttempts) {
+        // Use maybeSingle() instead of single() - returns null instead of throwing PGRST116
         const { data: existing } = await supabase
           .from('bands')
           .select('id')
           .eq('join_code', newCode)
           .neq('id', bandId)
-          .single();
+          .maybeSingle();
 
         if (!existing) break;
         newCode = generateJoinCode();

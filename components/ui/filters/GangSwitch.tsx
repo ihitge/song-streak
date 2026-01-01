@@ -116,6 +116,10 @@ export const GangSwitch = <T extends string>({
                   styles.buttonWrapper,
                   equalWidth && { flex: 1 },
                 ]}
+                accessibilityLabel={`${label}: ${opt.label}`}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: isActive, disabled }}
+                accessibilityHint={`Select ${opt.label} for ${label.toLowerCase()}`}
               >
                 {/* Skia Button Cap */}
                 <View style={[styles.buttonCap, isActive && styles.buttonCapActive]}>

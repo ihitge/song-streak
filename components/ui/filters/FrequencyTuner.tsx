@@ -128,8 +128,11 @@ export const FrequencyTuner = <T extends string>({
             onPress={() => cycle(-1)}
             style={styles.chevronButton}
             disabled={disabled}
+            accessibilityLabel={`Previous ${label.toLowerCase()}`}
+            accessibilityRole="button"
+            accessibilityHint={`Select previous option for ${label.toLowerCase()}`}
           >
-            <ChevronLeft size={14} color={chevronColor} />
+            <ChevronLeft size={14} color={chevronColor} accessibilityElementsHidden={true} />
           </Pressable>
 
           {/* Value display */}
@@ -151,8 +154,11 @@ export const FrequencyTuner = <T extends string>({
             onPress={() => cycle(1)}
             style={styles.chevronButton}
             disabled={disabled}
+            accessibilityLabel={`Next ${label.toLowerCase()}`}
+            accessibilityRole="button"
+            accessibilityHint={`Select next option for ${label.toLowerCase()}`}
           >
-            <ChevronRight size={14} color={chevronColor} />
+            <ChevronRight size={14} color={chevronColor} accessibilityElementsHidden={true} />
           </Pressable>
         </View>
 

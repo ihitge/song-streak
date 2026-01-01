@@ -71,7 +71,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
           <View style={styles.filterCell}>
             <View style={styles.widgetContainer}>
               <View style={styles.searchRow}>
-                <Search size={16} color={Colors.graphite} style={styles.searchIcon} />
+                <Search size={16} color={Colors.graphite} style={styles.searchIcon} accessibilityElementsHidden={true} />
                 <TextInput
                   style={styles.searchInput}
                   value={searchText}
@@ -80,6 +80,8 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
                   onBlur={handleSearchBlur}
                   placeholder="Search songs..."
                   placeholderTextColor={Colors.graphite}
+                  accessibilityLabel="Search songs"
+                  accessibilityHint="Enter song title or artist name to search your library"
                 />
               </View>
             </View>
@@ -118,7 +120,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
 const styles = StyleSheet.create({
   // --- Filter Deck ---
   filterDeck: {
-    backgroundColor: '#e8e8e8',
+    backgroundColor: Colors.alloy,
     paddingVertical: 16,
     paddingHorizontal: 24,
     gap: 12,

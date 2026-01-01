@@ -103,6 +103,9 @@ const SuggestionItem: React.FC<SuggestionItemProps> = ({
       onPressIn={() => setIsPressed(true)}
       onPressOut={() => setIsPressed(false)}
       style={styles.itemOuter}
+      accessibilityLabel={`${song.title} by ${song.artist}`}
+      accessibilityRole="button"
+      accessibilityHint="Tap to select this song"
     >
       <View style={[styles.itemInner, isPressed && styles.itemInnerPressed]}>
         {/* Skia Background */}
@@ -258,11 +261,13 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
               styles.showMoreRow,
               pressed && styles.showMoreRowPressed,
             ]}
+            accessibilityLabel={`Show ${totalResults - maxVisible} more results`}
+            accessibilityRole="button"
           >
             <Text style={styles.showMoreText}>
               +{totalResults - maxVisible} more results
             </Text>
-            <ChevronDown size={14} color={Colors.graphite} />
+            <ChevronDown size={14} color={Colors.graphite} accessibilityElementsHidden={true} />
           </Pressable>
         )}
       </View>

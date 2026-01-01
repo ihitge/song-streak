@@ -64,12 +64,24 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         {/* Right (Controls) */}
         <View style={styles.topBarControls}>
           {/* User Avatar */}
-          <Pressable style={styles.avatarButton} onPress={handleAvatarPress}>
-            <Text style={styles.avatarText}>{initials}</Text>
+          <Pressable
+            style={styles.avatarButton}
+            onPress={handleAvatarPress}
+            accessibilityLabel="Profile settings"
+            accessibilityRole="button"
+            accessibilityHint="Opens your account settings"
+          >
+            <Text style={styles.avatarText} accessibilityElementsHidden={true}>{initials}</Text>
           </Pressable>
           {/* Logout */}
-          <Pressable style={styles.logoutButton} onPress={handleLogoutPress}>
-            <LogOut size={20} color={Colors.charcoal} />
+          <Pressable
+            style={styles.logoutButton}
+            onPress={handleLogoutPress}
+            accessibilityLabel="Sign out"
+            accessibilityRole="button"
+            accessibilityHint="Signs you out of the app"
+          >
+            <LogOut size={20} color={Colors.charcoal} accessibilityElementsHidden={true} />
           </Pressable>
         </View>
       </View>
@@ -101,9 +113,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   avatarButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 44, // Minimum 44pt for touch targets (Apple HIG)
+    height: 44,
+    borderRadius: 22,
     backgroundColor: Colors.alloy,
     justifyContent: 'center',
     alignItems: 'center',
@@ -113,14 +125,18 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
     borderWidth: 1,
-    borderColor: '#c0c0c0',
+    borderColor: Colors.alloy,
   },
   avatarText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: Colors.charcoal,
   },
   logoutButton: {
-    padding: 6,
+    padding: 12, // Larger padding for 44pt minimum touch target
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

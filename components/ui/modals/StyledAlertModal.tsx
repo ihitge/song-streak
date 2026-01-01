@@ -183,6 +183,9 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
                     ]}
                     onPress={() => handleButtonPress(button)}
                     activeOpacity={0.8}
+                    accessibilityLabel={button.text}
+                    accessibilityRole="button"
+                    accessibilityHint={isCancel ? 'Dismiss this alert' : `Confirm: ${button.text}`}
                   >
                     {isCancel ? (
                       <View style={styles.cancelButtonInner}>

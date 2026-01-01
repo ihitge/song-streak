@@ -16,6 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.songstreak.app",
+      "buildNumber": "1",
       "usesAppleSignIn": true,
       "infoPlist": {
         "UIBackgroundModes": [
