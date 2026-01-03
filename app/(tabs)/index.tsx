@@ -101,7 +101,7 @@ export default function SetListScreen() {
   const { playSound } = useFABSound();
   const { playSound: playClickSound } = useClickSound();
   const { showInfo, showError, showSuccess, showConfirm } = useStyledAlert();
-  const [instrument, setInstrument] = useState<Instrument>('All');
+  const [instrument, setInstrument] = useState<Instrument>('Guitar');
   const [genre, setGenre] = useState<Genre>('All');
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -250,7 +250,7 @@ export default function SetListScreen() {
       const matchesSearch = searchText === '' ||
         song.title.toLowerCase().includes(searchText.toLowerCase()) ||
         song.artist.toLowerCase().includes(searchText.toLowerCase());
-      const matchesInstrument = instrument === 'All' || song.instrument === instrument;
+      const matchesInstrument = song.instrument === instrument;
       const matchesGenre = genre === 'All' || (song.genres && song.genres.includes(genre as Exclude<Genre, 'All'>));
       return matchesSearch && matchesInstrument && matchesGenre;
     });

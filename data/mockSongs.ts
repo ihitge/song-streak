@@ -20,11 +20,11 @@ export const MOCK_SONGS: Song[] = [
   },
   {
     id: '2',
-    title: 'Tom Sawyer',
+    title: 'YYZ',
     artist: 'Rush',
-    duration: '4:34',
+    duration: '4:27',
     lastPracticed: 'Yesterday',
-    instrument: 'Drums',
+    instrument: 'Bass',
     genres: ['Prog', 'Rock'],
     artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/3d/1f/893d1f2b-7690-bc6d-6f0e-c7fc31acf7b4/06UMGIM04263.rgb.jpg/600x600bb.jpg'
   },
@@ -54,7 +54,7 @@ export const MOCK_SONGS: Song[] = [
     artist: 'Pink Floyd',
     duration: '6:21',
     lastPracticed: 'Just now',
-    instrument: 'Keys',
+    instrument: 'Guitar',
     genres: ['Prog', 'Rock'],
     artwork: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3e/17/ec/3e17ec6d-f980-c64f-19e0-a6fd8bbf0c10/886445635850.jpg/600x600bb.jpg'
   },

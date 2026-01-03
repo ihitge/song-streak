@@ -123,9 +123,8 @@ export const ChordVisualization: React.FC<ChordVisualizationProps> = ({
     );
   }
 
-  // Future: Add bass, ukulele, piano renderers here
+  // Future: Add bass, ukulele renderers here
   // if (instrument === 'bass') { return <BassChordDiagram ... />; }
-  // if (instrument === 'piano') { return <PianoChordDiagram ... />; }
 
   return null;
 };

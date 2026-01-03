@@ -286,8 +286,6 @@ Song data is stored separately for each instrument. This allows:
 const [instrumentData, setInstrumentData] = useState<Partial<Record<Instrument, InstrumentAnalysisData | null>>>({
   Guitar: null,
   Bass: null,
-  Drums: null,
-  Keys: null,
 });
 ```
 

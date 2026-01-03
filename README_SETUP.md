@@ -192,7 +192,7 @@ STATUS.md                     # Project status
 ### Gemini API Integration
 The app sends the video URL to Gemini with a structured prompt, asking it to extract:
 - Song title and artist
-- Instrument (Guitar, Bass, Drums, Keys)
+- Instrument (Guitar or Bass)
 - Music theory data (key, tempo, time signature)
 - Practice data (difficulty, techniques list)
 

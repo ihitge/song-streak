@@ -6,7 +6,7 @@
 export interface GeminiAnalysisResponse {
   title: string;
   artist: string;
-  instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
+  instrument: 'Guitar' | 'Bass';
   theoryData: {
     tuning: string;
     key: string;
@@ -59,8 +59,8 @@ const extractSongTheoryFunction = {
       },
       instrument: {
         type: 'string',
-        enum: ['Guitar', 'Bass', 'Drums', 'Keys'],
-        description: 'The primary instrument being taught in the tutorial',
+        enum: ['Guitar', 'Bass'],
+        description: 'The primary instrument being taught in the tutorial (Guitar or Bass only)',
       },
       theoryData: {
         type: 'object',

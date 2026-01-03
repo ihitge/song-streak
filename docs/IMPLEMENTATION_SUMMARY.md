@@ -13,7 +13,7 @@ Features:
 
 The function extracts:
 - Song title and artist
-- Primary instrument (Guitar, Bass, Drums, Keys)
+- Primary instrument (Guitar or Bass)
 - Theory data: key, tempo, time signature
 - Practice data: difficulty, techniques
 

@@ -33,7 +33,7 @@ Extract and return ONLY a JSON object (no markdown, no extra text) with this exa
 {
   "title": "song title",
   "artist": "artist name",
-  "instrument": "Guitar|Bass|Drums|Keys",
+  "instrument": "Guitar|Bass",
   "theoryData": {
     "key": "musical key (e.g., 'A Minor')",
     "tempo": "tempo in BPM (e.g., '120 BPM')",

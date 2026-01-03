@@ -48,7 +48,7 @@ Create a unified practice companion that:
 ### Primary Persona: "The Dedicated Hobbyist"
 - **Age:** 15-65
 - **Experience:** Intermediate musician (2-10 years)
-- **Instruments:** Guitar, keys, bass, drums
+- **Instruments:** Guitar, Bass
 - **Behavior:** Practices 3-5 times per week, wants to improve systematically
 - **Pain Points:** Struggles with consistency, loses track of songs to learn
 - **Goals:** Build repertoire, track progress, maintain streaks
@@ -115,7 +115,7 @@ interface Song {
   title: string
   artist: string
   genre: Genre // rock | blues | pop | jazz | metal | folk | indie | funk
-  instrument: Instrument // guitar | keys | drums | bass | vocals
+  instrument: Instrument // guitar | bass
   fluencyLevel: FluencyLevel // performance | developer | reacher | campfire
   bpm?: number
   key?: string
@@ -542,10 +542,9 @@ Verdict: Do not use an older version (0.72 or below). The "Rams" look is too gra
 
 ### B. Supported Instruments
 - Guitar
-- Keys (Piano/Keyboard)
-- Drums
 - Bass
-- Vocals
+
+*Note: Additional instruments (Keys, Drums, Vocals) may be added in future versions.*
 
 ### C. Supported Genres
 - Rock

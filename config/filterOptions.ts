@@ -1,12 +1,9 @@
-import { Guitar, Drum, Keyboard, Music, Star, MinusCircle } from 'lucide-react-native';
+import { Guitar, Music, Star, MinusCircle } from 'lucide-react-native';
 import type { FilterOption, Instrument, Fluency, Genre } from '@/types/filters';
 
 export const instrumentOptions: FilterOption<Instrument>[] = [
-  { value: 'All', label: 'All', icon: MinusCircle },
   { value: 'Guitar', label: 'Guitar', icon: Guitar },
   { value: 'Bass', label: 'Bass', icon: Music },
-  { value: 'Drums', label: 'Drums', icon: Drum },
-  { value: 'Keys', label: 'Keys', icon: Keyboard },
 ];
 
 export const fluencyOptions: FilterOption<Fluency>[] = [

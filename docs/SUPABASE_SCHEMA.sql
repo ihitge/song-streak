@@ -13,7 +13,7 @@ CREATE TABLE songs (
   -- Basic Song Information
   title TEXT NOT NULL,
   artist TEXT NOT NULL,
-  instrument TEXT NOT NULL, -- 'Guitar', 'Bass', 'Drums', or 'Keys'
+  instrument TEXT NOT NULL, -- 'Guitar' or 'Bass'
 
   -- Video & Media
   video_url TEXT NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE songs (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
   -- Indexes for performance
-  CONSTRAINT valid_instrument CHECK (instrument IN ('Guitar', 'Bass', 'Drums', 'Keys')),
+  CONSTRAINT valid_instrument CHECK (instrument IN ('Guitar', 'Bass')),
   CONSTRAINT valid_difficulty CHECK (difficulty IN ('Easy', 'Medium', 'Hard') OR difficulty IS NULL)
 );
 

@@ -62,8 +62,6 @@ const TAB_OPTIONS: FilterOption<AddSongTab>[] = [
   { value: 'Lyrics', label: 'LYRICS', icon: StickyNote },
 ];
 
-// Filter out 'All' option for creation context (only show specific instruments)
-const ADD_SONG_INSTRUMENT_OPTIONS = instrumentOptions.filter(opt => opt.value !== 'All');
 
 export default function AddSongScreen() {
   // Get songId and edit flag from query params
@@ -80,8 +78,6 @@ export default function AddSongScreen() {
   const [instrumentData, setInstrumentData] = useState<Partial<Record<Instrument, InstrumentAnalysisData | null>>>({
     Guitar: null,
     Bass: null,
-    Drums: null,
-    Keys: null,
   });
   const [songTitle, setSongTitle] = useState('');
   const [artist, setArtist] = useState('');
@@ -395,8 +391,6 @@ export default function AddSongScreen() {
       setInstrumentData({
         Guitar: null,
         Bass: null,
-        Drums: null,
-        Keys: null,
       });
 
     } catch (error) {
@@ -761,7 +755,7 @@ export default function AddSongScreen() {
                 label="INSTRUMENT"
                 value={currentInstrument}
                 onChange={handleInstrumentChange}
-                options={ADD_SONG_INSTRUMENT_OPTIONS}
+                options={instrumentOptions}
                 disabled={isEditMode && !isEditing}
                 showGlassOverlay
               />
@@ -787,7 +781,7 @@ export default function AddSongScreen() {
                     <TheoryChordSection
                       label="CHORDS"
                       chords={instrumentData[currentInstrument]?.theoryData.chords || []}
-                      instrument={currentInstrument.toLowerCase() as 'guitar' | 'bass' | 'drums' | 'piano' | 'vocals'}
+                      instrument={currentInstrument.toLowerCase() as 'guitar' | 'bass'}
                       chipColor={Colors.vermilion}
                       emptyText="No chords detected"
                       editable={true}

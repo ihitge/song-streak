@@ -56,14 +56,9 @@ export interface ChordLookupResult {
 /** Fretboard-based instruments */
 export type FretboardInstrument = 'guitar' | 'bass' | 'ukulele';
 
-/** Keyboard-based instruments */
-export type KeyboardInstrument = 'piano';
-
 /** All supported instrument types */
 export type InstrumentType =
   | FretboardInstrument
-  | KeyboardInstrument
-  | 'drums'
   | 'vocals';
 
 /** Guitar-specific configuration */

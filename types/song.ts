@@ -7,7 +7,7 @@ export interface Song {
   artist: string;
   duration: string;
   lastPracticed: string;
-  instrument: 'Guitar' | 'Bass' | 'Drums' | 'Keys';
+  instrument: 'Guitar' | 'Bass';
   genres: Exclude<Genre, 'All'>[];
   artwork?: string;
   /** Practice audio file URL (for slow-down practice) */

@@ -95,7 +95,7 @@ export async function analyzeVideoWithGemini(
   const prompt = `Analyze this music video and extract:
 1. Song title
 2. Artist name
-3. Primary instrument (Guitar, Bass, Drums, or Keys)
+3. Primary instrument (Guitar or Bass)
 4. Musical key
 5. Tempo in BPM
 6. Time signature
@@ -108,7 +108,7 @@ Return as JSON with exact structure:
 {
   "title": "string",
   "artist": "string",
-  "instrument": "Guitar|Bass|Drums|Keys",
+  "instrument": "Guitar|Bass",
   "theoryData": {
     "key": "string (e.g., 'A Minor')",
     "tempo": "string (e.g., '120 BPM')",

@@ -26,7 +26,7 @@ You have successfully configured:
    - [ ] Form fields auto-fill:
      - [ ] Song Title (e.g., "Stairway to Heaven")
      - [ ] Artist (e.g., "Led Zeppelin")
-     - [ ] Instrument selector updates (Guitar, Bass, Drums, or Keys)
+     - [ ] Instrument selector updates (Guitar or Bass)
    - [ ] Tab icons revert to static icons
    - [ ] Orange LED dots appear on Theory and Practice tabs
    - [ ] Video placeholder shows the URL you analyzed
