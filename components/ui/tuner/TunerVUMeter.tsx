@@ -291,12 +291,12 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   meterFace: {
-    width: '100%',
+    width: 310,  // Fixed width required for iOS - Skia Canvas doesn't render with percentage widths
     height: 120,
     borderRadius: 12,
   },
   meterFaceCompact: {
-    width: 200,
+    width: 218,  // Fixed width for compact mode (matches MetronomePanel compact width)
     height: 90,
     borderRadius: 8,
   },
