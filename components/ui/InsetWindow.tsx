@@ -35,7 +35,7 @@ export const InsetWindow: React.FC<InsetWindowProps> = ({
 
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? '#2a2a2a' : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
   const innerShadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.40)';
   const outerHighlightColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,1)';
   const glassGradientColors = isDark

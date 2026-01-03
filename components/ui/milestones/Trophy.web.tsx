@@ -83,7 +83,7 @@ export const Trophy: React.FC<TrophyProps> = ({
   const iconSize = compact ? 20 : 28;
 
   // Generate CSS gradient from tier colors
-  const gradientColors = unlocked ? tierColors.gradient : ['#3a3a3a', '#2a2a2a'];
+  const gradientColors = unlocked ? tierColors.gradient : ['#3a3a3a', Colors.deepSpaceBlue];
   const gradientStyle = {
     background: `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1] || gradientColors[0]} 100%)`,
   };

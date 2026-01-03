@@ -20,6 +20,7 @@ export interface BaseFilterProps<T extends string = string> {
 export interface FrequencyTunerProps<T extends string = string> extends BaseFilterProps<T> {
   showValueLabel?: boolean;
   size?: 'compact' | 'standard';
+  height?: number;
 }
 
 // GangSwitch-specific props
@@ -42,10 +43,11 @@ export interface RotaryKnobProps<T extends string = string> extends BaseFilterPr
   size?: number;
   showNotches?: boolean;
   hapticFeedback?: boolean;
+  variant?: 'dark' | 'light';
 }
 
 // Filter types (moved from index.tsx)
 export type Instrument = 'Guitar' | 'Bass';
 export type Difficulty = 'All' | 'Easy' | 'Medium' | 'Hard';
 export type Fluency = 'All' | 'Learning' | 'Practicing' | 'Comfortable' | 'Mastered';
-export type Genre = 'All' | 'Rock' | 'Blues' | 'Metal' | 'Prog' | 'Jazz' | 'Country' | 'Pop' | 'Classical' | 'Flamenco' | 'Funk' | 'Folk' | 'Punk' | 'Reggae' | 'Bluegrass';
+export type Genre = 'All' | 'Rock' | 'Blues' | 'Metal' | 'New Metal' | 'Emo' | 'Prog' | 'Jazz' | 'Country' | 'Pop' | 'Classical' | 'Flamenco' | 'Funk' | 'Folk' | 'Punk' | 'Reggae' | 'Bluegrass';

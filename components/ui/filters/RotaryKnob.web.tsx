@@ -51,10 +51,16 @@ export const RotaryKnob = <T extends string>({
   size = KNOB_SIZE,
   showNotches = true,
   hapticFeedback = true,
+  variant = 'dark',
 }: RotaryKnobProps<T>) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1);
   const { playSound } = useRotaryKnobSound();
+
+  // Variant-specific colors
+  const isDark = variant === 'dark';
+  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
+  const textColor = isDark ? '#e0e0e0' : Colors.charcoal;
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setReadoutWidth(event.nativeEvent.layout.width);
@@ -107,7 +113,7 @@ export const RotaryKnob = <T extends string>({
 
       <View style={styles.row}>
         {/* Digital Readout - CSS version */}
-        <View style={[styles.readoutContainer, { backgroundColor: '#2a2a2a' }]} onLayout={handleLayout}>
+        <View style={[styles.readoutContainer, { backgroundColor }]} onLayout={handleLayout}>
           {/* Inset shadow effect (CSS) */}
           <View style={styles.insetShadow} />
 
@@ -117,7 +123,7 @@ export const RotaryKnob = <T extends string>({
             exiting={direction > 0 ? ExitToLeft : ExitToRight}
             style={styles.readoutTextWrapper}
           >
-            <Text style={styles.readoutText} numberOfLines={1}>
+            <Text style={[styles.readoutText, { color: textColor }]} numberOfLines={1}>
               {currentOption?.label || value}
             </Text>
           </Animated.View>
@@ -156,7 +162,7 @@ export const RotaryKnob = <T extends string>({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 6,
+    gap: 4,
     width: '100%',
   },
   label: Typography.label,

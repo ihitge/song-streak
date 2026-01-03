@@ -84,7 +84,7 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
         <Canvas style={StyleSheet.absoluteFill}>
           <Box
             box={rrect(rect(0, 0, width, height), 6, 6)}
-            color="#2a2a2a"
+            color={Colors.deepSpaceBlue}
           >
             <BoxShadow dx={0} dy={2} blur={6} color="rgba(0,0,0,0.9)" inner />
             <BoxShadow dx={0} dy={-1} blur={2} color="rgba(255,255,255,0.1)" />

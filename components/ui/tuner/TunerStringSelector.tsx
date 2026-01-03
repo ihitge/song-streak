@@ -13,6 +13,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { Typography } from '@/constants/Styles';
 import { useGangSwitchSound } from '@/hooks/useGangSwitchSound';
 import { GUITAR_STRINGS_ARRAY, type GuitarString } from '@/types/tuner';
 
@@ -115,15 +116,8 @@ const styles = StyleSheet.create({
   container: {
     gap: 6,
     width: '100%',
-    paddingHorizontal: 16,
   },
-  label: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 10,
-    letterSpacing: 1.5,
-    color: Colors.warmGray,
-    textTransform: 'uppercase',
-  },
+  label: Typography.label,
   wellContainer: {
     position: 'relative',
     height: WELL_HEIGHT,

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
-import Animated, { Keyframe } from 'react-native-reanimated';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
@@ -11,43 +10,6 @@ import type { FrequencyTunerProps } from '@/types/filters';
 type TunerVariant = 'dark' | 'light';
 
 const TUNER_HEIGHT = 44;
-
-// --- Glitch Animations ---
-
-// Enter from Right (Next)
-const EnterFromRight = new Keyframe({
-  0: { transform: [{ translateX: 20 }], opacity: 0 },
-  20: { transform: [{ translateX: 15 }], opacity: 0.5 },
-  40: { transform: [{ translateX: 10 }], opacity: 0.1 },
-  60: { transform: [{ translateX: 5 }], opacity: 0.9 },
-  80: { transform: [{ translateX: 2 }], opacity: 0.4 },
-  100: { transform: [{ translateX: 0 }], opacity: 1 },
-}).duration(250);
-
-// Exit to Left (Next)
-const ExitToLeft = new Keyframe({
-  0: { transform: [{ translateX: 0 }], opacity: 1 },
-  40: { transform: [{ translateX: -10 }], opacity: 0.5 },
-  100: { transform: [{ translateX: -20 }], opacity: 0 },
-}).duration(200);
-
-// Enter from Left (Prev)
-const EnterFromLeft = new Keyframe({
-  0: { transform: [{ translateX: -20 }], opacity: 0 },
-  20: { transform: [{ translateX: -15 }], opacity: 0.5 },
-  40: { transform: [{ translateX: -10 }], opacity: 0.1 },
-  60: { transform: [{ translateX: -5 }], opacity: 0.9 },
-  80: { transform: [{ translateX: -2 }], opacity: 0.4 },
-  100: { transform: [{ translateX: 0 }], opacity: 1 },
-}).duration(250);
-
-// Exit to Right (Prev)
-const ExitToRight = new Keyframe({
-  0: { transform: [{ translateX: 0 }], opacity: 1 },
-  40: { transform: [{ translateX: 10 }], opacity: 0.5 },
-  100: { transform: [{ translateX: 20 }], opacity: 0 },
-}).duration(200);
-
 
 export const FrequencyTuner = <T extends string>({
   label,
@@ -60,17 +22,17 @@ export const FrequencyTuner = <T extends string>({
   variant = 'dark',
   showGlassOverlay = false,
   labelColor,
+  height: customHeight,
 }: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean; labelColor?: string }) => {
   const [width, setWidth] = useState(200);
-  const [direction, setDirection] = useState(1);
   const { playSound } = useClickSound();
   const selectedIndex = options.findIndex((opt) => opt.value === value);
   const currentOption = options[selectedIndex];
-  const height = size === 'compact' ? 40 : TUNER_HEIGHT;
+  const height = customHeight ?? (size === 'compact' ? 40 : TUNER_HEIGHT);
 
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? '#2a2a2a' : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
   const scaleMarkingColor = isDark ? 'rgba(255,255,255,0.2)' : Colors.charcoal;
   const textColor = isDark ? '#e0e0e0' : Colors.charcoal;
   const chevronColor = isDark ? Colors.graphite : Colors.charcoal;
@@ -82,8 +44,6 @@ export const FrequencyTuner = <T extends string>({
 
   const cycle = async (dir: number) => {
     if (disabled) return;
-
-    setDirection(dir);
 
     let nextIndex = selectedIndex + dir;
     if (nextIndex < 0) nextIndex = options.length - 1;
@@ -117,7 +77,12 @@ export const FrequencyTuner = <T extends string>({
       <Text style={[styles.label, labelColor && { color: labelColor }]}>{label}</Text>
 
       {/* Tuner Window */}
-      <View style={[styles.tunerWindow, { height, backgroundColor }]} onLayout={handleLayout}>
+      <View style={[
+        styles.tunerWindow,
+        { height, backgroundColor },
+        // @ts-ignore - web-specific CSS for radial gradient with darker corners
+        isDark && { backgroundImage: 'radial-gradient(circle, #0E273C 0%, #0B1F30 100%)' }
+      ]} onLayout={handleLayout}>
         {/* Inset shadow effect (CSS) */}
         <View style={[styles.insetShadow, isDark ? styles.insetShadowDark : styles.insetShadowLight]} />
 
@@ -140,16 +105,9 @@ export const FrequencyTuner = <T extends string>({
 
           {/* Value display */}
           <View style={styles.valueContainer}>
-            <Animated.View
-              key={value}
-              entering={direction > 0 ? EnterFromRight : EnterFromLeft}
-              exiting={direction > 0 ? ExitToLeft : ExitToRight}
-              style={styles.textWrapper}
-            >
-              <Text style={[styles.valueText, { color: textColor }]}>
-                {currentOption?.label || value}
-              </Text>
-            </Animated.View>
+            <Text style={[styles.valueText, { color: textColor }]}>
+              {currentOption?.label || value}
+            </Text>
           </View>
 
           {/* Right chevron */}
@@ -177,7 +135,6 @@ const styles = StyleSheet.create({
   label: {
     ...Typography.label,
     textAlign: 'left',
-    color: Colors.warmGray,
   },
   tunerWindow: {
     borderRadius: 6,
@@ -242,9 +199,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.05)',
     pointerEvents: 'none',
-  },
-  textWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

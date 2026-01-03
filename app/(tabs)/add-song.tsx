@@ -1031,6 +1031,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     gap: 24,
+    backgroundColor: Colors.ink,
   },
   loadingContainer: {
     flex: 1,

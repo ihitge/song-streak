@@ -197,7 +197,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginHorizontal: 16,
     alignSelf: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: Colors.deepSpaceBlue,
+    // @ts-ignore - web-specific CSS for radial gradient with darker corners
+    backgroundImage: 'radial-gradient(circle, #0E273C 30%, #061219 100%)',
   },
   content: {
     flex: 1,

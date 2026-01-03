@@ -31,7 +31,7 @@ export const Typography = StyleSheet.create({
     fontSize: 9,
     textTransform: 'uppercase',
     letterSpacing: 2,
-    color: Colors.warmGray,
+    color: Colors.vermilion,
   },
   metaText: {
     fontFamily: 'LexendDecaRegular',

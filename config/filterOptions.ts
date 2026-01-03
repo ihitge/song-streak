@@ -19,6 +19,8 @@ export const genreOptions: FilterOption<Genre>[] = [
   { value: 'Rock', label: 'Rock', icon: Music },
   { value: 'Blues', label: 'Blues', icon: Music },
   { value: 'Metal', label: 'Metal', icon: Music },
+  { value: 'New Metal', label: 'New Metal', icon: Music },
+  { value: 'Emo', label: 'Emo', icon: Music },
   { value: 'Prog', label: 'Prog', icon: Music },
   { value: 'Jazz', label: 'Jazz', icon: Music },
   { value: 'Country', label: 'Country', icon: Music },

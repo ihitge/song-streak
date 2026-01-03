@@ -14,7 +14,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { useClickSound } from '@/hooks/useClickSound';
 import { CircleOfFifths } from './CircleOfFifths';
-import { GangSwitch } from '@/components/ui/filters/GangSwitch';
+import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
 import {
   parseKey,
   getScaleNotes,
@@ -35,10 +35,10 @@ interface CircleOfFifthsModalProps {
   artist?: string;
 }
 
-// Mode options for GangSwitch
+// Mode options for FrequencyTuner
 const MODE_OPTIONS = MODE_ORDER.map((mode) => ({
   value: mode,
-  label: MODES[mode].name.split(' / ')[0].toUpperCase(),
+  label: MODES[mode].name.split(' / ')[0],
 }));
 
 export const CircleOfFifthsModal: React.FC<CircleOfFifthsModalProps> = ({
@@ -100,10 +100,8 @@ export const CircleOfFifthsModal: React.FC<CircleOfFifthsModalProps> = ({
     }
   }, [selectedMode]);
 
-  // Handle mode change
-  const handleModeChange = async (mode: ModeName) => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
+  // Handle mode change (FrequencyTuner handles haptics and sound internally)
+  const handleModeChange = (mode: ModeName) => {
     setSelectedMode(mode);
   };
 
@@ -117,7 +115,7 @@ export const CircleOfFifthsModal: React.FC<CircleOfFifthsModalProps> = ({
   };
 
   // Calculate circle size based on screen
-  const circleSize = Math.min(SCREEN_WIDTH - 48, SCREEN_HEIGHT * 0.4, 320);
+  const circleSize = Math.min(SCREEN_WIDTH - 48, SCREEN_HEIGHT * 0.34, 285);
 
   return (
     <Modal
@@ -151,16 +149,13 @@ export const CircleOfFifthsModal: React.FC<CircleOfFifthsModalProps> = ({
         >
           {/* Mode Selector */}
           <View style={styles.modeSection}>
-            <Text style={styles.sectionLabel}>MODE</Text>
-            <View style={styles.modeSwitchContainer}>
-              <GangSwitch
-                label=""
-                options={MODE_OPTIONS}
-                value={selectedMode}
-                onChange={handleModeChange}
-                allowDeselect={false}
-              />
-            </View>
+            <FrequencyTuner
+              label="MODE"
+              options={MODE_OPTIONS}
+              value={selectedMode}
+              onChange={handleModeChange}
+              variant="light"
+            />
           </View>
 
           {/* Circle of Fifths */}
@@ -280,17 +275,6 @@ const styles = StyleSheet.create({
   },
   modeSection: {
     marginBottom: 16,
-  },
-  sectionLabel: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 9,
-    color: Colors.warmGray,
-    letterSpacing: 2,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  modeSwitchContainer: {
-    // GangSwitch handles its own styling
   },
   circleContainer: {
     alignItems: 'center',

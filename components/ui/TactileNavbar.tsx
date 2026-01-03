@@ -43,8 +43,6 @@ const styles = StyleSheet.create({
   chassis: {
     height: 128, // h-32 (128px)
     backgroundColor: Colors.matteFog,
-    borderTopWidth: 1,
-    borderTopColor: 'white', // 1px white top border
     // Subtle drop shadow upwards
     shadowColor: 'rgba(0,0,0,0.1)',
     shadowOffset: { width: 0, height: -2 },

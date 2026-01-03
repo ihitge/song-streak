@@ -1,5 +1,33 @@
 # Development Notes & Future Features
 
+## Recent Changes (January 3, 2026)
+
+### UI Consistency & Polish
+
+**Typography & Labels**
+- Unified all filter labels to orange (`Colors.vermilion`) via shared `Typography.label` style
+- Removed local color overrides in FrequencyTuner, FrequencyTuner.web, and TunerStringSelector
+- Tuner labels now consistent: "TUNING", "STRINGS", "METER" (or "PLAY A STRING" when idle)
+
+**Filter Component Swap**
+- Instrument filter now uses RotaryKnob (was FrequencyTuner)
+- Genre filter now uses FrequencyTuner (was RotaryKnob)
+- Added `variant` prop support to RotaryKnob for light/dark theming
+
+**Layout & Spacing**
+- Tuner page now matches song page layout with 24px padding
+- All tuner elements (FrequencyTuner, Strings, VU Meter) now full-width
+- Song page content area has dark background (`Colors.ink`)
+- Removed white border artifact above TactileNavbar
+
+**Component Updates**
+- TunerVUMeter: Restructured with proper label positioning above meter
+- TunerPanel: Full-width header container
+- TunerStringSelector: Uses shared Typography.label style
+- RotaryKnob: Added variant prop for light/dark theming
+
+---
+
 ## Browser Testing Now Available ✅
 
 **Updated**: December 18, 2025

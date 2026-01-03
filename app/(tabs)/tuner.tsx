@@ -2,12 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { PageHeader } from '@/components/ui/PageHeader';
-import {
-  TunerMeter,
-  TunerNoteDisplay,
-  TunerStringSelector,
-  TunerControls,
-} from '@/components/ui/tuner';
+import { TunerPanel } from '@/components/ui/tuner';
 import { Colors } from '@/constants/Colors';
 import { useTunerMachine } from '@/hooks/tuner';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
@@ -17,10 +12,10 @@ import { useStyledAlert } from '@/hooks/useStyledAlert';
  *
  * Features:
  * - Real-time pitch detection using YIN algorithm
- * - Visual meter showing cents deviation
+ * - VU-style swing meter showing cents deviation
  * - Auto-detection of played string
  * - Haptic feedback when in tune
- * - Industrial Play aesthetic
+ * - Industrial Play aesthetic matching Metronome
  *
  * Based on YIN algorithm from pitchfinder library.
  */
@@ -64,57 +59,26 @@ export default function TunerScreen() {
     [showInfo]
   );
 
-  const isActive = tuner.status !== 'idle';
-
   return (
     <View style={styles.container}>
       <PageHeader />
 
-      {/* Main content */}
-      <View style={styles.content}>
-        {/* Note display section */}
-        <View style={styles.displaySection}>
-          <TunerNoteDisplay
-            detectedString={tuner.detectedString}
-            frequency={tuner.frequency}
-            cents={tuner.cents}
-            direction={tuner.direction}
-            status={tuner.status}
-            isInTune={tuner.isInTune}
-          />
-        </View>
-
-        {/* Meter section */}
-        <View style={styles.meterSection}>
-          <TunerMeter
-            cents={tuner.cents}
-            direction={tuner.direction}
-            isInTune={tuner.isInTune}
-            isActive={isActive}
-          />
-        </View>
-
-        {/* String selector */}
-        <View style={styles.stringsSection}>
-          <TunerStringSelector
-            detectedString={tuner.detectedString}
-            isInTune={tuner.isInTune}
-            onStringSelect={handleStringSelect}
-            isActive={isActive}
-          />
-        </View>
-
-        {/* Controls section */}
-        <View style={styles.controlsSection}>
-          <TunerControls
-            status={tuner.status}
-            signalStrength={tuner.signalStrength}
-            hasPermission={tuner.hasPermission}
-            permissionStatus={tuner.permissionStatus}
-            onStart={handleStart}
-            onStop={handleStop}
-          />
-        </View>
+      {/* Tuner Panel - takes up available space */}
+      <View style={styles.tunerSection}>
+        <TunerPanel
+          detectedString={tuner.detectedString}
+          frequency={tuner.frequency}
+          cents={tuner.cents}
+          direction={tuner.direction}
+          status={tuner.status}
+          isInTune={tuner.isInTune}
+          signalStrength={tuner.signalStrength}
+          hasPermission={tuner.hasPermission}
+          permissionStatus={tuner.permissionStatus}
+          onStart={handleStart}
+          onStop={handleStop}
+          onStringSelect={handleStringSelect}
+        />
       </View>
     </View>
   );
@@ -125,22 +89,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.matteFog,
   },
-  content: {
+  tunerSection: {
     flex: 1,
-    paddingVertical: 16,
-    gap: 24,
-  },
-  displaySection: {
-    paddingHorizontal: 16,
-  },
-  meterSection: {
-    // Full width, component handles padding
-  },
-  stringsSection: {
-    // Full width, component handles padding
-  },
-  controlsSection: {
-    marginTop: 'auto',
-    paddingBottom: 16,
+    padding: 24,
+    backgroundColor: Colors.ink,
   },
 });

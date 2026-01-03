@@ -129,7 +129,7 @@ export const Trophy: React.FC<TrophyProps> = ({
               <LinearGradient
                 start={vec(0, 0)}
                 end={vec(size, size)}
-                colors={unlocked ? tierColors.gradient : ['#3a3a3a', '#2a2a2a']}
+                colors={unlocked ? tierColors.gradient : ['#3a3a3a', Colors.deepSpaceBlue]}
               />
             </RoundedRect>
 

@@ -28,17 +28,18 @@ export const FrequencyTuner = <T extends string>({
   variant = 'dark',
   showGlassOverlay = false,
   labelColor,
+  height: customHeight,
 }: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean; labelColor?: string }) => {
   const [width, setWidth] = useState(200); // default fallback
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
   const { playSound } = useClickSound();
   const selectedIndex = options.findIndex((opt) => opt.value === value);
   const currentOption = options[selectedIndex];
-  const height = size === 'compact' ? 40 : TUNER_HEIGHT;
+  const height = customHeight ?? (size === 'compact' ? 40 : TUNER_HEIGHT);
 
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? '#2a2a2a' : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
   const innerShadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.40)';
   const outerHighlightColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,1)';
   const scaleMarkingColor = isDark ? 'rgba(255,255,255,0.2)' : Colors.charcoal;
@@ -209,7 +210,6 @@ const styles = StyleSheet.create({
   label: {
     ...Typography.label,
     textAlign: 'left',
-    color: Colors.warmGray,
   },
   tunerWindow: {
     borderRadius: 6,

@@ -17,6 +17,8 @@ interface LibraryHeaderProps {
   recentSuggestions?: SongSuggestion[];
   instrumentFilter?: ReactNode;
   genreFilter?: ReactNode;
+  /** Dark mode - renders without PageHeader wrapper and with dark styling */
+  darkMode?: boolean;
 }
 
 export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
@@ -29,6 +31,7 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
   recentSuggestions = [],
   instrumentFilter,
   genreFilter,
+  darkMode = false,
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -62,57 +65,65 @@ export const LibraryHeader: React.FC<LibraryHeaderProps> = ({
     (searchText.length >= 2 && searchSuggestions.length === 0)
   );
 
-  return (
-    <PageHeader>
-      {/* Filter Deck (The Control Surface) */}
-      <View style={styles.filterDeck}>
-        {/* Row 1: Search */}
-        <View style={[styles.filterRow, { zIndex: 10 }]}>
-          <View style={styles.filterCell}>
-            <View style={styles.widgetContainer}>
-              <View style={styles.searchRow}>
-                <Search size={16} color={Colors.graphite} style={styles.searchIcon} accessibilityElementsHidden={true} />
-                <TextInput
-                  style={styles.searchInput}
-                  value={searchText}
-                  onChangeText={onSearchChange}
-                  onFocus={handleSearchFocus}
-                  onBlur={handleSearchBlur}
-                  placeholder="Search songs..."
-                  placeholderTextColor={Colors.graphite}
-                  accessibilityLabel="Search songs"
-                  accessibilityHint="Enter song title or artist name to search your library"
-                />
-              </View>
-            </View>
-            {shouldShowDropdown && (
-              <SearchSuggestions
-                suggestions={displaySuggestions}
-                onSelect={onSuggestionSelect}
-                onClose={() => setShowSuggestions(false)}
-                searchQuery={searchText}
-                totalResults={showRecentOnEmptyFocus ? displaySuggestions.length : totalResults}
-                isLoading={isLoading && !showRecentOnEmptyFocus}
-                headerLabel={displayHeaderLabel}
+  const content = (
+    <View style={[styles.filterDeck, darkMode && styles.filterDeckDark]}>
+      {/* Row 1: Search */}
+      <View style={[styles.filterRow, { zIndex: 10 }]}>
+        <View style={styles.filterCell}>
+          <View style={styles.widgetContainer}>
+            <View style={[styles.searchRow, darkMode && styles.searchRowDark]}>
+              <Search size={16} color={Colors.graphite} style={styles.searchIcon} accessibilityElementsHidden={true} />
+              <TextInput
+                style={styles.searchInput}
+                value={searchText}
+                onChangeText={onSearchChange}
+                onFocus={handleSearchFocus}
+                onBlur={handleSearchBlur}
+                placeholder="Search songs..."
+                placeholderTextColor={Colors.graphite}
+                accessibilityLabel="Search songs"
+                accessibilityHint="Enter song title or artist name to search your library"
               />
-            )}
+            </View>
           </View>
-        </View>
-
-        {/* Row 2: Instrument | Genre */}
-        <View style={[styles.filterRow, { zIndex: 1 }]}>
-          {instrumentFilter && (
-            <View style={styles.filterCell}>
-              {instrumentFilter}
-            </View>
-          )}
-          {genreFilter && (
-            <View style={styles.filterCell}>
-              {genreFilter}
-            </View>
+          {shouldShowDropdown && (
+            <SearchSuggestions
+              suggestions={displaySuggestions}
+              onSelect={onSuggestionSelect}
+              onClose={() => setShowSuggestions(false)}
+              searchQuery={searchText}
+              totalResults={showRecentOnEmptyFocus ? displaySuggestions.length : totalResults}
+              isLoading={isLoading && !showRecentOnEmptyFocus}
+              headerLabel={displayHeaderLabel}
+            />
           )}
         </View>
       </View>
+
+      {/* Row 2: Instrument | Genre */}
+      <View style={[styles.filterRow, { zIndex: 1 }]}>
+        {instrumentFilter && (
+          <View style={styles.filterCell}>
+            {instrumentFilter}
+          </View>
+        )}
+        {genreFilter && (
+          <View style={styles.filterCell}>
+            {genreFilter}
+          </View>
+        )}
+      </View>
+    </View>
+  );
+
+  // In dark mode, don't wrap with PageHeader (caller handles that)
+  if (darkMode) {
+    return content;
+  }
+
+  return (
+    <PageHeader>
+      {content}
     </PageHeader>
   );
 };
@@ -126,6 +137,10 @@ const styles = StyleSheet.create({
     gap: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'white',
+  },
+  filterDeckDark: {
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
   },
   filterRow: {
     flexDirection: 'row',
@@ -155,6 +170,13 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.5)',
     borderLeftColor: 'rgba(255,255,255,0.5)',
+    borderBottomColor: 'rgba(0,0,0,0.15)',
+    borderRightColor: 'rgba(0,0,0,0.15)',
+  },
+  searchRowDark: {
+    backgroundColor: Colors.softWhite,
+    borderTopColor: 'rgba(255,255,255,1)',
+    borderLeftColor: 'rgba(255,255,255,1)',
     borderBottomColor: 'rgba(0,0,0,0.15)',
     borderRightColor: 'rgba(0,0,0,0.15)',
   },

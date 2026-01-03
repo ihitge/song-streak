@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   windowBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: Colors.deepSpaceBlue,
     borderRadius: 6,
     // Inset shadow simulation
     shadowColor: '#000',

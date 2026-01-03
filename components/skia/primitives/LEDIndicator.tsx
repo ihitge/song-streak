@@ -33,7 +33,7 @@ export const LEDIndicator: React.FC<LEDIndicatorProps> = ({
   const lensRadius = radius - bezelWidth;
 
   // Off-state colors (Dark, muted lens)
-  const offColorCenter = '#2a2a2a';
+  const offColorCenter = Colors.deepSpaceBlue;
   const offColorEdge = '#111111';
 
   return (

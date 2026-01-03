@@ -7,6 +7,7 @@ import { Colors } from '@/constants/Colors';
 import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
 import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay } from '@/components/skia/primitives/InsetShadowOverlay';
@@ -258,63 +259,70 @@ export default function SetListScreen() {
 
   return (
     <View style={styles.container}>
-      <LibraryHeader
-        searchText={searchText}
-        onSearchChange={handleSearchChange}
-        searchSuggestions={searchSuggestions}
-        onSuggestionSelect={handleSuggestionSelect}
-        totalResults={totalResults}
-        isLoading={isSearchLoading}
-        recentSuggestions={recentSuggestions}
-        instrumentFilter={
-          <FrequencyTuner
-            label="INSTRUMENT"
-            value={instrument}
-            onChange={setInstrument}
-            options={instrumentOptions}
-            showGlassOverlay
-          />
-        }
-        genreFilter={
-          <RotaryKnob
-            label="GENRE"
-            value={genre}
-            onChange={setGenre}
-            options={genreOptions}
-            showGlassOverlay
-          />
-        }
-      />
+      <PageHeader />
 
-      {/* Songs List */}
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.vermilion} />
-          <Text style={styles.loadingText}>Loading songs...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredSongs}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <SongCard
-              song={item}
-              onDelete={handleDeleteSong}
-              onEdit={handleEditSong}
-              onPress={() => handleSongPress(item)}
+      {/* Songs List - Dark background to match Metronome/Tuner */}
+      <View style={styles.songListContainer}>
+        {/* Filter Controls inside dark area */}
+        <LibraryHeader
+          searchText={searchText}
+          onSearchChange={handleSearchChange}
+          searchSuggestions={searchSuggestions}
+          onSuggestionSelect={handleSuggestionSelect}
+          totalResults={totalResults}
+          isLoading={isSearchLoading}
+          recentSuggestions={recentSuggestions}
+          instrumentFilter={
+            <RotaryKnob
+              label="INSTRUMENT"
+              value={instrument}
+              onChange={setInstrument}
+              options={instrumentOptions}
+              showGlassOverlay
+              variant="light"
             />
-          )}
-          contentContainerStyle={styles.songListContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Music size={48} color={Colors.graphite} />
-              <Text style={styles.emptyText}>No songs yet</Text>
-              <Text style={styles.emptySubtext}>Tap + to add your first song</Text>
-            </View>
           }
+          genreFilter={
+            <FrequencyTuner
+              label="GENRE"
+              value={genre}
+              onChange={setGenre}
+              options={genreOptions}
+              showGlassOverlay
+              variant="light"
+            />
+          }
+          darkMode
         />
-      )}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.vermilion} />
+            <Text style={styles.loadingText}>Loading songs...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredSongs}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <SongCard
+                song={item}
+                onDelete={handleDeleteSong}
+                onEdit={handleEditSong}
+                onPress={() => handleSongPress(item)}
+              />
+            )}
+            contentContainerStyle={styles.songListContent}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Music size={48} color={Colors.warmGray} />
+                <Text style={styles.emptyText}>No songs yet</Text>
+                <Text style={styles.emptySubtext}>Tap + to add your first song</Text>
+              </View>
+            }
+          />
+        )}
+      </View>
 
       {/* Hero Action Button */}
       <Pressable
@@ -337,6 +345,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.matteFog, // Chassis Base
   },
   // --- Song List ---
+  songListContainer: {
+    flex: 1,
+    backgroundColor: Colors.ink,
+  },
   songListContent: {
     paddingHorizontal: 24,
     paddingVertical: 16,
@@ -480,7 +492,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 14,
-    color: Colors.graphite,
+    color: Colors.warmGray,
     marginTop: 12,
   },
   emptyContainer: {
@@ -492,13 +504,13 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: 'LexendDecaBold',
     fontSize: 18,
-    color: Colors.ink,
+    color: Colors.softWhite,
     marginTop: 16,
   },
   emptySubtext: {
     fontFamily: 'LexendDecaRegular',
     fontSize: 14,
-    color: Colors.graphite,
+    color: Colors.warmGray,
     marginTop: 4,
   },
 

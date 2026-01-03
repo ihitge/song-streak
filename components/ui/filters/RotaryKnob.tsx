@@ -25,10 +25,22 @@ export const RotaryKnob = <T extends string>({
   showNotches = true,
   hapticFeedback = true,
   showGlassOverlay = false,
+  variant = 'dark',
 }: RotaryKnobProps<T> & { showGlassOverlay?: boolean }) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
   const { playSound } = useRotaryKnobSound();
+
+  // Variant-specific colors
+  const isDark = variant === 'dark';
+  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
+  const innerShadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.40)';
+  const outerHighlightColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,1)';
+  const glassGradientColors: [string, string] = isDark
+    ? ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0)']
+    : ['rgba(255,255,255,0.35)', 'rgba(255,255,255,0)'];
+  const textColor = isDark ? '#e0e0e0' : Colors.charcoal;
+  const textShadowColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.8)';
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setReadoutWidth(event.nativeEvent.layout.width);
@@ -88,10 +100,10 @@ export const RotaryKnob = <T extends string>({
           <Canvas style={StyleSheet.absoluteFill}>
             <Box
               box={rrect(rect(0, 0, readoutWidth, READOUT_HEIGHT), 6, 6)}
-              color="#2a2a2a"
+              color={backgroundColor}
             >
-              <BoxShadow dx={0} dy={2} blur={6} color="rgba(0,0,0,0.9)" inner />
-              <BoxShadow dx={0} dy={-1} blur={2} color="rgba(255,255,255,0.1)" />
+              <BoxShadow dx={0} dy={2} blur={6} color={innerShadowColor} inner />
+              <BoxShadow dx={0} dy={-1} blur={2} color={outerHighlightColor} />
             </Box>
           </Canvas>
 
@@ -102,7 +114,7 @@ export const RotaryKnob = <T extends string>({
                 <LinearGradient
                   start={vec(0, 0)}
                   end={vec(0, READOUT_HEIGHT / 2)}
-                  colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0)']}
+                  colors={glassGradientColors}
                 />
               </Box>
             </Canvas>
@@ -117,8 +129,8 @@ export const RotaryKnob = <T extends string>({
                 height={READOUT_HEIGHT}
                 borderRadius={6}
                 insetDepth={6}
-                shadowIntensity={0.9}
-                variant="dark"
+                shadowIntensity={isDark ? 0.9 : 0.4}
+                variant={variant}
               />
               {/* Layer 2: Glass overlay */}
               <GlassOverlay
@@ -127,7 +139,7 @@ export const RotaryKnob = <T extends string>({
                 borderRadius={6}
                 glareOpacity={0.2}
                 specularOpacity={0.3}
-                variant="dark"
+                variant={variant}
               />
               {/* Layer 3: Surface texture for dust/scratches */}
               <SurfaceTextureOverlay
@@ -135,7 +147,7 @@ export const RotaryKnob = <T extends string>({
                 height={READOUT_HEIGHT}
                 borderRadius={6}
                 textureOpacity={0.03}
-                variant="dark"
+                variant={variant}
               />
             </>
           )}
@@ -146,7 +158,7 @@ export const RotaryKnob = <T extends string>({
                 exiting={direction > 0 ? ExitToLeft : ExitToRight}
                 style={styles.readoutTextWrapper}
             >
-                <Text style={styles.readoutText} numberOfLines={1}>
+                <Text style={[styles.readoutText, { color: textColor, textShadowColor }]} numberOfLines={1}>
                     {currentOption?.label || value}
                 </Text>
             </Animated.View>
@@ -191,7 +203,7 @@ export const RotaryKnob = <T extends string>({
 
 const styles = StyleSheet.create({
   container: {
-    gap: 6,
+    gap: 4,
     width: '100%',
   },
   label: Typography.label,
