@@ -690,18 +690,19 @@ Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches, beveled modal
 
 ## Metronome Components
 
-### VUMeterDisplay (Dual Mode)
+### VUMeterDisplay (Multi-Mode)
 
-The `VUMeterDisplay` now supports two modes:
+The `VUMeterDisplay` supports three modes:
 - **Progress mode** (default): Shows total practice time with static needle position
 - **Metronome mode**: Shows pendulum swing synchronized with metronome beats
+- **Recording mode**: Shows audio level for voice recorder with dB scale
 
 **Props**:
 ```typescript
 interface VUMeterDisplayProps {
   totalSeconds?: number;              // For progress mode
   compact?: boolean;
-  mode?: 'progress' | 'metronome';    // Default: 'progress'
+  mode?: 'progress' | 'metronome' | 'recording';  // Default: 'progress'
   beatPosition?: number;              // 0 (left) or 1 (right) for pendulum
   isMetronomePlaying?: boolean;       // For LED beat effects
   currentBeat?: number;               // Current beat (1-indexed)
@@ -709,9 +710,21 @@ interface VUMeterDisplayProps {
   sessionSeconds?: number;            // Session time display
   sessionLabel?: string;              // Custom label
   showTimeDisplay?: boolean;          // Show embedded time (default: true)
-  children?: React.ReactNode;         // Content to render at bottom of housing
+  headerContent?: React.ReactNode;    // Content at top of housing
+  children?: React.ReactNode;         // Content at bottom of housing
+  // Recording mode props
+  audioLevel?: number;                // 0-1 audio level
+  isRecording?: boolean;              // Show REC LED
+  isPlaying?: boolean;                // Show PLAY LED
 }
 ```
+
+**Recording Mode Specifics**:
+- Labels: `-40`, `-25`, `-10`, `-2`, `+3` (dB scale)
+- `-10` is centered at needle base (50% position) for precise alignment
+- Uses absolute positioning for labels (not space-between) to ensure center alignment
+- LED colors: green for 0dB+, vermilion for negative dB
+- Direction labels: "LOW" (left) and "PEAK" (right)
 
 **Visual Updates (Dec 15, 2025)**:
 - **LED Indicators**: Uses the new `LEDIndicator` Skia primitive (16px size) with realistic bloom.
@@ -1211,6 +1224,19 @@ colors={[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.
 - `TapePath` - Simplified to single reel design
 
 **Updated exports** in `components/ui/recorder/index.ts`.
+
+### VUMeterDisplay Recording Mode Label Alignment
+
+**Change**: Recording mode labels now use absolute positioning with `-10` centered at the needle base.
+
+**Labels**: `-40` (0%), `-25` (25%), `-10` (50%), `-2` (75%), `+3` (100%)
+
+**Why**: The `-10` label must align precisely with the needle pivot point. Using `space-between` caused slight misalignment due to variable label widths. Absolute positioning ensures pixel-perfect center alignment.
+
+**Implementation**:
+- Added `position` property to `recordingMarkers` array
+- Created `recordingScaleMarkings` style for absolute positioning container
+- Created `recordingMarkerContainer` style with `translateX: -12` to center labels on their position
 
 ---
 

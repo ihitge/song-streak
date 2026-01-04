@@ -117,13 +117,13 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     { label: '+3', time: '10h', threshold: 36000 },
   ];
 
-  // Scale markers for recording mode (dB scale - matches tuner style)
+  // Scale markers for recording mode (dB scale - absolute positioning with -10 at exact center)
   const recordingMarkers = [
-    { label: '-40', db: -40 },
-    { label: '-20', db: -20 },
-    { label: '-10', db: -10 },
-    { label: '0', db: 0 },
-    { label: '+3', db: 3 },
+    { label: '-40', db: -40, position: 0 },
+    { label: '-25', db: -25, position: 0.25 },
+    { label: '-10', db: -10, position: 0.5 },   // Exactly centered with needle base
+    { label: '-2', db: -2, position: 0.75 },
+    { label: '+3', db: 3, position: 1 },
   ];
 
   // Calculate current dB level for LED activation in recording mode
@@ -191,12 +191,34 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
         style={compact ? { ...styles.meterFace, ...styles.meterFaceCompact } : styles.meterFace}
         showGlassOverlay
       >
-        {/* Scale arc background */}
-        <View style={styles.scaleArc}>
-          {/* Scale markings - different for each mode */}
+        {/* Scale markings with labels at top and LEDs below (matches TunerVUMeter) */}
+        {mode === 'recording' ? (
+          // Recording mode: absolute positioning to ensure -10 aligns with needle base
+          <View style={styles.recordingScaleMarkings}>
+            {recordingMarkers.map((marker) => (
+              <View
+                key={marker.label}
+                style={[
+                  styles.recordingMarkerContainer,
+                  { left: `${marker.position * 100}%` },
+                ]}
+              >
+                <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
+                  {marker.label}
+                </Text>
+                <LEDIndicator
+                  size={compact ? 10 : 14}
+                  isActive={isRecordingLedActive(marker.db)}
+                  color={marker.db >= 0 ? Colors.moss : Colors.vermilion}
+                />
+              </View>
+            ))}
+          </View>
+        ) : (
+          // Metronome and Progress modes: evenly spaced with space-between
           <View style={styles.scaleMarkings}>
             {mode === 'metronome' ? (
-              // Metronome mode: show beat numbers
+              // Metronome mode: beat numbers with LEDs
               beatMarkers.map((marker) => (
                 <View key={marker.label} style={styles.markerContainer}>
                   <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
@@ -207,45 +229,25 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
                     isActive={isLedActiveForBeat(marker.beat)}
                     color={marker.beat === 1 ? '#FF6B35' : '#16A34A'}
                   />
-                  <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
-                    ·
-                  </Text>
-                </View>
-              ))
-            ) : mode === 'recording' ? (
-              // Recording mode: show dB scale markers (matches tuner style)
-              recordingMarkers.map((marker) => (
-                <View key={marker.label} style={styles.markerContainer}>
-                  <Text style={[styles.recordingMarkerLabel, compact && styles.recordingMarkerLabelCompact]}>
-                    {marker.label}
-                  </Text>
-                  <LEDIndicator
-                    size={compact ? 10 : 14}
-                    isActive={isRecordingLedActive(marker.db)}
-                    color={marker.db === 0 ? Colors.moss : Colors.vermilion}
-                  />
                 </View>
               ))
             ) : (
-              // Progress mode: show time thresholds
+              // Progress mode: time labels with LEDs
               progressMarkers.map((marker) => (
                 <View key={marker.label} style={styles.markerContainer}>
                   <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
-                    {marker.label}
+                    {marker.time}
                   </Text>
                   <LEDIndicator
                     size={compact ? 12 : 16}
                     isActive={totalSeconds >= marker.threshold}
                     color={Colors.moss}
                   />
-                  <Text style={[styles.timeLabel, compact && styles.timeLabelCompact]}>
-                    {marker.time}
-                  </Text>
                 </View>
               ))
             )}
           </View>
-        </View>
+        )}
 
         {/* Direction labels for recording mode (like tuner's FLAT/SHARP) */}
         {mode === 'recording' && (
@@ -368,40 +370,42 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
   },
-  scaleArc: {
+  // Scale markings at top inside meter (matches TunerVUMeter)
+  scaleMarkings: {
     position: 'absolute',
-    top: 10,
+    top: 12,
     left: 0,
     right: 0,
-    height: 64,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  scaleMarkings: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '90%',
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
+  },
+  // Recording mode: absolute positioning for precise alignment
+  recordingScaleMarkings: {
+    position: 'absolute',
+    top: 12,
+    left: 16,
+    right: 16,
+    height: 40,
   },
   markerContainer: {
     alignItems: 'center',
-    gap: 2,
+    gap: 4,
   },
+  // Recording mode marker: absolutely positioned, centered on its position
+  recordingMarkerContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    gap: 4,
+    transform: [{ translateX: -12 }], // Center marker on position (approx half width)
+  },
+  // Marker labels match TunerVUMeter style exactly
   markerLabel: {
-    fontFamily: 'LexendDecaBold',
-    fontSize: 24,
-    color: Colors.warmGray,
-  },
-  markerLabelCompact: {
-    fontSize: 18,
-  },
-  // Recording mode marker labels - smaller to match tuner style
-  recordingMarkerLabel: {
     fontFamily: 'LexendDecaBold',
     fontSize: 12,
     color: Colors.warmGray,
   },
-  recordingMarkerLabelCompact: {
+  markerLabelCompact: {
     fontSize: 10,
   },
   // Direction labels for recording mode (like tuner's FLAT/SHARP)
