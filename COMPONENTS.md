@@ -73,13 +73,10 @@
 | `DailyGoalModal` | **Celebration: daily goal achieved** | `components/ui/streaks/DailyGoalModal.tsx` |
 | `MilestoneModal` | **Celebration: lifetime trophy unlock** | `components/ui/milestones/MilestoneModal.tsx` |
 | `StreakMilestoneModal` | **Celebration: streak milestone reached** | `components/ui/streaks/StreakMilestoneModal.tsx` |
-| `ReelToReelRecorder` | **Full skeuomorphic voice recorder** | `components/ui/recorder/ReelToReelRecorder.tsx` |
+| `ReelToReelRecorder` | **Full skeuomorphic voice recorder (uses VUMeterDisplay)** | `components/ui/recorder/ReelToReelRecorder.tsx` |
 | `TapeReel` | Animated spinning tape reel (Skia) | `components/ui/recorder/TapeReel.tsx` |
-| `TapePath` | Animated tape line between reels | `components/ui/recorder/TapePath.tsx` |
-| `RecorderVUMeter` | Dual stereo VU meter display | `components/ui/recorder/RecorderVUMeter.tsx` |
 | `TapeCounter` | Mechanical flip time counter | `components/ui/recorder/TapeCounter.tsx` |
-| `SpeedSelector` | SLOW/NORMAL/FAST speed picker | `components/ui/recorder/SpeedSelector.tsx` |
-| `RecorderTransportControls` | 5-button transport (REC/STOP/PLAY/REW/FF) | `components/ui/recorder/TransportControls.tsx` |
+| `TransportControls` | 5-button transport (REC/STOP/PLAY/REW/FF) | `components/ui/recorder/TransportControls.tsx` |
 | `VoiceMemosList` | List of voice memos with playback | `components/ui/recorder/VoiceMemosList.tsx` |
 | `VoiceMemoModal` | **Modal containing recorder + library** | `components/ui/modals/VoiceMemoModal.tsx` |
 
@@ -1182,7 +1179,40 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 ---
 
-*Last updated: Jan 1, 2026*
+*Last updated: Jan 4, 2026*
+
+## Jan 4, 2026 Changes
+
+### VUMeterDisplay Needle Color Unification
+
+**Change**: All VU meter needles now use consistent green (Colors.moss) styling to match TunerVUMeter.
+
+**Before** (orange gradient):
+```typescript
+colors={['#cc3300', Colors.vermilion, '#ff8866', Colors.vermilion, '#cc3300']}
+```
+
+**After** (green with white highlight, matching tuner):
+```typescript
+colors={[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.moss]}
+```
+
+**Affected components**:
+- MetronomePanel VU meter
+- Voice recorder (Ideas) VU meter
+
+**Why**: Visual consistency across all VU meters. The tuner uses dynamic coloring (green when in tune), so using the same base color creates a unified aesthetic.
+
+### Voice Recorder Cleanup
+
+**Removed deprecated components**:
+- `RecorderVUMeter` - Replaced by unified `VUMeterDisplay` with `mode="recording"`
+- `SpeedSelector` - No longer used
+- `TapePath` - Simplified to single reel design
+
+**Updated exports** in `components/ui/recorder/index.ts`.
+
+---
 
 ## Dec 18, 2025 Changes
 
@@ -1517,8 +1547,9 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 **VUMeterDisplay Needle Improvements**
 - Thinner needle: 4px → 3px (standard), 3px → 2px (compact)
 - Tapered tip using borderRadius (3px top corners, 1px bottom)
-- Skeuomorphic depth with cylindrical gradient simulating rounded metal:
-  - 5-color gradient: `['#cc3300', Colors.vermilion, '#ff8866', Colors.vermilion, '#cc3300']`
+- Skeuomorphic depth with cylindrical gradient:
+  - 5-color gradient: `[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.moss]`
+  - Matches TunerVUMeter needle style for visual consistency across all VU meters
 - Drop shadow for depth: `shadowOffset: {1, 2}`, `shadowOpacity: 0.5`
 - Left edge highlight: `borderLeftWidth: 0.5`, `borderLeftColor: rgba(255,255,255,0.3)`
 

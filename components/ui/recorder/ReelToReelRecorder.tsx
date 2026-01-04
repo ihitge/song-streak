@@ -1,30 +1,22 @@
 /**
  * ReelToReelRecorder Component
  *
- * Full skeuomorphic reel-to-reel tape recorder for voice memos.
- * Combines all recorder sub-components into a cohesive interface.
+ * Voice recorder with unified single reel graphic.
+ * Features a glowing reel that spins during recording/playback.
  */
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { Mic, MicOff, Share2, Trash2 } from 'lucide-react-native';
+import { Share2, Trash2 } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
-import { Typography } from '@/constants/Styles';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
-import {
-  TransportButton,
-  PlaybackSpeed,
-  MAX_RECORDING_SECONDS,
-} from '@/types/voiceMemo';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
+import { TransportButton } from '@/types/voiceMemo';
 
 // Sub-components
 import { TapeReel } from './TapeReel';
-import { TapePath } from './TapePath';
-import { RecorderVUMeter } from './RecorderVUMeter';
-import { TapeCounter } from './TapeCounter';
-import { SpeedSelector } from './SpeedSelector';
+import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { TransportControls } from './TransportControls';
 
 interface ReelToReelRecorderProps {
@@ -36,24 +28,25 @@ interface ReelToReelRecorderProps {
   onDelete?: () => void;
   /** Compact mode */
   compact?: boolean;
+  /** Full-width mode - removes card styling, matches metronome/tuner design */
+  fullWidth?: boolean;
   /** Custom title */
   title?: string;
 }
 
 // Layout constants
-const REEL_SIZE = 70;
-const REEL_SIZE_COMPACT = 55;
-const REEL_GAP = 80;
-const REEL_GAP_COMPACT = 60;
+const REEL_SIZE = 140;
+const REEL_SIZE_COMPACT = 100;
 
 export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
   onRecordingComplete,
   onShare,
   onDelete,
   compact = false,
+  fullWidth = false,
   title = 'VOICE MEMO',
 }) => {
-  const [playbackSpeed, setPlaybackSpeed] = useState<PlaybackSpeed>('normal');
+  const { showWarning } = useStyledAlert();
 
   const {
     state,
@@ -69,7 +62,6 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
     stop,
     rewind,
     fastForward,
-    setSpeed,
     reset,
     audioBlob,
   } = useVoiceRecorder({
@@ -82,32 +74,15 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
     },
   });
 
-  // Sync playback speed with hook
+  // Show permission warning via styled alert
   useEffect(() => {
-    setSpeed(playbackSpeed);
-  }, [playbackSpeed, setSpeed]);
-
-  // Calculate tape amounts based on state
-  const [supplyTape, setSupplyTape] = useState(0.8);
-  const [takeupTape, setTakeupTape] = useState(0.2);
-
-  useEffect(() => {
-    if (state === 'recording') {
-      // During recording, tape moves from supply to takeup
-      const progress = recording.elapsedSeconds / MAX_RECORDING_SECONDS;
-      setSupplyTape(0.8 - progress * 0.6);
-      setTakeupTape(0.2 + progress * 0.6);
-    } else if (state === 'playing') {
-      // During playback, simulate tape movement
-      const progress = playback.currentTime / playback.duration;
-      setSupplyTape(0.8 - progress * 0.6);
-      setTakeupTape(0.2 + progress * 0.6);
-    } else if (!hasRecording) {
-      // Reset to initial state
-      setSupplyTape(0.8);
-      setTakeupTape(0.2);
+    if (permissionStatus === 'denied') {
+      showWarning(
+        'Microphone Access Required',
+        'Please enable microphone access in settings to use the voice recorder.'
+      );
     }
-  }, [state, recording.elapsedSeconds, playback.currentTime, playback.duration, hasRecording]);
+  }, [permissionStatus, showWarning]);
 
   // Handle transport button presses
   const handleTransportPress = useCallback((button: TransportButton) => {
@@ -171,20 +146,14 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
   }, [reset, onDelete]);
 
   const reelSize = compact ? REEL_SIZE_COMPACT : REEL_SIZE;
-  const reelGap = compact ? REEL_GAP_COMPACT : REEL_GAP;
   const isSpinning = state === 'recording' || state === 'playing';
 
-  // Elapsed time for display
-  const elapsedSeconds = state === 'recording'
-    ? recording.elapsedSeconds
-    : state === 'playing'
-      ? playback.currentTime
-      : hasRecording
-        ? playback.duration
-        : 0;
-
   return (
-    <View style={[styles.housing, compact && styles.housingCompact]}>
+    <View style={[
+      styles.housing,
+      compact && styles.housingCompact,
+      fullWidth && styles.housingFullWidth,
+    ]}>
       {/* Header with title and screws */}
       <View style={styles.header}>
         <View style={styles.screw} />
@@ -192,66 +161,25 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
         <View style={styles.screw} />
       </View>
 
-      {/* Microphone permission indicator */}
-      {permissionStatus === 'denied' && (
-        <View style={styles.permissionWarning}>
-          <MicOff size={14} color={Colors.vermilion} />
-          <Text style={styles.permissionText}>Microphone access denied</Text>
-        </View>
-      )}
-
-      {/* Reels section */}
-      <View style={[styles.reelsContainer, compact && styles.reelsContainerCompact]}>
-        {/* Supply reel (left) */}
-        <View style={styles.reelWrapper}>
-          <TapeReel
-            size={reelSize}
-            isSpinning={isSpinning}
-            direction="supply"
-            speed={playbackSpeed}
-            isRecording={state === 'recording'}
-            tapeAmount={supplyTape}
-          />
-          <Text style={[styles.reelLabel, compact && styles.reelLabelCompact]}>SUPPLY</Text>
-        </View>
-
-        {/* Tape path */}
-        <TapePath
-          width={reelGap + reelSize}
-          height={reelSize / 2}
-          isMoving={isSpinning}
-          speed={playbackSpeed}
-          direction="forward"
-          leftReelX={reelSize / 2}
-          rightReelX={reelSize / 2 + reelGap}
-          reelY={reelSize / 4}
-          tapeRadius={reelSize * 0.35}
-        />
-
-        {/* Takeup reel (right) */}
-        <View style={styles.reelWrapper}>
-          <TapeReel
-            size={reelSize}
-            isSpinning={isSpinning}
-            direction="takeup"
-            speed={playbackSpeed}
-            isRecording={state === 'recording'}
-            tapeAmount={takeupTape}
-          />
-          <Text style={[styles.reelLabel, compact && styles.reelLabelCompact]}>TAKE-UP</Text>
-        </View>
-      </View>
-
-      {/* VU Meter */}
-      <View style={[styles.vuMeterContainer, compact && styles.vuMeterContainerCompact]}>
-        <RecorderVUMeter
-          levelLeft={recording.audioLevelLeft}
-          levelRight={recording.audioLevelRight}
+      {/* Single centered reel */}
+      <View style={[styles.reelContainer, compact && styles.reelContainerCompact]}>
+        <TapeReel
+          size={reelSize}
+          isSpinning={isSpinning}
           isRecording={state === 'recording'}
-          isPlaying={state === 'playing'}
-          compact={compact}
         />
       </View>
+
+      {/* VU Meter - using unified VUMeterDisplay component */}
+      <VUMeterDisplay
+        mode="recording"
+        audioLevel={recording.audioLevelLeft}
+        isRecording={state === 'recording'}
+        isPlaying={state === 'playing'}
+        compact={compact}
+        embedded
+        showTimeDisplay={false}
+      />
 
       {/* Transport controls */}
       <View style={[styles.transportContainer, compact && styles.transportContainerCompact]}>
@@ -263,38 +191,17 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
         />
       </View>
 
-      {/* Bottom controls: Speed + Counter */}
-      <View style={[styles.bottomControls, compact && styles.bottomControlsCompact]}>
-        <View style={styles.speedContainer}>
-          <SpeedSelector
-            value={playbackSpeed}
-            onChange={setPlaybackSpeed}
-            disabled={state === 'recording'}
-            compact={compact}
-          />
-        </View>
-
-        <View style={styles.counterContainer}>
-          <TapeCounter
-            elapsedSeconds={Math.floor(elapsedSeconds)}
-            totalSeconds={MAX_RECORDING_SECONDS}
-            showTotal={true}
-            compact={compact}
-          />
-        </View>
-      </View>
-
-      {/* Action buttons (when recording exists) */}
+      {/* Action buttons (when recording exists) - beveled style matching metronome */}
       {hasRecording && state !== 'recording' && (
         <View style={[styles.actionButtons, compact && styles.actionButtonsCompact]}>
           {onShare && (
             <Pressable
               onPress={handleShare}
-              style={styles.actionButton}
+              style={[styles.secondaryButton, compact && styles.secondaryButtonCompact]}
               accessibilityLabel="Share recording"
               accessibilityRole="button"
             >
-              <Share2 size={compact ? 16 : 18} color={Colors.softWhite} />
+              <Share2 size={compact ? 16 : 18} color={Colors.graphite} />
               <Text style={[styles.actionButtonText, compact && styles.actionButtonTextCompact]}>
                 SHARE
               </Text>
@@ -303,12 +210,12 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
 
           <Pressable
             onPress={handleDelete}
-            style={[styles.actionButton, styles.actionButtonDestructive]}
+            style={[styles.secondaryButton, styles.deleteButton, compact && styles.secondaryButtonCompact]}
             accessibilityLabel="Delete recording"
             accessibilityRole="button"
           >
-            <Trash2 size={compact ? 16 : 18} color={Colors.softWhite} />
-            <Text style={[styles.actionButtonText, compact && styles.actionButtonTextCompact]}>
+            <Trash2 size={compact ? 16 : 18} color={Colors.vermilion} />
+            <Text style={[styles.actionButtonText, styles.deleteButtonText, compact && styles.actionButtonTextCompact]}>
               DELETE
             </Text>
           </Pressable>
@@ -320,20 +227,21 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
 
 const styles = StyleSheet.create({
   housing: {
-    backgroundColor: Colors.matteFog,
+    backgroundColor: Colors.ink,
     borderRadius: 16,
     padding: 20,
+    alignItems: 'center',
     // Outer bevel
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.7)',
+    borderTopColor: 'rgba(255,255,255,0.15)',
     borderBottomWidth: 3,
-    borderBottomColor: 'rgba(0,0,0,0.15)',
+    borderBottomColor: 'rgba(0,0,0,0.4)',
     // Shadow
     shadowColor: Colors.ink,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 10,
   },
   housingCompact: {
     borderRadius: 12,
@@ -342,11 +250,23 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
+  housingFullWidth: {
+    flex: 1,
+    borderRadius: 0,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    justifyContent: 'center',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
+    width: '100%',
   },
   screw: {
     width: 10,
@@ -354,125 +274,83 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: Colors.charcoal,
     borderWidth: 1,
-    borderColor: Colors.graphite,
+    borderColor: Colors.warmGray,
   },
   title: {
     fontFamily: 'LexendDecaBold',
     fontSize: 12,
     letterSpacing: 3,
-    color: Colors.graphite,
+    color: Colors.vermilion,
     textTransform: 'uppercase',
   },
   titleCompact: {
     fontSize: 10,
     letterSpacing: 2,
   },
-  permissionWarning: {
-    flexDirection: 'row',
+  reelContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: 'rgba(238, 108, 77, 0.1)',
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  permissionText: {
-    fontFamily: 'LexendDecaRegular',
-    fontSize: 11,
-    color: Colors.vermilion,
-  },
-  reelsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: REEL_GAP,
     marginBottom: 20,
-    position: 'relative',
   },
-  reelsContainerCompact: {
-    gap: REEL_GAP_COMPACT,
+  reelContainerCompact: {
     marginBottom: 14,
   },
-  reelWrapper: {
-    alignItems: 'center',
-    gap: 6,
-  },
-  reelLabel: {
-    fontFamily: 'LexendDecaBold',
-    fontSize: 8,
-    letterSpacing: 1,
-    color: Colors.graphite,
-  },
-  reelLabelCompact: {
-    fontSize: 7,
-  },
-  vuMeterContainer: {
-    marginBottom: 16,
-  },
-  vuMeterContainerCompact: {
-    marginBottom: 10,
-  },
   transportContainer: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   transportContainerCompact: {
-    marginBottom: 10,
-  },
-  bottomControls: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-  },
-  bottomControlsCompact: {
-    gap: 8,
-  },
-  speedContainer: {
-    flex: 1,
-  },
-  counterContainer: {
-    flex: 1.2,
+    marginBottom: 14,
   },
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
+    gap: 16,
+    marginTop: 20,
   },
   actionButtonsCompact: {
-    marginTop: 10,
-    paddingTop: 10,
-    gap: 8,
+    marginTop: 12,
+    gap: 12,
   },
-  actionButton: {
+  secondaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    backgroundColor: Colors.alloy,
+    // Bevel effect matching metronome
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.5)',
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+    // Shadow
+    shadowColor: Colors.ink,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  secondaryButtonCompact: {
     paddingVertical: 10,
     paddingHorizontal: 16,
-    backgroundColor: Colors.deepSpaceBlue,
-    borderRadius: 8,
-    // Bevel
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.2)',
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 20,
   },
-  actionButtonDestructive: {
-    backgroundColor: Colors.vermilion,
+  deleteButton: {
+    borderColor: Colors.vermilion,
+    borderWidth: 1,
   },
   actionButtonText: {
     fontFamily: 'LexendDecaBold',
     fontSize: 10,
     letterSpacing: 1,
-    color: Colors.softWhite,
+    color: Colors.graphite,
   },
   actionButtonTextCompact: {
     fontSize: 9,
+  },
+  deleteButtonText: {
+    color: Colors.vermilion,
   },
 });
 

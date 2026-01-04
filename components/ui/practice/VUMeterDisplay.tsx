@@ -11,13 +11,15 @@ import { LEDIndicator } from '@/components/skia/primitives/LEDIndicator';
  * VU Meter mode
  * - 'progress': Shows practice time progress (default)
  * - 'metronome': Shows pendulum swing for metronome beats
+ * - 'recording': Shows audio level for voice recorder
  */
-type VUMeterMode = 'progress' | 'metronome';
+type VUMeterMode = 'progress' | 'metronome' | 'recording';
 
 interface VUMeterDisplayProps {
   totalSeconds?: number;              // For progress mode (optional in metronome mode)
   compact?: boolean;
   fullWidth?: boolean;                // Full viewport width, no rounded corners
+  embedded?: boolean;                 // Remove housing borders when embedded in another component
   mode?: VUMeterMode;                 // Default: 'progress'
   beatPosition?: number;              // 0 (left) or 1 (right) for metronome pendulum
   isMetronomePlaying?: boolean;       // For LED beat effects
@@ -28,17 +30,23 @@ interface VUMeterDisplayProps {
   showTimeDisplay?: boolean;          // Show embedded time display (default: true)
   headerContent?: React.ReactNode;    // Content to render at top of housing (e.g., time signature)
   children?: React.ReactNode;         // Content to render at bottom of housing (e.g., BPM display)
+  // Recording mode props
+  audioLevel?: number;                // 0-1 audio level for recording mode
+  isRecording?: boolean;              // Show REC LED in recording mode
+  isPlaying?: boolean;                // Show PLAY LED in recording mode
 }
 
 /**
- * Skeuomorphic VU Meter display with dual modes:
+ * Skeuomorphic VU Meter display with multiple modes:
  * - Progress mode: Shows total practice time with static needle position
  * - Metronome mode: Shows pendulum swing for metronome beats
+ * - Recording mode: Shows audio level for voice recorder
  */
 export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   totalSeconds = 0,
   compact = false,
   fullWidth = false,
+  embedded = false,
   mode = 'progress',
   beatPosition = 0.5,
   isMetronomePlaying = false,
@@ -49,6 +57,10 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   showTimeDisplay = true,
   headerContent,
   children,
+  // Recording mode props
+  audioLevel = 0,
+  isRecording = false,
+  isPlaying = false,
 }) => {
   const needleRotation = useRef(new Animated.Value(50)).current;
 
@@ -59,15 +71,28 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
       // 0 = left (-45deg), 1 = right (+45deg)
       return beatPosition * 100;
     }
+    if (mode === 'recording') {
+      // Map audioLevel 0-1 to 0-100 for needle rotation
+      // Use logarithmic scaling for natural VU meter feel
+      if (audioLevel <= 0) return 0;
+      const db = 20 * Math.log10(Math.max(audioLevel, 0.001));
+      // Map -40dB to +3dB onto 0-100
+      const minDb = -40;
+      const maxDb = 3;
+      const position = ((db - minDb) / (maxDb - minDb)) * 100;
+      return Math.max(0, Math.min(100, position));
+    }
     // Progress mode: calculate from totalSeconds
     return calculateProgress(totalSeconds);
-  }, [mode, beatPosition, totalSeconds]);
+  }, [mode, beatPosition, totalSeconds, audioLevel]);
 
   useEffect(() => {
     // Animate needle to new position
     // Use different spring parameters for each mode
     const springConfig = mode === 'metronome'
       ? { tension: 120, friction: 8 }   // Snappy for pendulum
+      : mode === 'recording'
+      ? { tension: 100, friction: 12 }  // Responsive for audio level
       : { tension: 50, friction: 10 };  // Smooth for progress
 
     Animated.spring(needleRotation, {
@@ -91,6 +116,28 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     { label: '0', time: '3h', threshold: 10800 },
     { label: '+3', time: '10h', threshold: 36000 },
   ];
+
+  // Scale markers for recording mode (dB scale - matches tuner style)
+  const recordingMarkers = [
+    { label: '-40', db: -40 },
+    { label: '-20', db: -20 },
+    { label: '-10', db: -10 },
+    { label: '0', db: 0 },
+    { label: '+3', db: 3 },
+  ];
+
+  // Calculate current dB level for LED activation in recording mode
+  const currentDb = useMemo(() => {
+    if (audioLevel <= 0) return -60;
+    return 20 * Math.log10(Math.max(audioLevel, 0.001));
+  }, [audioLevel]);
+
+  // Check if LED should be active in recording mode (based on needle position like tuner)
+  const isRecordingLedActive = (markerDb: number): boolean => {
+    if (mode !== 'recording') return false;
+    // LED is active when currentDb is within ±10dB of the marker
+    return Math.abs(currentDb - markerDb) <= 10;
+  };
 
   // Beat markers for metronome mode - show beat numbers
   const beatMarkers = useMemo(() => {
@@ -124,7 +171,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
       : 'TOTAL PRACTICE';
 
   return (
-    <View style={[styles.housing, compact && styles.housingCompact, fullWidth && styles.housingFullWidth]}>
+    <View style={[styles.housing, compact && styles.housingCompact, fullWidth && styles.housingFullWidth, embedded && styles.housingEmbedded]}>
       {/* Header content (e.g., time signature selector) */}
       {headerContent && (
         <View style={[styles.headerContainer, compact && styles.headerContainerCompact]}>
@@ -132,9 +179,9 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
         </View>
       )}
 
-      {/* VU label - shows BPM indicator in metronome mode */}
+      {/* VU label - shows BPM indicator in metronome mode, VU in recording mode */}
       <Text style={[styles.vuLabel, compact && styles.vuLabelCompact]}>
-        {mode === 'metronome' ? 'BPM' : 'VU'}
+        {mode === 'metronome' ? 'BPM' : mode === 'recording' ? 'VU' : 'VU'}
       </Text>
 
       {/* Meter face */}
@@ -165,6 +212,20 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
                   </Text>
                 </View>
               ))
+            ) : mode === 'recording' ? (
+              // Recording mode: show dB scale markers (matches tuner style)
+              recordingMarkers.map((marker) => (
+                <View key={marker.label} style={styles.markerContainer}>
+                  <Text style={[styles.recordingMarkerLabel, compact && styles.recordingMarkerLabelCompact]}>
+                    {marker.label}
+                  </Text>
+                  <LEDIndicator
+                    size={compact ? 10 : 14}
+                    isActive={isRecordingLedActive(marker.db)}
+                    color={marker.db === 0 ? Colors.moss : Colors.vermilion}
+                  />
+                </View>
+              ))
             ) : (
               // Progress mode: show time thresholds
               progressMarkers.map((marker) => (
@@ -186,6 +247,14 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
           </View>
         </View>
 
+        {/* Direction labels for recording mode (like tuner's FLAT/SHARP) */}
+        {mode === 'recording' && (
+          <View style={styles.directionLabels}>
+            <Text style={styles.directionText}>LOW</Text>
+            <Text style={styles.directionText}>PEAK</Text>
+          </View>
+        )}
+
         {/* Needle pivot point and needle */}
         <View style={styles.needlePivot}>
           <Animated.View
@@ -196,7 +265,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
             ]}
           >
             <LinearGradient
-              colors={['#cc3300', Colors.vermilion, '#ff8866', Colors.vermilion, '#cc3300']}
+              colors={[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.moss]}
               locations={[0, 0.2, 0.5, 0.8, 1]}
               style={styles.needleBody}
               start={{ x: 0, y: 0 }}
@@ -263,6 +332,13 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 0,
   },
+  housingEmbedded: {
+    // Remove borders and shadow when embedded in another component
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   headerContainer: {
     width: '100%',
     marginBottom: 8,
@@ -318,6 +394,31 @@ const styles = StyleSheet.create({
   },
   markerLabelCompact: {
     fontSize: 18,
+  },
+  // Recording mode marker labels - smaller to match tuner style
+  recordingMarkerLabel: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 12,
+    color: Colors.warmGray,
+  },
+  recordingMarkerLabelCompact: {
+    fontSize: 10,
+  },
+  // Direction labels for recording mode (like tuner's FLAT/SHARP)
+  directionLabels: {
+    position: 'absolute',
+    bottom: 10,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+  directionText: {
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 9,
+    letterSpacing: 1,
+    color: 'rgba(255,255,255,0.3)',
   },
 
   timeLabel: {
