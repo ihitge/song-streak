@@ -67,8 +67,9 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   // Calculate target value based on mode
   const targetValue = useMemo(() => {
     if (mode === 'metronome') {
-      // Map beatPosition 0-1 to 0-100 for needle rotation
-      // 0 = left (-45deg), 1 = right (+45deg)
+      // Map beat position (0-1) directly to needle rotation (0-100)
+      // 0 = left (-45deg), 0.5 = center (0deg), 1 = right (+45deg)
+      // Beat markers are absolutely positioned to match needle arc geometry
       return beatPosition * 100;
     }
     if (mode === 'recording') {
@@ -98,7 +99,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     Animated.spring(needleRotation, {
       toValue: targetValue,
       ...springConfig,
-      useNativeDriver: true,
+      useNativeDriver: false, // Required for web compatibility
     }).start();
   }, [targetValue, needleRotation, mode]);
 
@@ -139,14 +140,22 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     return Math.abs(currentDb - markerDb) <= 10;
   };
 
-  // Beat markers for metronome mode - show beat numbers
+  // Beat markers for metronome mode - positioned to align with needle arc
+  // Needle geometry: 72px long, pivots from center (140px) at ±45°
+  // At -45°: tip at 140 - 72*sin(45°) ≈ 89px
+  // At +45°: tip at 140 + 72*sin(45°) ≈ 191px
+  // Markers must be positioned within this ~102px arc range
   const beatMarkers = useMemo(() => {
-    // Generate beat markers based on beats per measure
     const markers = [];
     for (let i = 1; i <= beatsPerMeasure; i++) {
+      // Position as fraction from 0 to 1 across the needle arc
+      const position = beatsPerMeasure > 1
+        ? (i - 1) / (beatsPerMeasure - 1)
+        : 0.5;
       markers.push({
         label: String(i),
         beat: i,
+        position, // 0 = left edge of arc, 1 = right edge
       });
     }
     return markers;
@@ -214,38 +223,43 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
               </View>
             ))}
           </View>
+        ) : mode === 'metronome' ? (
+          // Metronome mode: absolute positioning to align with needle arc
+          <View style={styles.metronomeScaleMarkings}>
+            {beatMarkers.map((marker) => (
+              <View
+                key={marker.label}
+                style={[
+                  styles.metronomeMarkerContainer,
+                  { left: `${marker.position * 100}%` },
+                ]}
+              >
+                <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
+                  {marker.label}
+                </Text>
+                <LEDIndicator
+                  size={compact ? 12 : 16}
+                  isActive={isLedActiveForBeat(marker.beat)}
+                  color={marker.beat === 1 ? '#FF6B35' : '#16A34A'}
+                />
+              </View>
+            ))}
+          </View>
         ) : (
-          // Metronome and Progress modes: evenly spaced with space-between
+          // Progress mode: evenly spaced with space-between
           <View style={styles.scaleMarkings}>
-            {mode === 'metronome' ? (
-              // Metronome mode: beat numbers with LEDs
-              beatMarkers.map((marker) => (
-                <View key={marker.label} style={styles.markerContainer}>
-                  <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
-                    {marker.label}
-                  </Text>
-                  <LEDIndicator
-                    size={compact ? 12 : 16}
-                    isActive={isLedActiveForBeat(marker.beat)}
-                    color={marker.beat === 1 ? '#FF6B35' : '#16A34A'}
-                  />
-                </View>
-              ))
-            ) : (
-              // Progress mode: time labels with LEDs
-              progressMarkers.map((marker) => (
-                <View key={marker.label} style={styles.markerContainer}>
-                  <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
-                    {marker.time}
-                  </Text>
-                  <LEDIndicator
-                    size={compact ? 12 : 16}
-                    isActive={totalSeconds >= marker.threshold}
-                    color={Colors.moss}
-                  />
-                </View>
-              ))
-            )}
+            {progressMarkers.map((marker) => (
+              <View key={marker.label} style={styles.markerContainer}>
+                <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
+                  {marker.time}
+                </Text>
+                <LEDIndicator
+                  size={compact ? 12 : 16}
+                  isActive={totalSeconds >= marker.threshold}
+                  color={Colors.moss}
+                />
+              </View>
+            ))}
           </View>
         )}
 
@@ -387,6 +401,22 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     height: 40,
+  },
+  // Metronome mode: positioned to align markers with needle arc
+  // Needle reaches from ~89px to ~191px on 280px face (32% to 68%)
+  // Using ~30% margins to center markers within needle arc
+  metronomeScaleMarkings: {
+    position: 'absolute',
+    top: 12,
+    left: 89,  // Where needle tip reaches at -45°
+    right: 89, // 280 - 191 = 89 (where needle reaches at +45°)
+    height: 40,
+  },
+  metronomeMarkerContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    gap: 4,
+    transform: [{ translateX: -12 }], // Center marker on position
   },
   markerContainer: {
     alignItems: 'center',

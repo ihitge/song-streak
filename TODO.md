@@ -1,5 +1,21 @@
 # Development Notes & Future Features
 
+## Recent Changes (January 4, 2026)
+
+### Metronome VU Meter Needle Fix
+
+**Problem**: The VU meter needle wasn't pointing accurately at beat markers (1, 2, 3, 4). When beat 4's LED lit, the needle pointed toward beat 3.
+
+**Root Cause**: Geometry mismatch - needle arc (72px at ±45°) reached positions ~89px to ~191px, but beat markers with `space-between` layout were at ~16px to ~264px.
+
+**Fix (VUMeterDisplay.tsx)**:
+- Changed beat markers from `space-between` layout to absolute positioning
+- Markers now positioned within needle arc range (left: 89px, right: 89px)
+- Added `metronomeScaleMarkings` and `metronomeMarkerContainer` styles
+- Changed `useNativeDriver: true` to `false` for web compatibility
+
+---
+
 ## Recent Changes (January 3, 2026)
 
 ### UI Consistency & Polish
