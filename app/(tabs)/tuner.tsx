@@ -87,11 +87,9 @@ export default function TunerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.matteFog,
+    backgroundColor: Colors.ink,
   },
   tunerSection: {
     flex: 1,
-    padding: 24,
-    backgroundColor: Colors.ink,
   },
 });

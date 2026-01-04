@@ -123,49 +123,31 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
 
 const styles = StyleSheet.create({
   housing: {
-    backgroundColor: Colors.ink,
-    borderRadius: 16,
     paddingTop: 20,
-    paddingBottom: 32,
-    paddingHorizontal: 16,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    // Outer bevel
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.15)',
-    borderBottomWidth: 3,
-    borderBottomColor: 'rgba(0,0,0,0.4)',
-    // Shadow
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 10,
-    // Full width like metronome
     width: '100%',
   },
   housingCompact: {
     paddingVertical: 12,
     paddingHorizontal: 12,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 6,
   },
   housingFullWidth: {
     maxWidth: '100%',
-    borderRadius: 0,
   },
   headerContainer: {
     width: '100%',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   headerContainerCompact: {
-    marginBottom: 10,
+    marginBottom: 6,
   },
   stringSection: {
     width: '100%',
-    marginTop: 16,
+    marginTop: 12,
   },
   controlsSection: {
-    marginTop: 24,
+    marginTop: 16,
   },
 });

@@ -255,10 +255,10 @@ export const TunerVUMeter: React.FC<TunerVUMeterProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   containerCompact: {
-    gap: 8,
+    gap: 6,
   },
   meterSection: {
     width: '100%',
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   noteName: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 48,
+    fontSize: 40,
     color: Colors.softWhite,
     letterSpacing: 2,
   },
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   notePlaceholder: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 48,
+    fontSize: 40,
     color: Colors.graphite,
     letterSpacing: 2,
   },
@@ -400,11 +400,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 24,
-    marginTop: 4,
+    gap: 20,
+    marginTop: 0,
   },
   dataRowCompact: {
-    gap: 16,
+    gap: 12,
   },
   dataItem: {
     alignItems: 'center',

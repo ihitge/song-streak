@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.ink,
     borderRadius: 16,
     paddingVertical: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: 24,
     alignItems: 'center',
     // Outer bevel
     borderTopWidth: 1,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavButton } from './NavButton';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useRouter, usePathname } from 'expo-router';
@@ -23,9 +24,10 @@ const navItems: NavItem[] = [
 export const TactileNavbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.chassis}>
+    <View style={[styles.chassis, { paddingBottom: 16 + insets.bottom }]}>
       {navItems.map((item) => (
         <NavButton
           key={item.name}
@@ -41,7 +43,6 @@ export const TactileNavbar: React.FC = () => {
 
 const styles = StyleSheet.create({
   chassis: {
-    height: 128, // h-32 (128px)
     backgroundColor: Colors.matteFog,
     // Subtle drop shadow upwards
     shadowColor: 'rgba(0,0,0,0.1)',
@@ -53,7 +54,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around', // items centered and spaced evenly
     alignItems: 'center', // Center vertically
     paddingHorizontal: 10,
-    paddingTop: 10,
-    paddingBottom: 25,
+    paddingVertical: 16, // Equal padding top and bottom
   },
 });

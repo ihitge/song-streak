@@ -9,6 +9,7 @@
 | Component | Purpose | Location |
 |-----------|---------|----------|
 | `PageHeader` | **Reusable page header with logo and user controls** | `components/ui/PageHeader.tsx` |
+| `FAB` | **Floating Action Button (shared: Add Song, Start Tuner)** | `components/ui/FAB.tsx` |
 | `NavButton` | Tactile navigation button with LED indicator + audio/haptic feedback | `components/ui/NavButton.tsx` |
 | `GangSwitch` | Horizontal/vertical switch with LED indicators | `components/ui/filters/GangSwitch.tsx` |
 | `FrequencyTuner` | Horizontal tuner with glass overlay | `components/ui/filters/FrequencyTuner.tsx` |
@@ -209,6 +210,55 @@ interface PageHeaderProps {
 - Logout button with audio + haptic feedback (uses `useSignOut` hook)
 
 **Audio Feedback**: Both avatar and logout buttons provide haptic + sound feedback on press (`useClickSound` hook)
+
+---
+
+### FAB (Floating Action Button)
+
+**Purpose**: Shared circular action button used throughout the app for primary actions. Ensures consistent sizing, styling, and feedback across all FAB instances.
+
+**Location**: `components/ui/FAB.tsx`
+
+**Props**:
+```typescript
+interface FABProps {
+  onPress: () => void;           // Press handler
+  icon: React.ReactNode;         // Icon to display inside the button
+  disabled?: boolean;            // Whether the button is disabled
+  variant?: 'primary' | 'secondary'; // primary = vermilion, secondary = graphite
+  style?: ViewStyle;             // Additional styles (e.g., positioning)
+}
+```
+
+**Usage**:
+```typescript
+// Add Song button (Songs page)
+<FAB
+  onPress={() => router.push('/add-song')}
+  icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
+  style={styles.fabPosition}
+/>
+
+// Start/Stop Tuner button (Tuner page)
+<FAB
+  onPress={handleToggle}
+  icon={isActive
+    ? <MicOff size={28} color={Colors.softWhite} strokeWidth={2.5} />
+    : <Mic size={28} color={Colors.softWhite} strokeWidth={2.5} />
+  }
+  variant={isActive ? 'secondary' : 'primary'}
+  disabled={permissionStatus === 'denied'}
+/>
+```
+
+**Visual Behavior**:
+- 64x64px circular button with white border ring
+- Primary variant: vermilion background
+- Secondary variant: graphite background
+- Drop shadow for depth
+- Disabled state: 50% opacity
+
+**Audio Feedback**: Haptic + sound feedback on press (`useFABSound` hook)
 
 ---
 

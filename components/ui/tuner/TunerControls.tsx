@@ -9,11 +9,10 @@
  */
 
 import React, { useCallback } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Mic, MicOff, Volume2 } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useFABSound } from '@/hooks/useFABSound';
+import { FAB } from '@/components/ui/FAB';
 import type { TunerStatus } from '@/types/tuner';
 
 interface TunerControlsProps {
@@ -42,21 +41,17 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
   onStop,
   compact = false,
 }) => {
-  const { playSound } = useFABSound();
   const isActive = status !== 'idle';
 
-  const handleToggle = useCallback(async () => {
+  const handleToggle = useCallback(() => {
     if (permissionStatus === 'denied') return;
-
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
 
     if (isActive) {
       onStop();
     } else {
       onStart();
     }
-  }, [isActive, onStart, onStop, permissionStatus, playSound]);
+  }, [isActive, onStart, onStop, permissionStatus]);
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
@@ -88,25 +83,22 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
       </View>
 
       {/* Primary Start/Stop Button - FAB style */}
-      <Pressable
-        style={[
-          styles.fab,
-          isActive && styles.fabActive,
-          permissionStatus === 'denied' && styles.buttonDisabled,
-        ]}
+      <FAB
         onPress={handleToggle}
+        icon={
+          isActive ? (
+            <MicOff size={28} color={Colors.softWhite} strokeWidth={2.5} />
+          ) : (
+            <Mic
+              size={28}
+              color={permissionStatus === 'denied' ? Colors.graphite : Colors.softWhite}
+              strokeWidth={2.5}
+            />
+          )
+        }
+        variant={isActive ? 'secondary' : 'primary'}
         disabled={permissionStatus === 'denied'}
-      >
-        {isActive ? (
-          <MicOff size={24} color={Colors.softWhite} strokeWidth={2.5} />
-        ) : (
-          <Mic
-            size={24}
-            color={permissionStatus === 'denied' ? Colors.graphite : Colors.softWhite}
-            strokeWidth={2.5}
-          />
-        )}
-      </Pressable>
+      />
 
       {/* Button label */}
       <Text style={[styles.buttonLabel, isActive && styles.buttonLabelActive]}>
@@ -132,10 +124,10 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   containerCompact: {
-    gap: 8,
+    gap: 6,
   },
   signalContainer: {
     flexDirection: 'row',
@@ -158,22 +150,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     color: Colors.warmGray,
   },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.vermilion,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
-  },
-  fabActive: {
-    backgroundColor: Colors.graphite,
-  },
   buttonLabel: {
     fontFamily: 'LexendDecaBold',
     fontSize: 12,
@@ -182,9 +158,6 @@ const styles = StyleSheet.create({
   },
   buttonLabelActive: {
     color: Colors.graphite,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
   },
   permissionDeniedText: {
     fontFamily: 'LexendDecaRegular',

@@ -8,13 +8,13 @@ import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
 import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { FAB } from '@/components/ui/FAB';
 import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay } from '@/components/skia/primitives/InsetShadowOverlay';
 import { SurfaceTextureOverlay } from '@/components/skia/primitives/SurfaceTextureOverlay';
 import { instrumentOptions, genreOptions } from '@/config/filterOptions';
 import { useSearch } from '@/hooks/useSearch';
-import { useFABSound } from '@/hooks/useFABSound';
 import { supabase } from '@/utils/supabase/client';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 import type { Instrument, Fluency, Genre } from '@/types/filters';
@@ -99,7 +99,6 @@ const SongCard = ({ song, onDelete, onEdit, onPress }: {
 
 export default function SetListScreen() {
   const router = useRouter();
-  const { playSound } = useFABSound();
   const { playSound: playClickSound } = useClickSound();
   const { showInfo, showError, showSuccess, showConfirm } = useStyledAlert();
   const [instrument, setInstrument] = useState<Instrument>('Guitar');
@@ -325,16 +324,11 @@ export default function SetListScreen() {
       </View>
 
       {/* Hero Action Button */}
-      <Pressable
-        style={styles.fab}
-        onPress={async () => {
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          await playSound();
-          router.push('/add-song');
-        }}
-      >
-        <Plus size={32} color={Colors.softWhite} strokeWidth={3} />
-      </Pressable>
+      <FAB
+        onPress={() => router.push('/add-song')}
+        icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
+        style={styles.fabPosition}
+      />
     </View>
   );
 }
@@ -461,25 +455,11 @@ const styles = StyleSheet.create({
       backgroundColor: 'rgba(238, 108, 77, 0.1)', // Vermilion with low opacity
   },
 
-  // --- FAB ---
-  fab: {
+  // --- FAB Position ---
+  fabPosition: {
     position: 'absolute',
     bottom: 24,
     right: 24,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: Colors.vermilion,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // Elevation/Shadow
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
-    borderWidth: 2,
-    borderColor: '#fff', // Ring effect
   },
 
   // --- Loading & Empty States ---

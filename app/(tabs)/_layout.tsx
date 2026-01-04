@@ -12,7 +12,7 @@ export default function TabLayout() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
         <Slot />
       </SafeAreaView>
       <TactileNavbar />
