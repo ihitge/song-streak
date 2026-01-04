@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Play, Pause, RotateCcw, Check } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { useNavButtonSound } from '@/hooks/useNavButtonSound';
+import { FAB } from '@/components/ui/FAB';
 
 interface TransportControlsProps {
   isPlaying: boolean;
@@ -74,29 +74,14 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Play/Pause button (primary) */}
-      <TouchableOpacity
-        style={styles.primaryButtonContainer}
+      {/* Play/Pause button (FAB) */}
+      <FAB
         onPress={handlePlayPause}
-        activeOpacity={0.9}
-      >
-        <LinearGradient
-          colors={isPlaying ? ['#666', '#444'] : [Colors.vermilion, '#d04620']}
-          style={[styles.primaryButton, compact && styles.primaryButtonCompact]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-        >
-          {isPlaying ? (
-            <Pause size={compact ? 24 : 32} color={Colors.softWhite} />
-          ) : (
-            <Play
-              size={compact ? 24 : 32}
-              color={Colors.softWhite}
-              style={{ marginLeft: compact ? 2 : 4 }}
-            />
-          )}
-        </LinearGradient>
-      </TouchableOpacity>
+        icon={isPlaying
+          ? <Pause size={32} color={Colors.softWhite} />
+          : <Play size={32} color={Colors.softWhite} style={{ marginLeft: 4 }} />
+        }
+      />
 
       {/* Complete/Log button */}
       {showComplete && onComplete && (
@@ -130,29 +115,6 @@ const styles = StyleSheet.create({
   },
   containerCompact: {
     gap: 16,
-  },
-  primaryButtonContainer: {
-    shadowColor: Colors.vermilion,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  primaryButton: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.3)',
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0,0,0,0.2)',
-  },
-  primaryButtonCompact: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
   },
   secondaryButton: {
     shadowColor: Colors.ink,

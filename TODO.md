@@ -8,11 +8,46 @@
 
 **Root Cause**: Geometry mismatch - needle arc (72px at ±45°) reached positions ~89px to ~191px, but beat markers with `space-between` layout were at ~16px to ~264px.
 
-**Fix (VUMeterDisplay.tsx)**:
-- Changed beat markers from `space-between` layout to absolute positioning
-- Markers now positioned within needle arc range (left: 89px, right: 89px)
-- Added `metronomeScaleMarkings` and `metronomeMarkerContainer` styles
-- Changed `useNativeDriver: true` to `false` for web compatibility
+**Fix**:
+- `VUMeterDisplay.tsx`: Changed beat markers to absolute positioning within needle arc range
+- `useMetronome.ts`: Updated `beatPosition` calculation to map beats linearly (1→0, 2→0.33, 3→0.67, 4→1)
+
+### 5-Tab Navigation - Ideas Tab Added
+
+**New Tab**: Added "Ideas" tab with microphone icon for voice recorder access.
+
+**Changes**:
+- `TactileNavbar.tsx`: Added 5th nav item (Ideas → /ideas route)
+- `NavButton.tsx`: Added `compact` prop for smaller buttons in 5-tab layout
+- Reduced navbar padding for tighter 5-button fit
+
+### Voice Recorder UI Overhaul
+
+**TapeReel Redesign** - Clean minimalist film reel icon:
+- Thin outer ring with 3 triangular cutouts
+- Center circle design (arc-loader.jpeg reference)
+- Unified single-reel design (removed dual-reel complexity)
+- Recording state changes accent glow color
+
+**SpeedSelector Light Variant**:
+- Switched to light variant styling (was dark)
+- Vermilion label color to match FrequencyTuner
+- Light background (`Colors.softWhite`) with dark text
+- Updated both native and web versions
+
+**Transport Controls Simplification**:
+- Streamlined to essential controls only
+- Consistent styling with metronome transport
+
+**Removed Components**:
+- `RecorderVUMeter.tsx` - Consolidated into shared VUMeterDisplay
+- `TapePath.tsx` - Removed tape path animation (simplified design)
+
+### RotaryKnob Light Variant Fix
+
+- Added `knobFaceColor` variable for variant-aware knob styling
+- Light variant now uses `Colors.alloy` (was always charcoal)
+- Applied to both native and web versions
 
 ---
 

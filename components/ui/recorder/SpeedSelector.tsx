@@ -2,7 +2,7 @@
  * SpeedSelector Component
  *
  * Playback speed selector for the voice recorder.
- * Matches the FrequencyTuner style with SLOW/NORMAL/FAST options.
+ * Matches FrequencyTuner light variant styling with vermilion label.
  */
 
 import React, { useState } from 'react';
@@ -44,7 +44,7 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
   compact = false,
   label = 'SPEED',
 }) => {
-  const [width, setWidth] = useState(160);
+  const [width, setWidth] = useState(180);
   const [direction, setDirection] = useState(1);
   const { playSound } = useClickSound();
 
@@ -72,22 +72,22 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
-      {/* Label */}
+      {/* Label - Vermilion color to match FrequencyTuner */}
       <Text style={[styles.label, compact && styles.labelCompact]}>{label}</Text>
 
-      {/* Selector window */}
+      {/* Selector window - Light variant */}
       <View
         style={[styles.selectorWindow, { height }]}
         onLayout={handleLayout}
       >
-        {/* Background with inset shadows */}
+        {/* Background with inset shadows - Light variant */}
         <Canvas style={StyleSheet.absoluteFill}>
           <Box
             box={rrect(rect(0, 0, width, height), 6, 6)}
-            color={Colors.deepSpaceBlue}
+            color={Colors.softWhite}
           >
-            <BoxShadow dx={0} dy={2} blur={6} color="rgba(0,0,0,0.9)" inner />
-            <BoxShadow dx={0} dy={-1} blur={2} color="rgba(255,255,255,0.1)" />
+            <BoxShadow dx={0} dy={2} blur={6} color="rgba(0,0,0,0.4)" inner />
+            <BoxShadow dx={0} dy={-1} blur={2} color="rgba(255,255,255,1)" />
           </Box>
 
           {/* Scale markings */}
@@ -98,13 +98,13 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
                 key={i}
                 p1={vec(x, height - 8)}
                 p2={vec(x, height - 4)}
-                color="rgba(255,255,255,0.2)"
+                color={Colors.charcoal}
                 strokeWidth={1}
               />
             );
           })}
 
-          {/* Center indicator line */}
+          {/* Center indicator line - Vermilion */}
           <Line
             p1={vec(width / 2, 4)}
             p2={vec(width / 2, height - 4)}
@@ -120,7 +120,7 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
               <LinearGradient
                 start={vec(0, 0)}
                 end={vec(0, height / 2)}
-                colors={['rgba(255,255,255,0.15)', 'rgba(255,255,255,0)']}
+                colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']}
               />
             </Box>
           </Canvas>
@@ -136,7 +136,7 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
             accessibilityRole="button"
             accessibilityHint="Decrease playback speed"
           >
-            <ChevronLeft size={compact ? 12 : 14} color={Colors.graphite} />
+            <ChevronLeft size={compact ? 12 : 14} color={Colors.charcoal} />
           </Pressable>
 
           <View style={styles.valueContainer}>
@@ -163,7 +163,7 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
             accessibilityRole="button"
             accessibilityHint="Increase playback speed"
           >
-            <ChevronRight size={compact ? 12 : 14} color={Colors.graphite} />
+            <ChevronRight size={compact ? 12 : 14} color={Colors.charcoal} />
           </Pressable>
         </View>
 
@@ -181,9 +181,10 @@ const styles = StyleSheet.create({
   containerCompact: {
     gap: 2,
   },
+  // Label - Vermilion color (matches FrequencyTuner)
   label: {
     ...Typography.label,
-    color: Colors.warmGray,
+    color: Colors.vermilion,
   },
   labelCompact: {
     fontSize: 8,
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     overflow: 'hidden',
     position: 'relative',
-    minWidth: 120,
+    minWidth: 180,
   },
   glassOverlay: {
     position: 'absolute',
@@ -223,15 +224,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Text colors - Dark for light variant
   valueText: {
     fontSize: 10,
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#e0e0e0',
-    textShadowColor: 'rgba(255,255,255,0.3)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
+    color: Colors.charcoal,
   },
   valueTextCompact: {
     fontSize: 9,
@@ -249,7 +248,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(0,0,0,0.1)',
     pointerEvents: 'none',
   },
 });

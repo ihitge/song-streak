@@ -19,6 +19,7 @@ const navItems: NavItem[] = [
   { name: 'tuner', icon: 'bullseye', label: 'Tuner', route: '/tuner' },
   { name: 'metronome', icon: 'play', label: 'Metronome', route: '/timing' },
   { name: 'streaks', icon: 'bolt', label: 'Streaks', route: '/streaks' },
+  { name: 'ideas', icon: 'microphone', label: 'Ideas', route: '/ideas' },
 ];
 
 export const TactileNavbar: React.FC = () => {
@@ -27,7 +28,7 @@ export const TactileNavbar: React.FC = () => {
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.chassis, { paddingBottom: 16 + insets.bottom }]}>
+    <View style={[styles.chassis, { paddingBottom: 12 + insets.bottom }]}>
       {navItems.map((item) => (
         <NavButton
           key={item.name}
@@ -35,6 +36,7 @@ export const TactileNavbar: React.FC = () => {
           label={item.label}
           isActive={pathname === item.route || (item.route === '/' && pathname === '/')}
           onPress={() => router.push(item.route as any)}
+          compact
         />
       ))}
     </View>
@@ -53,7 +55,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', // Flexbox
     justifyContent: 'space-around', // items centered and spaced evenly
     alignItems: 'center', // Center vertically
-    paddingHorizontal: 10,
-    paddingVertical: 16, // Equal padding top and bottom
+    paddingHorizontal: 4,
+    paddingVertical: 10, // Reduced for compact 5-tab layout
   },
 });

@@ -1,18 +1,19 @@
 /**
  * TapeReel Component
  *
- * Animated spinning reel for the reel-to-reel recorder.
+ * Clean, minimalist film reel icon for the voice recorder.
+ * Style: arc-loader.jpeg reference - thin outer ring, 3 triangular cutouts, center circle.
  * Uses Skia for hardware-accelerated rendering.
  */
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
   Canvas,
   Circle,
-  Group,
   Path,
-  Shadow,
+  Skia,
+  vec,
 } from '@shopify/react-native-skia';
 import Animated, {
   useSharedValue,
@@ -23,96 +24,138 @@ import Animated, {
   cancelAnimation,
 } from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
-import { PlaybackSpeed, PLAYBACK_SPEED_MULTIPLIERS } from '@/types/voiceMemo';
 
 interface TapeReelProps {
   /** Size of the reel in pixels */
   size?: number;
   /** Whether the reel is currently spinning */
   isSpinning?: boolean;
-  /** Direction: 'supply' (clockwise) or 'takeup' (counterclockwise) */
-  direction?: 'supply' | 'takeup';
-  /** Current playback speed */
-  speed?: PlaybackSpeed;
-  /** Show recording indicator LED */
+  /** Show recording state (changes accent color) */
   isRecording?: boolean;
-  /** Amount of tape on reel (0-1, affects visual appearance) */
-  tapeAmount?: number;
 }
 
-// Reel colors
-const REEL_BODY_COLOR = Colors.charcoal;
-const REEL_HUB_COLOR = '#1a1a1a';
-const SPOKE_COLOR = Colors.graphite;
-const TAPE_COLOR = '#3d3632'; // Magnetic tape oxide color
+// Simple color palette for clean film reel icon
+const REEL_COLORS = {
+  // Main reel body - darker for contrast
+  reelBody: Colors.charcoal,
+  // Stroke color - subtle warm gray
+  stroke: 'rgba(255,255,255,0.5)',
+  // Recording glow
+  recordingGlow: Colors.vermilion,
+};
 
 /**
- * Create spoke path for reel hub
+ * Create a triangular wedge path for the film reel cutout
  */
-function createSpokePath(centerX: number, centerY: number, innerR: number, outerR: number, angle: number): string {
-  const spokeWidth = 3;
-  const halfWidth = spokeWidth / 2;
+function createWedgePath(
+  centerX: number,
+  centerY: number,
+  innerRadius: number,
+  outerRadius: number,
+  startAngleDeg: number,
+  endAngleDeg: number
+): ReturnType<typeof Skia.Path.Make> {
+  const path = Skia.Path.Make();
 
-  // Calculate spoke endpoints
-  const startX = centerX + innerR * Math.cos(angle);
-  const startY = centerY + innerR * Math.sin(angle);
-  const endX = centerX + outerR * Math.cos(angle);
-  const endY = centerY + outerR * Math.sin(angle);
+  const startAngle = (startAngleDeg * Math.PI) / 180;
+  const endAngle = (endAngleDeg * Math.PI) / 180;
 
-  // Perpendicular offset for width
-  const perpX = Math.sin(angle) * halfWidth;
-  const perpY = -Math.cos(angle) * halfWidth;
+  // Start at inner radius, start angle
+  const innerX1 = centerX + innerRadius * Math.cos(startAngle);
+  const innerY1 = centerY + innerRadius * Math.sin(startAngle);
 
-  return `M ${startX - perpX} ${startY - perpY}
-          L ${endX - perpX} ${endY - perpY}
-          L ${endX + perpX} ${endY + perpY}
-          L ${startX + perpX} ${startY + perpY} Z`;
+  // Inner radius, end angle
+  const innerX2 = centerX + innerRadius * Math.cos(endAngle);
+  const innerY2 = centerY + innerRadius * Math.sin(endAngle);
+
+  // Outer radius, start angle
+  const outerX1 = centerX + outerRadius * Math.cos(startAngle);
+  const outerY1 = centerY + outerRadius * Math.sin(startAngle);
+
+  // Outer radius, end angle
+  const outerX2 = centerX + outerRadius * Math.cos(endAngle);
+  const outerY2 = centerY + outerRadius * Math.sin(endAngle);
+
+  // Create wedge shape
+  path.moveTo(innerX1, innerY1);
+  path.lineTo(outerX1, outerY1);
+
+  // Arc along outer edge
+  path.arcToOval(
+    Skia.XYWHRect(
+      centerX - outerRadius,
+      centerY - outerRadius,
+      outerRadius * 2,
+      outerRadius * 2
+    ),
+    startAngleDeg,
+    endAngleDeg - startAngleDeg,
+    false
+  );
+
+  path.lineTo(innerX2, innerY2);
+
+  // Arc along inner edge (reverse direction)
+  path.arcToOval(
+    Skia.XYWHRect(
+      centerX - innerRadius,
+      centerY - innerRadius,
+      innerRadius * 2,
+      innerRadius * 2
+    ),
+    endAngleDeg,
+    -(endAngleDeg - startAngleDeg),
+    false
+  );
+
+  path.close();
+
+  return path;
 }
 
 export const TapeReel: React.FC<TapeReelProps> = ({
-  size = 70,
+  size = 140,
   isSpinning = false,
-  direction = 'takeup',
-  speed = 'normal',
   isRecording = false,
-  tapeAmount = 0.5,
 }) => {
   const rotation = useSharedValue(0);
 
-  // Calculate reel dimensions
-  const center = size / 2;
-  const outerRadius = size / 2 - 2; // Small margin for shadow
-  const hubRadius = size * 0.14; // Inner hub
-  const spokeOuterRadius = size * 0.35; // Where spokes end
-  const tapeInnerRadius = spokeOuterRadius + 2;
-  const tapeOuterRadius = tapeInnerRadius + (outerRadius - tapeInnerRadius) * Math.max(0.2, tapeAmount);
+  // Calculate dimensions based on size
+  const dimensions = useMemo(() => {
+    const center = size / 2;
+    const strokeWidth = 2;
+    return {
+      center,
+      strokeWidth,
+      // Outer ring
+      outerRadius: size / 2 - strokeWidth - 2,
+      // Center circle
+      centerRadius: size * 0.10,
+      // Spoke cutouts - triangular wedges
+      spokeInnerRadius: size * 0.14,
+      spokeOuterRadius: size * 0.40,
+      // Wedge angular width (degrees)
+      spokeAngle: 55,
+    };
+  }, [size]);
 
-  // Number of spokes
-  const spokeCount = 6;
-
-  // Animation effect
+  // Animation effect - slow continuous spin
   useEffect(() => {
     if (isSpinning) {
-      const speedMultiplier = PLAYBACK_SPEED_MULTIPLIERS[speed];
-      const baseDuration = 2000; // 2 seconds for one rotation at normal speed
-      const duration = baseDuration / speedMultiplier;
-
-      // Direction affects rotation direction
-      const targetRotation = direction === 'supply' ? 360 : -360;
+      const duration = 3000; // 3 seconds per rotation
 
       rotation.value = withRepeat(
-        withTiming(targetRotation, {
+        withTiming(360, {
           duration,
           easing: Easing.linear,
         }),
-        -1, // Infinite repeat
-        false // Don't reverse
+        -1,
+        false
       );
     } else {
       cancelAnimation(rotation);
-      // Smoothly stop at current position
       rotation.value = withTiming(rotation.value % 360, {
-        duration: 300,
+        duration: 500,
         easing: Easing.out(Easing.quad),
       });
     }
@@ -120,94 +163,106 @@ export const TapeReel: React.FC<TapeReelProps> = ({
     return () => {
       cancelAnimation(rotation);
     };
-  }, [isSpinning, speed, direction, rotation]);
+  }, [isSpinning, rotation]);
 
   // Animated style for rotation
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
   }));
 
-  // Generate spoke paths
-  const spokePaths = [];
-  for (let i = 0; i < spokeCount; i++) {
-    const angle = (i * Math.PI * 2) / spokeCount;
-    spokePaths.push(createSpokePath(center, center, hubRadius + 2, spokeOuterRadius, angle));
-  }
+  // Create the 3 wedge cutout paths
+  const wedgePaths = useMemo(() => {
+    const { center, spokeInnerRadius, spokeOuterRadius, spokeAngle } = dimensions;
+
+    // 3 wedges at 90°, 210°, 330° (top, bottom-left, bottom-right)
+    const baseAngles = [90, 210, 330];
+
+    return baseAngles.map((baseAngle) => {
+      const startAngle = baseAngle - spokeAngle / 2;
+      const endAngle = baseAngle + spokeAngle / 2;
+
+      return createWedgePath(
+        center,
+        center,
+        spokeInnerRadius,
+        spokeOuterRadius,
+        startAngle,
+        endAngle
+      );
+    });
+  }, [dimensions]);
+
+  // Create the main reel body path (filled circle)
+  const reelBodyPath = useMemo(() => {
+    const path = Skia.Path.Make();
+    const { center, outerRadius, centerRadius } = dimensions;
+
+    // Add outer circle
+    path.addCircle(center, center, outerRadius);
+
+    return path;
+  }, [dimensions]);
+
+  const { center, outerRadius, centerRadius, strokeWidth } = dimensions;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      {/* Static shadow layer */}
-      <View style={[styles.shadow, { width: size, height: size, borderRadius: size / 2 }]} />
-
-      {/* Rotating reel */}
       <Animated.View style={[styles.reelContainer, { width: size, height: size }, animatedStyle]}>
         <Canvas style={{ width: size, height: size }}>
-          {/* Outer reel body */}
-          <Circle cx={center} cy={center} r={outerRadius} color={REEL_BODY_COLOR}>
-            <Shadow dx={0} dy={2} blur={4} color="rgba(0,0,0,0.5)" />
-          </Circle>
+          {/* Main reel body (filled) */}
+          <Path path={reelBodyPath} color={REEL_COLORS.reelBody} />
 
-          {/* Reel rim highlight */}
+          {/* Cut out the 3 triangular wedges (reveal background) */}
+          {wedgePaths.map((wedgePath, i) => (
+            <Path
+              key={`wedge-${i}`}
+              path={wedgePath}
+              color={Colors.ink}
+            />
+          ))}
+
+          {/* Cut out center circle (reveal background) */}
           <Circle
             cx={center}
             cy={center}
-            r={outerRadius - 1}
-            color="transparent"
-            style="stroke"
-            strokeWidth={1}
-          >
-            <Shadow dx={-1} dy={-1} blur={1} color="rgba(255,255,255,0.15)" />
-          </Circle>
-
-          {/* Tape wound on reel */}
-          <Circle cx={center} cy={center} r={tapeOuterRadius} color={TAPE_COLOR} />
-
-          {/* Tape inner edge (darker) */}
-          <Circle
-            cx={center}
-            cy={center}
-            r={tapeInnerRadius}
-            color={REEL_BODY_COLOR}
+            r={centerRadius}
+            color={Colors.ink}
           />
 
-          {/* Spoke area background */}
-          <Circle cx={center} cy={center} r={spokeOuterRadius} color={REEL_BODY_COLOR} />
-
-          {/* Spokes */}
-          <Group>
-            {spokePaths.map((pathData, index) => (
-              <Path key={index} path={pathData} color={SPOKE_COLOR} />
-            ))}
-          </Group>
-
-          {/* Center hub */}
-          <Circle cx={center} cy={center} r={hubRadius} color={REEL_HUB_COLOR}>
-            <Shadow dx={0} dy={1} blur={2} color="rgba(0,0,0,0.8)" inner />
-          </Circle>
-
-          {/* Hub center dot */}
-          <Circle cx={center} cy={center} r={hubRadius * 0.4} color="#0d0d0d" />
-
-          {/* Hub highlight ring */}
+          {/* Outer ring stroke */}
           <Circle
             cx={center}
             cy={center}
-            r={hubRadius - 1}
-            color="transparent"
+            r={outerRadius}
             style="stroke"
-            strokeWidth={0.5}
-          >
-            <Shadow dx={0} dy={-0.5} blur={0.5} color="rgba(255,255,255,0.1)" />
-          </Circle>
+            strokeWidth={strokeWidth}
+            color={REEL_COLORS.stroke}
+          />
+
+          {/* Center circle stroke */}
+          <Circle
+            cx={center}
+            cy={center}
+            r={centerRadius}
+            style="stroke"
+            strokeWidth={strokeWidth}
+            color={REEL_COLORS.stroke}
+          />
+
+          {/* Recording glow effect */}
+          {isRecording && (
+            <Circle
+              cx={center}
+              cy={center}
+              r={outerRadius + 6}
+              style="stroke"
+              strokeWidth={3}
+              color={REEL_COLORS.recordingGlow}
+              opacity={0.7}
+            />
+          )}
         </Canvas>
       </Animated.View>
-
-      {/* Recording LED indicator */}
-      {isRecording && (
-        <View style={styles.recordingIndicator}>
-          <View style={styles.recordingLed} />
-        </View>
-      )}
     </View>
   );
 };
@@ -218,33 +273,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  shadow: {
-    position: 'absolute',
-    backgroundColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
   reelContainer: {
     position: 'absolute',
-  },
-  recordingIndicator: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-  },
-  recordingLed: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.vermilion,
-    shadowColor: Colors.vermilion,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 4,
   },
 });
 

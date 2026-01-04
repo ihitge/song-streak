@@ -2,7 +2,7 @@
  * SpeedSelector Web Component
  *
  * CSS-based fallback for the speed selector on web.
- * Matches the native Skia version visually using CSS gradients and shadows.
+ * Matches FrequencyTuner light variant styling with vermilion label.
  */
 
 import React, { useState } from 'react';
@@ -105,7 +105,7 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
             accessibilityRole="button"
             accessibilityHint="Decrease playback speed"
           >
-            <ChevronLeft size={compact ? 12 : 14} color={Colors.graphite} />
+            <ChevronLeft size={compact ? 12 : 14} color={Colors.charcoal} />
           </Pressable>
 
           <View style={styles.valueContainer}>
@@ -132,7 +132,7 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
             accessibilityRole="button"
             accessibilityHint="Increase playback speed"
           >
-            <ChevronRight size={compact ? 12 : 14} color={Colors.graphite} />
+            <ChevronRight size={compact ? 12 : 14} color={Colors.charcoal} />
           </Pressable>
         </View>
 
@@ -150,9 +150,10 @@ const styles = StyleSheet.create({
   containerCompact: {
     gap: 2,
   },
+  // Label - Vermilion color (matches FrequencyTuner)
   label: {
     ...Typography.label,
-    color: Colors.warmGray,
+    color: Colors.vermilion,
   },
   labelCompact: {
     fontSize: 8,
@@ -161,20 +162,21 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     overflow: 'hidden',
     position: 'relative',
-    minWidth: 120,
+    minWidth: 180,
   },
+  // Light variant background
   windowBackground: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.deepSpaceBlue,
+    backgroundColor: Colors.softWhite,
     borderRadius: 6,
     // Inset shadow simulation
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.9,
+    shadowOpacity: 0.4,
     shadowRadius: 6,
     // Top highlight
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
+    borderTopColor: 'rgba(255,255,255,1)',
   },
   scaleMarks: {
     position: 'absolute',
@@ -187,7 +189,7 @@ const styles = StyleSheet.create({
   scaleMark: {
     width: 1,
     height: 4,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: Colors.charcoal,
   },
   centerIndicator: {
     position: 'absolute',
@@ -204,8 +206,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: '50%',
-    // CSS gradient fallback
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    // CSS gradient fallback - light variant
+    backgroundColor: 'rgba(255,255,255,0.3)',
     borderTopLeftRadius: 6,
     borderTopRightRadius: 6,
     pointerEvents: 'none',
@@ -231,15 +233,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Text colors - Dark for light variant
   valueText: {
     fontSize: 10,
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
     letterSpacing: 1,
-    color: '#e0e0e0',
-    textShadowColor: 'rgba(255,255,255,0.3)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 5,
+    color: Colors.charcoal,
   },
   valueTextCompact: {
     fontSize: 9,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: 'rgba(0,0,0,0.1)',
     pointerEvents: 'none',
   },
 });

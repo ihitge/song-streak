@@ -1,17 +1,17 @@
 /**
  * TransportControls Component
  *
- * 5-button transport for the reel-to-reel recorder.
- * Buttons: REWIND | RECORD | STOP | PLAY | FAST-FORWARD
+ * 3-button transport for the reel-to-reel recorder.
+ * Primary button matches FAB style (64×64px, solid color, white ring).
+ * Buttons: RESET | RECORD/STOP/PLAY (primary) | FAST-FORWARD
  */
 
-import React, { useState } from 'react';
-import { View, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
-import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
+import React, { useCallback } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Rewind, Circle, Square, Play, FastForward } from 'lucide-react-native';
+import { Rewind, Circle, Square, Play, FastForward, RotateCcw, Pause } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
+import { useNavButtonSound } from '@/hooks/useNavButtonSound';
 import { TransportButton, RecorderState } from '@/types/voiceMemo';
 
 interface TransportControlsProps {
@@ -27,25 +27,14 @@ interface TransportControlsProps {
   compact?: boolean;
 }
 
-// Button configuration
-const BUTTONS: {
-  id: TransportButton;
-  icon: typeof Rewind;
-  label: string;
-}[] = [
-  { id: 'rewind', icon: Rewind, label: 'Rewind' },
-  { id: 'record', icon: Circle, label: 'Record' },
-  { id: 'stop', icon: Square, label: 'Stop' },
-  { id: 'play', icon: Play, label: 'Play' },
-  { id: 'fastforward', icon: FastForward, label: 'Fast Forward' },
-];
-
-const BUTTON_SIZE = 48;
-const BUTTON_SIZE_COMPACT = 38;
-const WELL_HEIGHT = 60;
-const WELL_HEIGHT_COMPACT = 48;
-const BORDER_RADIUS = 4;
-
+/**
+ * Transport Controls for Voice Recorder
+ *
+ * 3-button layout:
+ * - Left: Rewind (when playing) or Reset
+ * - Center: Record/Stop/Play (context-aware, FAB style)
+ * - Right: Fast Forward
+ */
 export const TransportControls: React.FC<TransportControlsProps> = ({
   state,
   hasRecording = false,
@@ -53,220 +42,201 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   onPress,
   compact = false,
 }) => {
-  const [wellWidth, setWellWidth] = useState(280);
-  const { playSound } = useClickSound();
+  const { playSound } = useNavButtonSound();
 
-  const buttonSize = compact ? BUTTON_SIZE_COMPACT : BUTTON_SIZE;
-  const wellHeight = compact ? WELL_HEIGHT_COMPACT : WELL_HEIGHT;
-
-  const handleLayout = (event: LayoutChangeEvent) => {
-    setWellWidth(event.nativeEvent.layout.width);
+  // Get primary button configuration based on state
+  const getPrimaryConfig = () => {
+    if (state === 'recording') {
+      return {
+        id: 'stop' as TransportButton,
+        icon: Square,
+        label: 'Stop Recording',
+        backgroundColor: Colors.vermilion,
+        iconFill: true,
+      };
+    }
+    if (state === 'playing') {
+      return {
+        id: 'stop' as TransportButton,
+        icon: Pause,
+        label: 'Pause',
+        backgroundColor: Colors.graphite,
+        iconFill: false,
+      };
+    }
+    if (hasRecording) {
+      return {
+        id: 'play' as TransportButton,
+        icon: Play,
+        label: 'Play',
+        backgroundColor: Colors.moss,
+        iconFill: false,
+      };
+    }
+    return {
+      id: 'record' as TransportButton,
+      icon: Circle,
+      label: 'Record',
+      backgroundColor: Colors.vermilion,
+      iconFill: true,
+    };
   };
 
-  const handlePress = async (buttonId: TransportButton) => {
-    if (disabled) return;
+  const primaryConfig = getPrimaryConfig();
+  const isRecording = state === 'recording';
 
-    // Don't allow certain actions based on state
-    if (buttonId === 'play' && !hasRecording) return;
-    if (buttonId === 'rewind' && !hasRecording) return;
-    if (buttonId === 'fastforward' && !hasRecording) return;
-    if (buttonId === 'record' && state === 'recording') return;
-    if (buttonId === 'record' && state === 'playing') return;
+  // Handle button presses
+  const handleLeftPress = useCallback(async () => {
+    if (disabled) return;
+    if (!hasRecording && state !== 'playing') return;
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+    onPress(state === 'playing' ? 'rewind' : 'stop');
+  }, [disabled, hasRecording, state, onPress, playSound]);
+
+  const handlePrimaryPress = useCallback(async () => {
+    if (disabled) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await playSound();
-    onPress(buttonId);
-  };
+    onPress(primaryConfig.id);
+  }, [disabled, primaryConfig.id, onPress, playSound]);
 
-  // Determine button states
-  const getButtonState = (buttonId: TransportButton): {
-    isActive: boolean;
-    isDisabled: boolean;
-    glowColor: string | null;
-  } => {
-    switch (buttonId) {
-      case 'record':
-        return {
-          isActive: state === 'recording',
-          isDisabled: disabled || state === 'playing',
-          glowColor: state === 'recording' ? Colors.vermilion : null,
-        };
-      case 'play':
-        return {
-          isActive: state === 'playing',
-          isDisabled: disabled || !hasRecording || state === 'recording',
-          glowColor: state === 'playing' ? Colors.moss : null,
-        };
-      case 'stop':
-        return {
-          isActive: false,
-          isDisabled: disabled || (state !== 'recording' && state !== 'playing'),
-          glowColor: null,
-        };
-      case 'rewind':
-      case 'fastforward':
-        return {
-          isActive: false,
-          isDisabled: disabled || !hasRecording || state === 'recording',
-          glowColor: null,
-        };
-      default:
-        return { isActive: false, isDisabled: disabled, glowColor: null };
-    }
-  };
+  const handleRightPress = useCallback(async () => {
+    if (disabled || !hasRecording || state === 'recording') return;
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await playSound();
+    onPress('fastforward');
+  }, [disabled, hasRecording, state, onPress, playSound]);
+
+  // Button disabled states
+  const leftDisabled = disabled || (!hasRecording && state !== 'recording');
+  const rightDisabled = disabled || !hasRecording || state === 'recording';
+
+  // Icon sizes
+  const primaryIconSize = compact ? 24 : 28;
+  const secondaryIconSize = compact ? 16 : 20;
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
-      {/* Housing well */}
-      <View
-        style={[styles.wellContainer, { height: wellHeight }]}
-        onLayout={handleLayout}
+      {/* Left button - Rewind (when playing) or Reset */}
+      <TouchableOpacity
+        style={[styles.secondaryButton, leftDisabled && styles.buttonDisabled]}
+        onPress={handleLeftPress}
+        activeOpacity={0.8}
+        disabled={leftDisabled}
+        accessibilityLabel={state === 'playing' ? 'Rewind' : 'Reset'}
+        accessibilityRole="button"
       >
-        {/* Skia well background */}
-        <View style={styles.wellBackground}>
-          <Canvas style={StyleSheet.absoluteFill}>
-            <Box
-              box={rrect(rect(0, 0, wellWidth, wellHeight), 8, 8)}
-              color={Colors.ink}
-            >
-              <BoxShadow dx={2} dy={2} blur={5} color="rgba(0,0,0,0.3)" inner />
-              <BoxShadow dx={-1} dy={-1} blur={3} color="rgba(255,255,255,0.1)" inner />
-            </Box>
-          </Canvas>
+        <View style={[styles.secondaryButtonInner, compact && styles.secondaryButtonInnerCompact]}>
+          {state === 'playing' ? (
+            <Rewind size={secondaryIconSize} color={leftDisabled ? Colors.warmGray : Colors.graphite} />
+          ) : (
+            <RotateCcw size={secondaryIconSize} color={leftDisabled ? Colors.warmGray : Colors.graphite} />
+          )}
         </View>
+      </TouchableOpacity>
 
-        {/* Buttons row */}
-        <View style={styles.buttonsRow}>
-          {BUTTONS.map((button) => {
-            const { isActive, isDisabled, glowColor } = getButtonState(button.id);
-            const IconComponent = button.icon;
+      {/* Primary button - Record/Stop/Play (FAB style) */}
+      <TouchableOpacity
+        style={[
+          styles.primaryButton,
+          compact && styles.primaryButtonCompact,
+          { backgroundColor: primaryConfig.backgroundColor },
+          disabled && styles.buttonDisabled,
+        ]}
+        onPress={handlePrimaryPress}
+        activeOpacity={0.9}
+        disabled={disabled}
+        accessibilityLabel={primaryConfig.label}
+        accessibilityRole="button"
+      >
+        <primaryConfig.icon
+          size={primaryIconSize}
+          color={Colors.softWhite}
+          fill={primaryConfig.iconFill ? Colors.softWhite : 'transparent'}
+          style={primaryConfig.id === 'play' ? { marginLeft: compact ? 2 : 3 } : undefined}
+        />
+      </TouchableOpacity>
 
-            // Special styling for record button (filled when active)
-            const isRecordButton = button.id === 'record';
-
-            return (
-              <Pressable
-                key={button.id}
-                onPress={() => handlePress(button.id)}
-                disabled={isDisabled}
-                style={[
-                  styles.buttonWrapper,
-                  { width: buttonSize, height: buttonSize },
-                ]}
-                accessibilityLabel={button.label}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: isDisabled }}
-                accessibilityHint={`${button.label} transport control`}
-              >
-                {/* Button cap */}
-                <View style={[styles.buttonCap, { width: buttonSize, height: buttonSize }]}>
-                  <Canvas style={StyleSheet.absoluteFill}>
-                    <Box
-                      box={rrect(rect(0, 0, buttonSize, buttonSize), BORDER_RADIUS, BORDER_RADIUS)}
-                      color={isActive ? Colors.charcoal : Colors.softWhite}
-                    >
-                      {!isActive ? (
-                        <>
-                          {/* Raised appearance */}
-                          <BoxShadow dx={0} dy={2} blur={3} color="rgba(0,0,0,0.2)" />
-                          <BoxShadow dx={0} dy={-1} blur={1} color="rgba(255,255,255,0.9)" />
-                          <LinearGradient
-                            start={vec(0, 0)}
-                            end={vec(0, buttonSize)}
-                            colors={['#fafafa', '#d4d4d4']}
-                          />
-                        </>
-                      ) : (
-                        /* Pressed appearance */
-                        <BoxShadow dx={1} dy={1} blur={3} color="rgba(0,0,0,0.5)" inner />
-                      )}
-                    </Box>
-                  </Canvas>
-
-                  {/* Icon */}
-                  <View style={styles.iconContainer}>
-                    <IconComponent
-                      size={compact ? 16 : 20}
-                      color={
-                        isDisabled
-                          ? Colors.graphite
-                          : isActive
-                            ? Colors.softWhite
-                            : isRecordButton
-                              ? Colors.vermilion
-                              : Colors.charcoal
-                      }
-                      fill={isRecordButton && isActive ? Colors.vermilion : 'transparent'}
-                      strokeWidth={isRecordButton ? 2.5 : 2}
-                    />
-                  </View>
-
-                  {/* Active glow indicator */}
-                  {glowColor && (
-                    <View
-                      style={[
-                        styles.glowIndicator,
-                        { backgroundColor: glowColor, shadowColor: glowColor },
-                      ]}
-                    />
-                  )}
-                </View>
-              </Pressable>
-            );
-          })}
+      {/* Right button - Fast Forward */}
+      <TouchableOpacity
+        style={[styles.secondaryButton, rightDisabled && styles.buttonDisabled]}
+        onPress={handleRightPress}
+        activeOpacity={0.8}
+        disabled={rightDisabled}
+        accessibilityLabel="Fast Forward"
+        accessibilityRole="button"
+      >
+        <View style={[styles.secondaryButtonInner, compact && styles.secondaryButtonInnerCompact]}>
+          <FastForward size={secondaryIconSize} color={rightDisabled ? Colors.warmGray : Colors.graphite} />
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-  },
-  containerCompact: {},
-  wellContainer: {
-    position: 'relative',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  wellBackground: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  buttonsRow: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
-    gap: 6,
+    gap: 24,
   },
-  buttonWrapper: {
+  containerCompact: {
+    gap: 16,
+  },
+  // Primary button - FAB style (64×64, solid color, white ring)
+  primaryButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  buttonCap: {
-    borderRadius: BORDER_RADIUS,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  iconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  glowIndicator: {
-    position: 'absolute',
-    bottom: 4,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
+    // White ring effect (matches FAB)
+    borderWidth: 2,
+    borderColor: '#fff',
+    // Shadow (matches FAB)
+    shadowColor: Colors.charcoal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
     shadowRadius: 4,
-    elevation: 4,
+    elevation: 8,
+  },
+  primaryButtonCompact: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+  },
+  // Secondary buttons (beveled style)
+  secondaryButton: {
+    shadowColor: Colors.ink,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  secondaryButtonInner: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.alloy,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.5)',
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  secondaryButtonInnerCompact: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });
 

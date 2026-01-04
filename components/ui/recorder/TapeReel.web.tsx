@@ -1,75 +1,65 @@
 /**
  * TapeReel Web Component
  *
- * CSS-based fallback for the spinning reel component on web.
- * Uses React Native Animated API for rotation animation.
+ * Clean, minimalist film reel icon for the voice recorder (web version).
+ * Style: arc-loader.jpeg reference - thin outer ring, 3 triangular cutouts, center circle.
+ * Uses CSS for rendering since Skia path operations may not work on web.
  */
 
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { Colors } from '@/constants/Colors';
-import { PlaybackSpeed, PLAYBACK_SPEED_MULTIPLIERS } from '@/types/voiceMemo';
 
 interface TapeReelProps {
   /** Size of the reel in pixels */
   size?: number;
   /** Whether the reel is currently spinning */
   isSpinning?: boolean;
-  /** Direction: 'supply' (clockwise) or 'takeup' (counterclockwise) */
-  direction?: 'supply' | 'takeup';
-  /** Current playback speed */
-  speed?: PlaybackSpeed;
-  /** Show recording indicator LED */
+  /** Show recording state (changes accent color) */
   isRecording?: boolean;
-  /** Amount of tape on reel (0-1, affects visual appearance) */
-  tapeAmount?: number;
 }
 
-// Reel colors
-const REEL_BODY_COLOR = Colors.charcoal;
-const REEL_HUB_COLOR = '#1a1a1a';
-const SPOKE_COLOR = Colors.graphite;
-const TAPE_COLOR = '#3d3632'; // Magnetic tape oxide color
+// Simple color palette for clean film reel icon
+const REEL_COLORS = {
+  // Main reel body
+  reelBody: Colors.charcoal,
+  // Stroke color - subtle
+  stroke: 'rgba(255,255,255,0.5)',
+  // Background (cutout color)
+  background: Colors.ink,
+  // Recording glow
+  recordingGlow: Colors.vermilion,
+};
 
 export const TapeReel: React.FC<TapeReelProps> = ({
-  size = 70,
+  size = 140,
   isSpinning = false,
-  direction = 'takeup',
-  speed = 'normal',
   isRecording = false,
-  tapeAmount = 0.5,
 }) => {
   const rotation = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
 
-  // Calculate reel dimensions
-  const outerRadius = size / 2 - 2;
-  const hubRadius = size * 0.14;
-  const spokeOuterRadius = size * 0.35;
-  const tapeInnerRadius = spokeOuterRadius + 2;
-  const tapeOuterRadius = tapeInnerRadius + (outerRadius - tapeInnerRadius) * Math.max(0.2, tapeAmount);
+  // Calculate dimensions
+  const strokeWidth = 2;
+  const outerRadius = size / 2 - strokeWidth - 2;
+  const centerRadius = size * 0.10;
+  const spokeInnerRadius = size * 0.14;
+  const spokeOuterRadius = size * 0.40;
+  const spokeAngle = 55; // degrees
 
-  // Number of spokes
-  const spokeCount = 6;
-
-  // Animation effect
+  // Animation effect - slow continuous spin
   useEffect(() => {
     if (animationRef.current) {
       animationRef.current.stop();
     }
 
     if (isSpinning) {
-      const speedMultiplier = PLAYBACK_SPEED_MULTIPLIERS[speed];
-      const baseDuration = 2000; // 2 seconds for one rotation at normal speed
-      const duration = baseDuration / speedMultiplier;
-
-      // Direction affects rotation direction
-      const toValue = direction === 'supply' ? 1 : -1;
+      const duration = 3000; // 3 seconds per rotation
 
       rotation.setValue(0);
       animationRef.current = Animated.loop(
         Animated.timing(rotation, {
-          toValue,
+          toValue: 1,
           duration,
           easing: Easing.linear,
           useNativeDriver: true,
@@ -80,7 +70,7 @@ export const TapeReel: React.FC<TapeReelProps> = ({
       // Smoothly stop
       Animated.timing(rotation, {
         toValue: 0,
-        duration: 300,
+        duration: 500,
         easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }).start();
@@ -91,43 +81,66 @@ export const TapeReel: React.FC<TapeReelProps> = ({
         animationRef.current.stop();
       }
     };
-  }, [isSpinning, speed, direction, rotation]);
+  }, [isSpinning, rotation]);
 
   // Create rotation interpolation
   const rotateInterpolation = rotation.interpolate({
-    inputRange: [-1, 0, 1],
-    outputRange: ['-360deg', '0deg', '360deg'],
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
   });
 
-  // Generate spoke positions
-  const spokes = [];
-  for (let i = 0; i < spokeCount; i++) {
-    const angle = (i * 360) / spokeCount;
-    spokes.push(
+  // Create triangular wedge shapes using CSS clip-path approach
+  // For web, we'll use positioned triangular elements
+  const createWedge = (baseAngle: number, index: number) => {
+    // Calculate wedge dimensions
+    const halfAngle = spokeAngle / 2;
+    const startAngle = baseAngle - halfAngle;
+    const endAngle = baseAngle + halfAngle;
+
+    // Convert to radians
+    const startRad = (startAngle * Math.PI) / 180;
+    const endRad = (endAngle * Math.PI) / 180;
+
+    // Calculate points for the wedge (triangle-ish shape)
+    const center = size / 2;
+
+    // Inner points (near center)
+    const innerX1 = center + spokeInnerRadius * Math.cos(startRad);
+    const innerY1 = center + spokeInnerRadius * Math.sin(startRad);
+    const innerX2 = center + spokeInnerRadius * Math.cos(endRad);
+    const innerY2 = center + spokeInnerRadius * Math.sin(endRad);
+
+    // Outer points
+    const outerX1 = center + spokeOuterRadius * Math.cos(startRad);
+    const outerY1 = center + spokeOuterRadius * Math.sin(startRad);
+    const outerX2 = center + spokeOuterRadius * Math.cos(endRad);
+    const outerY2 = center + spokeOuterRadius * Math.sin(endRad);
+
+    // Create polygon points for clip-path
+    const points = `${innerX1}px ${innerY1}px, ${outerX1}px ${outerY1}px, ${outerX2}px ${outerY2}px, ${innerX2}px ${innerY2}px`;
+
+    return (
       <View
-        key={i}
+        key={`wedge-${index}`}
         style={[
-          styles.spoke,
+          styles.wedge,
           {
-            width: 3,
-            height: spokeOuterRadius - hubRadius - 2,
-            backgroundColor: SPOKE_COLOR,
-            transform: [
-              { translateX: -1.5 },
-              { translateY: -(spokeOuterRadius - hubRadius - 2) / 2 - hubRadius - 1 },
-              { rotate: `${angle}deg` },
-            ],
+            width: size,
+            height: size,
+            backgroundColor: REEL_COLORS.background,
+            // @ts-ignore - web-specific style
+            clipPath: `polygon(${points})`,
           },
         ]}
       />
     );
-  }
+  };
+
+  // 3 wedges at 90°, 210°, 330° (top, bottom-left, bottom-right)
+  const wedgeAngles = [90, 210, 330];
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      {/* Static shadow layer */}
-      <View style={[styles.shadow, { width: size, height: size, borderRadius: size / 2 }]} />
-
       {/* Rotating reel */}
       <Animated.View
         style={[
@@ -139,95 +152,54 @@ export const TapeReel: React.FC<TapeReelProps> = ({
           },
         ]}
       >
-        {/* Outer reel body */}
+        {/* Main reel body (filled circle) */}
         <View
           style={[
-            styles.outerReel,
+            styles.reelBody,
             {
               width: outerRadius * 2,
               height: outerRadius * 2,
               borderRadius: outerRadius,
-              backgroundColor: REEL_BODY_COLOR,
+              backgroundColor: REEL_COLORS.reelBody,
+              borderWidth: strokeWidth,
+              borderColor: REEL_COLORS.stroke,
             },
           ]}
         />
 
-        {/* Tape wound on reel */}
+        {/* 3 triangular wedge cutouts */}
+        {wedgeAngles.map((angle, i) => createWedge(angle, i))}
+
+        {/* Center circle (cutout) */}
         <View
           style={[
-            styles.tape,
+            styles.centerCircle,
             {
-              width: tapeOuterRadius * 2,
-              height: tapeOuterRadius * 2,
-              borderRadius: tapeOuterRadius,
-              backgroundColor: TAPE_COLOR,
-            },
-          ]}
-        />
-
-        {/* Tape inner edge (darker) */}
-        <View
-          style={[
-            styles.tapeInner,
-            {
-              width: tapeInnerRadius * 2,
-              height: tapeInnerRadius * 2,
-              borderRadius: tapeInnerRadius,
-              backgroundColor: REEL_BODY_COLOR,
-            },
-          ]}
-        />
-
-        {/* Spoke area background */}
-        <View
-          style={[
-            styles.spokeArea,
-            {
-              width: spokeOuterRadius * 2,
-              height: spokeOuterRadius * 2,
-              borderRadius: spokeOuterRadius,
-              backgroundColor: REEL_BODY_COLOR,
-            },
-          ]}
-        />
-
-        {/* Spokes */}
-        <View style={[styles.spokesContainer, { width: size, height: size }]}>
-          {spokes}
-        </View>
-
-        {/* Center hub */}
-        <View
-          style={[
-            styles.hub,
-            {
-              width: hubRadius * 2,
-              height: hubRadius * 2,
-              borderRadius: hubRadius,
-              backgroundColor: REEL_HUB_COLOR,
-            },
-          ]}
-        />
-
-        {/* Hub center dot */}
-        <View
-          style={[
-            styles.hubDot,
-            {
-              width: hubRadius * 0.8,
-              height: hubRadius * 0.8,
-              borderRadius: hubRadius * 0.4,
-              backgroundColor: '#0d0d0d',
+              width: centerRadius * 2,
+              height: centerRadius * 2,
+              borderRadius: centerRadius,
+              backgroundColor: REEL_COLORS.background,
+              borderWidth: strokeWidth,
+              borderColor: REEL_COLORS.stroke,
             },
           ]}
         />
       </Animated.View>
 
-      {/* Recording LED indicator */}
+      {/* Recording glow effect */}
       {isRecording && (
-        <View style={styles.recordingIndicator}>
-          <View style={styles.recordingLed} />
-        </View>
+        <View
+          style={[
+            styles.recordingGlow,
+            {
+              width: (outerRadius + 6) * 2,
+              height: (outerRadius + 6) * 2,
+              borderRadius: outerRadius + 6,
+              borderWidth: 3,
+              borderColor: REEL_COLORS.recordingGlow,
+            },
+          ]}
+        />
       )}
     </View>
   );
@@ -239,69 +211,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  shadow: {
-    position: 'absolute',
-    backgroundColor: 'transparent',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
   reelContainer: {
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  outerReel: {
-    position: 'absolute',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-  },
-  tape: {
+  reelBody: {
     position: 'absolute',
   },
-  tapeInner: {
+  wedge: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+  },
+  centerCircle: {
     position: 'absolute',
   },
-  spokeArea: {
+  recordingGlow: {
     position: 'absolute',
-  },
-  spokesContainer: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  spoke: {
-    position: 'absolute',
-  },
-  hub: {
-    position: 'absolute',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-  },
-  hubDot: {
-    position: 'absolute',
-  },
-  recordingIndicator: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-  },
-  recordingLed: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.vermilion,
-    shadowColor: Colors.vermilion,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 4,
+    backgroundColor: 'transparent',
+    opacity: 0.7,
   },
 });
 

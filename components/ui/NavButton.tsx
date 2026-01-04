@@ -10,9 +10,10 @@ interface NavButtonProps {
   label: string;
   isActive: boolean;
   onPress: () => void;
+  compact?: boolean;
 }
 
-export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive, onPress }) => {
+export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive, onPress, compact = false }) => {
   const { playSound } = useNavButtonSound();
 
   const handlePress = async () => {
@@ -33,10 +34,11 @@ export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive,
       accessibilityState={{ selected: isActive }}
     >
       {/* The Well (Outer Recess) */}
-      <View style={styles.well}>
+      <View style={[styles.well, compact && styles.wellCompact]}>
         {/* The Cap (Physical Key) */}
         <View style={[
           styles.cap,
+          compact && styles.capCompact,
           isActive ? styles.capActive : styles.capInactive,
         ]}>
           {/* The LED */}
@@ -46,13 +48,13 @@ export const NavButton: React.FC<NavButtonProps> = ({ iconName, label, isActive,
           ]} />
           <FontAwesome
             name={iconName}
-            size={24}
+            size={compact ? 18 : 24}
             color={isActive ? Colors.vermilion : Colors.charcoal}
             accessibilityElementsHidden={true}
           />
         </View>
       </View>
-      <Text style={styles.labelText}>{label}</Text>
+      <Text style={[styles.labelText, compact && styles.labelTextCompact]}>{label}</Text>
     </Pressable>
   );
 };
@@ -134,5 +136,21 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginTop: 5,
     color: Colors.charcoal,
+  },
+  // Compact styles for 5-tab layout
+  wellCompact: {
+    width: 56,
+    height: 56,
+    borderRadius: 10,
+  },
+  capCompact: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+  },
+  labelTextCompact: {
+    fontSize: 7,
+    letterSpacing: 1,
+    marginTop: 4,
   },
 });

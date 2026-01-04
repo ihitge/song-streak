@@ -41,6 +41,8 @@ export const RotaryKnob = <T extends string>({
     : ['rgba(255,255,255,0.35)', 'rgba(255,255,255,0)'];
   const textColor = isDark ? '#e0e0e0' : Colors.charcoal;
   const textShadowColor = isDark ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.8)';
+  // Knob face color - lighter gray for light variant to match chassis
+  const knobFaceColor = isDark ? Colors.charcoal : Colors.alloy;
 
   const handleLayout = (event: LayoutChangeEvent) => {
     setReadoutWidth(event.nativeEvent.layout.width);
@@ -171,8 +173,8 @@ export const RotaryKnob = <T extends string>({
 
           {/* Rotating knob */}
           <Animated.View style={[styles.knobBody, { width: size, height: size, borderRadius: size / 2 }, animatedStyle]}>
-            {/* Black knob background */}
-            <View style={[styles.knobFace, { width: size - 4, height: size - 4, borderRadius: (size - 4) / 2 }]} />
+            {/* Knob background - variant-aware */}
+            <View style={[styles.knobFace, { width: size - 4, height: size - 4, borderRadius: (size - 4) / 2, backgroundColor: knobFaceColor }]} />
 
             {/* Orange position indicator dot */}
             <View style={styles.indicatorDot} />
@@ -264,7 +266,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   knobFace: {
-    backgroundColor: Colors.charcoal,
     position: 'absolute',
   },
   indicatorDot: {

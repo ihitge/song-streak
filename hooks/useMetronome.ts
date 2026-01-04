@@ -60,10 +60,11 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   // Derived values
   const beatsPerMeasure = useMemo(() => getBeatsPerMeasure(timeSignature), [timeSignature]);
 
-  // Beat position oscillates 0 → 1 → 0 → 1 for pendulum
+  // Beat position maps each beat to its marker position (0 to 1)
+  // Beat 1→0, Beat 2→0.33, Beat 3→0.67, Beat 4→1 (for 4/4 time)
   const beatPosition = useMemo(() => {
-    return currentBeat % 2 === 1 ? 0 : 1;
-  }, [currentBeat]);
+    return (currentBeat - 1) / Math.max(1, beatsPerMeasure - 1);
+  }, [currentBeat, beatsPerMeasure]);
 
   // Keep ref in sync with state
   useEffect(() => {
