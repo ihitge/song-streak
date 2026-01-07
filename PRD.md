@@ -405,7 +405,7 @@ See design_system.md for more details.
 | date-fns | Date calculations |
 | react-native-reanimated | Animations |
 | @shopify/react-native-skia | Chord diagrams & graphics |
-| expo-av | Audio feedback sounds |
+| expo-audio | Audio feedback sounds & practice player |
 | lucide-react-native | Icon library |
 
 ## Important Factors

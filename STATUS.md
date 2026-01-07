@@ -1,7 +1,7 @@
 # 🎵 Song Streak - Project Status
 
-**Last Updated:** December 20, 2025
-**Status:** ✅ **PHASE 4 COMPLETE - Chord Generator System + Theory UI Improvements**
+**Last Updated:** January 7, 2026
+**Status:** ✅ **PHASE 4 COMPLETE - Chord Generator System + Full expo-audio Migration**
 
 ---
 
@@ -21,7 +21,32 @@ This document shows the current implementation status and what's ready to test.
 
 ---
 
-## 🎯 Latest Updates (December 20, 2025)
+## 🎯 Latest Updates (January 7, 2026)
+
+### iOS Development Scripts - COMPLETE ✅
+- `npm run ios` now uses `--localhost` flag (fixes simulator timeout error 60)
+- Added `ios:lan` for physical device testing on same network
+- Added `ios:tunnel` for remote physical device testing
+- Added `start:local` for general localhost development
+
+### expo-av Migration - COMPLETE ✅
+- Migrated `usePracticePlayer.ts` from expo-av to expo-audio
+- Removed expo-av dependency from package.json
+- All audio now uses expo-audio API consistently
+- Practice player supports pitch-preserved speed control via `setPlaybackRate(rate, 'high')`
+
+### Ideas Tab (Idea Bank) - COMPLETE ✅
+- Added 5th navigation tab with voice recorder
+- Route: `/ideas` with ReelToReelRecorder component
+- NavButton compact mode for 5-button layout
+
+### Project Cleanup
+- Playwright test screenshots added to `.gitignore`
+- Removed tracked screenshots from repository
+
+---
+
+## Previous Updates (December 20, 2025)
 
 ### Legal Compliance - COMPLETE ✅
 - Privacy Policy fully rewritten (14 sections, UK GDPR + EU GDPR + CCPA compliant)
@@ -192,6 +217,8 @@ Test 3: Multiple Instruments
 - [x] expo-av → expo-audio migration for all sound hooks
 - [x] 7 UI sound hooks migrated (`useClickSound`, `useNavButtonSound`, etc.)
 - [x] `useMetronomeSound` migrated with sound pooling pattern preserved
+- [x] `usePracticePlayer` migrated to expo-audio with polling-based status updates
+- [x] expo-av removed from dependencies
 
 ### Theory Tab UI Improvements
 - [x] **Song Metrics 2x2 Grid**: Reorganized from 3-column to 2x2 layout
@@ -540,7 +567,7 @@ All core features implemented:
 - ✅ **624 tests validating chord accuracy**
 - ✅ **Deprecation warnings resolved (SafeAreaView, expo-av)**
 
-**Key Addition (Phase 4):** The chord generator system can produce guitar chord diagrams for ANY chord - from simple majors to complex jazz voicings like Cmaj9 or Dm11. Uses music theory algorithms with fallback constraints for playability. Also migrated all audio from deprecated expo-av to expo-audio.
+**Key Addition (Phase 4):** The chord generator system can produce guitar chord diagrams for ANY chord - from simple majors to complex jazz voicings like Cmaj9 or Dm11. Uses music theory algorithms with fallback constraints for playability. All audio fully migrated from deprecated expo-av to expo-audio (including usePracticePlayer).
 
 **Latest Updates (Dec 18):** Chord diagram enhancements - root notes now highlighted in green (moss) for both fretted positions and open strings, chord names left-aligned with fretboard. Added music theory helpers for note calculation and enharmonic handling. Algorithmic chord generator now includes heuristic finger assignments (finger 1 for barres, fingers 2-4 for remaining frets sorted by position).
 

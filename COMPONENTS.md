@@ -1379,6 +1379,8 @@ colors={[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.
      - `useRotaryKnobSound.ts`
      - `useChordChartSound.ts`
    - Migrated `useMetronomeSound.ts` to use `createAudioPlayer` (manual control for sound pooling)
+   - Migrated `usePracticePlayer.ts` to use `createAudioPlayer` with polling-based status updates
+   - **expo-av removed from package.json** - full migration complete
 
 **API Changes (expo-av → expo-audio)**:
 ```typescript

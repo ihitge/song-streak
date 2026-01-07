@@ -1,5 +1,45 @@
 # Development Notes & Future Features
 
+## Recent Changes (January 7, 2026)
+
+### iOS Simulator Timeout Fix
+
+**Problem**: iOS simulator failed to open `exp://` URLs with error code 60 (Operation timed out). Expo uses LAN mode by default, broadcasting on the machine's local IP which the simulator couldn't reliably reach.
+
+**Fix**: Updated `package.json` scripts to use `--localhost` flag for simulator development:
+- `npm run ios` - Now uses `--localhost` (fixes timeout)
+- `npm run ios:lan` - LAN mode for physical device on same network
+- `npm run ios:tunnel` - Tunnel mode for remote physical device
+- `npm run start:local` - General localhost development
+
+### expo-av to expo-audio Migration (Complete)
+
+**Problem**: expo-av deprecated warning on startup - will be removed in SDK 54.
+
+**Fix**: Migrated the last remaining expo-av usage in `usePracticePlayer.ts`:
+- `Audio.Sound.createAsync()` → `createAudioPlayer()`
+- `setRateAsync(rate, shouldCorrectPitch)` → `setPlaybackRate(rate, 'high')`
+- `setPositionAsync(ms)` → `seekTo(seconds)`
+- `setVolumeAsync()` → `player.volume = value`
+- Playback status callbacks → polling every 100ms
+- Removed `expo-av` from `package.json`
+
+### Ideas Tab (Idea Bank)
+
+**New Tab**: Added 5th navigation tab "Idea Bank" with voice recorder interface.
+
+**Files**:
+- `app/(tabs)/ideas.tsx` - Ideas screen with ReelToReelRecorder
+- Tab label changed from "Ideas" to "Idea Bank" for clarity
+
+### Playwright Screenshots Cleanup
+
+- Added `.playwright-mcp/` to `.gitignore`
+- Removed all tracked Playwright test screenshots
+- Added ignore rules for loose `.png`/`.jpeg` in project root (except assets/)
+
+---
+
 ## Recent Changes (January 4, 2026)
 
 ### Metronome VU Meter Needle Fix
