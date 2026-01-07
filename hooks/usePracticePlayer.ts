@@ -2,11 +2,11 @@
  * usePracticePlayer Hook
  *
  * Audio playback hook with pitch-preserved speed control for practice.
- * Uses expo-av for rate control with shouldCorrectPitch.
+ * Uses expo-audio for rate control with pitch correction.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Audio, AVPlaybackStatus, AVPlaybackStatusSuccess } from 'expo-av';
+import { AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import * as DocumentPicker from 'expo-document-picker';
 import type {
   PlaybackState,
@@ -31,8 +31,9 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
   const [loopRegion, setLoopRegionState] = useState<LoopRegion>(DEFAULT_LOOP_REGION);
   const [error, setError] = useState<string | null>(null);
 
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const playerRef = useRef<AudioPlayer | null>(null);
   const loopRegionRef = useRef<LoopRegion>(DEFAULT_LOOP_REGION);
+  const statusIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Keep loopRegionRef in sync with state
   useEffect(() => {
@@ -40,48 +41,64 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
   }, [loopRegion]);
 
   /**
-   * Handle playback status updates from expo-av
+   * Stop status polling interval
    */
-  const onPlaybackStatusUpdate = useCallback((avStatus: AVPlaybackStatus) => {
-    if (!avStatus.isLoaded) {
-      if (avStatus.error) {
-        setError(`Playback error: ${avStatus.error}`);
-        setState('error');
+  const stopStatusPolling = useCallback(() => {
+    if (statusIntervalRef.current) {
+      clearInterval(statusIntervalRef.current);
+      statusIntervalRef.current = null;
+    }
+  }, []);
+
+  /**
+   * Start polling for playback status updates
+   * expo-audio doesn't have callbacks like expo-av, so we poll
+   */
+  const startStatusPolling = useCallback(() => {
+    stopStatusPolling();
+
+    statusIntervalRef.current = setInterval(() => {
+      const player = playerRef.current;
+      if (!player) return;
+
+      try {
+        const positionMs = Math.round(player.currentTime * 1000);
+        const durationMs = Math.round(player.duration * 1000);
+        const isPlaying = player.playing;
+
+        // Check for loop region
+        const currentLoop = loopRegionRef.current;
+        if (
+          currentLoop.enabled &&
+          currentLoop.endMs > currentLoop.startMs &&
+          positionMs >= currentLoop.endMs
+        ) {
+          // Seek back to loop start
+          player.seekTo(currentLoop.startMs / 1000);
+          return;
+        }
+
+        setStatus({
+          positionMs,
+          durationMs,
+          rate: player.playbackRate,
+          pitchCorrected: player.shouldCorrectPitch,
+          volume: player.volume,
+          isPlaying,
+          isBuffering: false, // expo-audio doesn't expose buffering state
+        });
+
+        // Update state based on playback
+        if (isPlaying) {
+          setState('playing');
+        } else {
+          setState((prev) => (prev === 'loading' ? 'ready' : 'paused'));
+        }
+      } catch (err) {
+        console.error('[PracticePlayer] Status polling error:', err);
       }
-      return;
-    }
-
-    const successStatus = avStatus as AVPlaybackStatusSuccess;
-
-    // Check for loop region
-    const currentLoop = loopRegionRef.current;
-    if (
-      currentLoop.enabled &&
-      currentLoop.endMs > currentLoop.startMs &&
-      successStatus.positionMillis >= currentLoop.endMs
-    ) {
-      // Seek back to loop start
-      soundRef.current?.setPositionAsync(currentLoop.startMs);
-      return;
-    }
-
-    setStatus({
-      positionMs: successStatus.positionMillis,
-      durationMs: successStatus.durationMillis ?? 0,
-      rate: successStatus.rate,
-      pitchCorrected: successStatus.shouldCorrectPitch,
-      volume: successStatus.volume,
-      isPlaying: successStatus.isPlaying,
-      isBuffering: successStatus.isBuffering,
-    });
-
-    // Update state based on playback
-    if (successStatus.isPlaying) {
-      setState('playing');
-    } else if (successStatus.isLoaded) {
-      setState(state === 'loading' ? 'ready' : 'paused');
-    }
-  }, [state]);
+    }, 100); // Poll every 100ms
+  }, [stopStatusPolling]);
 
   /**
    * Pick an audio file using document picker
@@ -118,10 +135,11 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
    */
   const loadFile = useCallback(async (file: AudioFile): Promise<void> => {
     try {
-      // Unload any existing sound
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
+      // Stop polling and release any existing player
+      stopStatusPolling();
+      if (playerRef.current) {
+        playerRef.current.remove();
+        playerRef.current = null;
       }
 
       setState('loading');
@@ -129,57 +147,57 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
       setAudioFile(file);
 
       // Configure audio mode for practice
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: true,
-        shouldDuckAndroid: true,
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+        shouldPlayInBackground: true,
+        interruptionMode: 'duckOthers',
       });
 
-      // Create and load the sound
-      const { sound } = await Audio.Sound.createAsync(
-        { uri: file.uri },
-        {
-          shouldPlay: false,
-          rate: 1.0,
-          shouldCorrectPitch: true,
-          volume: 1.0,
-          isLooping: false, // We handle looping manually for A-B repeat
-          progressUpdateIntervalMillis: 100,
-        },
-        onPlaybackStatusUpdate
-      );
+      // Create the audio player
+      const player = createAudioPlayer({ uri: file.uri });
 
-      soundRef.current = sound;
+      // Configure initial settings
+      player.volume = 1.0;
+      player.loop = false; // We handle looping manually for A-B repeat
+
+      // Enable pitch correction for speed changes
+      player.setPlaybackRate(1.0, 'high');
+
+      playerRef.current = player;
       setState('ready');
 
-      // Get initial status
-      const initialStatus = await sound.getStatusAsync();
-      if (initialStatus.isLoaded) {
-        setStatus({
-          positionMs: initialStatus.positionMillis,
-          durationMs: initialStatus.durationMillis ?? 0,
-          rate: initialStatus.rate,
-          pitchCorrected: initialStatus.shouldCorrectPitch,
-          volume: initialStatus.volume,
-          isPlaying: false,
-          isBuffering: false,
-        });
-      }
+      // Get initial status (wait a moment for duration to be available)
+      setTimeout(() => {
+        if (playerRef.current) {
+          setStatus({
+            positionMs: 0,
+            durationMs: Math.round(playerRef.current.duration * 1000),
+            rate: playerRef.current.playbackRate,
+            pitchCorrected: playerRef.current.shouldCorrectPitch,
+            volume: playerRef.current.volume,
+            isPlaying: false,
+            isBuffering: false,
+          });
+        }
+      }, 100);
+
+      // Start polling for status updates
+      startStatusPolling();
     } catch (err) {
       console.error('[PracticePlayer] Error loading file:', err);
       setError('Failed to load audio file');
       setState('error');
     }
-  }, [onPlaybackStatusUpdate]);
+  }, [stopStatusPolling, startStatusPolling]);
 
   /**
    * Start playback
    */
   const play = useCallback(async (): Promise<void> => {
-    if (!soundRef.current) return;
+    if (!playerRef.current) return;
 
     try {
-      await soundRef.current.playAsync();
+      playerRef.current.play();
     } catch (err) {
       console.error('[PracticePlayer] Error playing:', err);
       setError('Failed to play audio');
@@ -190,10 +208,10 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
    * Pause playback
    */
   const pause = useCallback(async (): Promise<void> => {
-    if (!soundRef.current) return;
+    if (!playerRef.current) return;
 
     try {
-      await soundRef.current.pauseAsync();
+      playerRef.current.pause();
     } catch (err) {
       console.error('[PracticePlayer] Error pausing:', err);
       setError('Failed to pause audio');
@@ -204,7 +222,7 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
    * Toggle play/pause
    */
   const togglePlayPause = useCallback(async (): Promise<void> => {
-    if (!soundRef.current) return;
+    if (!playerRef.current) return;
 
     if (status?.isPlaying) {
       await pause();
@@ -217,10 +235,11 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
    * Seek to position in milliseconds
    */
   const seekTo = useCallback(async (positionMs: number): Promise<void> => {
-    if (!soundRef.current) return;
+    if (!playerRef.current) return;
 
     try {
-      await soundRef.current.setPositionAsync(positionMs);
+      // expo-audio uses seconds, not milliseconds
+      playerRef.current.seekTo(positionMs / 1000);
     } catch (err) {
       console.error('[PracticePlayer] Error seeking:', err);
       setError('Failed to seek');
@@ -231,12 +250,13 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
    * Set playback rate with pitch correction
    */
   const setRate = useCallback(async (rate: number): Promise<void> => {
-    if (!soundRef.current) return;
+    if (!playerRef.current) return;
 
     try {
-      // Clamp rate to supported range
+      // Clamp rate to supported range (expo-audio supports 0.1 to 2.0)
       const clampedRate = Math.max(0.5, Math.min(1.5, rate));
-      await soundRef.current.setRateAsync(clampedRate, true); // true = shouldCorrectPitch
+      // Use 'high' pitch correction quality for best results
+      playerRef.current.setPlaybackRate(clampedRate, 'high');
     } catch (err) {
       console.error('[PracticePlayer] Error setting rate:', err);
       setError('Failed to set playback speed');
@@ -247,11 +267,11 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
    * Set volume (0 to 1)
    */
   const setVolume = useCallback(async (volume: number): Promise<void> => {
-    if (!soundRef.current) return;
+    if (!playerRef.current) return;
 
     try {
       const clampedVolume = Math.max(0, Math.min(1, volume));
-      await soundRef.current.setVolumeAsync(clampedVolume);
+      playerRef.current.volume = clampedVolume;
     } catch (err) {
       console.error('[PracticePlayer] Error setting volume:', err);
       setError('Failed to set volume');
@@ -280,9 +300,10 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
    */
   const unload = useCallback(async (): Promise<void> => {
     try {
-      if (soundRef.current) {
-        await soundRef.current.unloadAsync();
-        soundRef.current = null;
+      stopStatusPolling();
+      if (playerRef.current) {
+        playerRef.current.remove();
+        playerRef.current = null;
       }
       setState('idle');
       setStatus(null);
@@ -292,16 +313,17 @@ export function usePracticePlayer(): UsePracticePlayerReturn {
     } catch (err) {
       console.error('[PracticePlayer] Error unloading:', err);
     }
-  }, []);
+  }, [stopStatusPolling]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
+      stopStatusPolling();
+      if (playerRef.current) {
+        playerRef.current.remove();
       }
     };
-  }, []);
+  }, [stopStatusPolling]);
 
   return {
     state,
