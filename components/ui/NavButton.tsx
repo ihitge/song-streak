@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   labelTextCompact: {
-    fontSize: 7,
+    fontSize: 9,
     letterSpacing: 1,
     marginTop: 4,
   },

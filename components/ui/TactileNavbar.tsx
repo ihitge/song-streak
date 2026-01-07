@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
   { name: 'tuner', icon: 'bullseye', label: 'Tuner', route: '/tuner' },
   { name: 'metronome', icon: 'play', label: 'Metronome', route: '/timing' },
   { name: 'streaks', icon: 'bolt', label: 'Streaks', route: '/streaks' },
-  { name: 'ideas', icon: 'microphone', label: 'Ideas', route: '/ideas' },
+  { name: 'ideas', icon: 'microphone', label: 'Idea Bank', route: '/ideas' },
 ];
 
 export const TactileNavbar: React.FC = () => {
