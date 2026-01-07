@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { TunerPanel } from '@/components/ui/tuner';
+import { TunerPanel, TunerControls } from '@/components/ui/tuner';
 import { Colors } from '@/constants/Colors';
 import { useTunerMachine } from '@/hooks/tuner';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
@@ -78,6 +78,19 @@ export default function TunerScreen() {
           onStart={handleStart}
           onStop={handleStop}
           onStringSelect={handleStringSelect}
+          showControls={false}
+        />
+      </View>
+
+      {/* FAB section - pinned at bottom, centered */}
+      <View style={styles.fabSection}>
+        <TunerControls
+          status={tuner.status}
+          signalStrength={tuner.signalStrength}
+          hasPermission={tuner.hasPermission}
+          permissionStatus={tuner.permissionStatus}
+          onStart={handleStart}
+          onStop={handleStop}
         />
       </View>
     </View>
@@ -91,5 +104,9 @@ const styles = StyleSheet.create({
   },
   tunerSection: {
     flex: 1,
+  },
+  fabSection: {
+    paddingVertical: 24,
+    alignItems: 'center',
   },
 });

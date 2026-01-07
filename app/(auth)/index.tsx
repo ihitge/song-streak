@@ -158,7 +158,7 @@ export default function AuthScreen() {
               <Animated.View layout={Layout.springify()}>
                 {/* Identity (Email) */}
                 <RamsInput
-                  label="IDENTITY"
+                  label="USER NAME"
                   icon={<Mail size={14} color={Colors.graphite} />}
                   placeholder="user@domain.com"
                   keyboardType="email-address"
@@ -169,7 +169,7 @@ export default function AuthScreen() {
 
                 {/* Security Key (Password) */}
                 <RamsInput
-                  label="SECURITY KEY"
+                  label="PASSWORD"
                   icon={<Lock size={14} color={Colors.graphite} />}
                   placeholder="••••••••"
                   secureTextEntry
@@ -182,7 +182,7 @@ export default function AuthScreen() {
                 {isRegistering && (
                   <Animated.View entering={FadeIn} exiting={FadeOut}>
                     <RamsInput
-                      label="CONFIRM KEY"
+                      label="CONFIRM PASSWORD"
                       icon={<Lock size={14} color={Colors.graphite} />}
                       placeholder="••••••••"
                       secureTextEntry
@@ -212,7 +212,7 @@ export default function AuthScreen() {
                    <ActivityIndicator color="#fff" />
                 ) : (
                   <Text style={styles.actionButtonText}>
-                    {isRegistering ? 'CREATE CREDENTIALS' : 'GRANT ACCESS'}
+                    {isRegistering ? 'REGISTER' : 'LOGIN'}
                   </Text>
                 )}
               </LinearGradient>
@@ -228,7 +228,7 @@ export default function AuthScreen() {
                 <ActivityIndicator size="small" color={Colors.graphite} />
               ) : (
                 <Text style={styles.footerLinkText}>
-                  {isRegistering ? 'NEED ASSISTANCE?' : 'FORGOT SECURITY KEY?'}
+                  {isRegistering ? 'NEED ASSISTANCE?' : 'FORGOT PASSWORD?'}
                 </Text>
               )}
             </TouchableOpacity>

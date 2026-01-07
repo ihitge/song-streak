@@ -52,6 +52,7 @@ interface MetronomePanelProps {
   compact?: boolean;
   fullWidth?: boolean;
   showTimer?: boolean;
+  showTransport?: boolean;
 }
 
 /**
@@ -88,6 +89,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   compact = false,
   fullWidth = false,
   showTimer = true,
+  showTransport = true,
 }) => {
   // Convert time signature options for FrequencyTuner
   const timeSignatureOptions = TIME_SIGNATURE_OPTIONS.map((opt) => ({
@@ -173,17 +175,19 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
         />
 
         {/* Transport Controls - play/pause, reset, complete */}
-        <View style={styles.transportSection}>
-          <TransportControls
-            isPlaying={isMetronomePlaying}
-            onPlayPause={onPlayPause}
-            onReset={onReset}
-            onComplete={onComplete}
-            sessionSeconds={sessionSeconds}
-            compact={true}
-            showComplete={showComplete}
-          />
-        </View>
+        {showTransport && (
+          <View style={styles.transportSection}>
+            <TransportControls
+              isPlaying={isMetronomePlaying}
+              onPlayPause={onPlayPause}
+              onReset={onReset}
+              onComplete={onComplete}
+              sessionSeconds={sessionSeconds}
+              compact={true}
+              showComplete={showComplete}
+            />
+          </View>
+        )}
       </VUMeterDisplay>
 
       {/* Session Timer - tape counter style (separate from metronome) */}

@@ -323,12 +323,13 @@ export default function SetListScreen() {
         )}
       </View>
 
-      {/* Hero Action Button */}
-      <FAB
-        onPress={() => router.push('/add-song')}
-        icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
-        style={styles.fabPosition}
-      />
+      {/* Hero Action Button - centered at bottom */}
+      <View style={styles.fabContainer}>
+        <FAB
+          onPress={() => router.push('/add-song')}
+          icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
+        />
+      </View>
     </View>
   );
 }
@@ -456,10 +457,13 @@ const styles = StyleSheet.create({
   },
 
   // --- FAB Position ---
-  fabPosition: {
+  fabContainer: {
     position: 'absolute',
     bottom: 24,
-    right: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    pointerEvents: 'box-none',
   },
 
   // --- Loading & Empty States ---

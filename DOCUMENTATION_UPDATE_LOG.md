@@ -1,5 +1,31 @@
 # Documentation Update Log
 
+**Date**: January 7, 2026
+**Project**: song-streak
+**Update Type**: FAB Centering, Auth Labels, Webapp Width
+
+## Summary (January 7, 2026)
+
+Updated documentation to reflect latest UI improvements:
+- FAB centering across all pages
+- Access control page label changes
+- Webapp 600px max-width constraint
+
+## Files Updated
+
+### STATUS.md
+- Added "FAB Centering & Consistent Bottom Position" section
+- Added "Access Control Page Labels" section
+- Added "Webapp Width Constraint" section
+
+### TODO.md
+- Added detailed changelog entries for January 7, 2026 changes
+- Documented FAB centering solution and files changed
+- Documented auth label changes
+- Documented webapp width fix
+
+---
+
 **Date**: December 18, 2025
 **Project**: song-streak
 **Update Type**: Browser Testing Capability - Full Documentation Refresh

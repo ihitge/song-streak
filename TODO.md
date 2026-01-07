@@ -2,6 +2,42 @@
 
 ## Recent Changes (January 7, 2026)
 
+### FAB Centering & Consistent Position
+
+**Problem**: FAB buttons were not consistently positioned across pages. Library page FAB was at bottom-right, while other pages had varying positions based on panel content.
+
+**Solution**: Standardized all primary FAB buttons to be horizontally centered with consistent 24px bottom margin:
+
+**Changes**:
+- `app/(tabs)/index.tsx` - FAB container uses `left: 0, right: 0, alignItems: 'center'`
+- `app/(tabs)/timing.tsx` - Extracted TransportControls to dedicated `fabSection`
+- `app/(tabs)/tuner.tsx` - Extracted TunerControls to dedicated `fabSection`
+- `components/ui/metronome/MetronomePanel.tsx` - Added `showTransport` prop (default true)
+- `components/ui/tuner/TunerPanel.tsx` - Added `showControls` prop (default true)
+- `components/ui/recorder/ReelToReelRecorder.tsx` - Added `showTransport` prop, `fullWidth` layout support
+
+**Result**: All pages now have consistent FAB placement for easy thumb access.
+
+### Access Control Page Labels
+
+**Changes**: Updated auth form labels to conventional naming:
+- "Identity" → "User Name"
+- "Security Key" → "Password"
+- "Confirm Key" → "Confirm Password"
+- "Grant Access" → "Login"
+- "Create Credentials" → "Register"
+- "Forgot Security Key?" → "Forgot Password?"
+
+**File**: `app/(auth)/index.tsx`
+
+### Webapp Width Constraint
+
+**Problem**: Webapp stretched to full viewport width, making UI elements too spread out.
+
+**Solution**: Added 600px max-width with centered layout on web platform only.
+
+**File**: `app/(tabs)/_layout.tsx`
+
 ### Metronome Pendulum Animation (Wittner Style)
 
 **Problem**: The metronome needle was jumping between discrete beat positions (1, 2, 3, 4) instead of swinging smoothly like a real mechanical metronome.

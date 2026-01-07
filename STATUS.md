@@ -23,6 +23,29 @@ This document shows the current implementation status and what's ready to test.
 
 ## 🎯 Latest Updates (January 7, 2026)
 
+### FAB Centering & Consistent Bottom Position - COMPLETE ✅
+- All primary FAB buttons now horizontally centered across all pages
+- Consistent 24px distance from bottom of dark container
+- Library page: FAB uses absolute positioning with `left: 0, right: 0, alignItems: 'center'`
+- Metronome page: TransportControls extracted to dedicated `fabSection`
+- Tuner page: TunerControls extracted to dedicated `fabSection`
+- Ideas page: ReelToReelRecorder now supports `showTransport` prop and `fullWidth` layout
+- Added `showTransport` prop to MetronomePanel and ReelToReelRecorder
+- Added `showControls` prop to TunerPanel
+- Verified via Playwright MCP browser testing
+
+### Access Control Page Labels - COMPLETE ✅
+- Changed "Identity" → "User Name"
+- Changed "Security Key" → "Password"
+- Changed "Grant Access" → "Login"
+- Changed "Create Credentials" → "Register"
+- Changed "Forgot Security Key?" → "Forgot Password?"
+
+### Webapp Width Constraint - COMPLETE ✅
+- Webapp now has fixed 600px max-width (centered)
+- Consistent with access control page design
+- Platform-specific styling only applied on web
+
 ### Metronome Pendulum Animation - COMPLETE ✅
 - True pendulum swing animation (Wittner mechanical metronome style)
 - Continuous 60fps motion via `requestAnimationFrame` (decoupled from React state)

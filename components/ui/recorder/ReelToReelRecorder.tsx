@@ -32,6 +32,8 @@ interface ReelToReelRecorderProps {
   fullWidth?: boolean;
   /** Custom title */
   title?: string;
+  /** Show transport controls (default true) */
+  showTransport?: boolean;
 }
 
 // Layout constants
@@ -45,6 +47,7 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
   compact = false,
   fullWidth = false,
   title = 'VOICE MEMO',
+  showTransport = true,
 }) => {
   const { showWarning } = useStyledAlert();
 
@@ -154,42 +157,51 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
       compact && styles.housingCompact,
       fullWidth && styles.housingFullWidth,
     ]}>
-      {/* Header with title and screws */}
-      <View style={styles.header}>
-        <View style={styles.screw} />
-        <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
-        <View style={styles.screw} />
-      </View>
+      {/* Main content section - flex: 1 in fullWidth mode */}
+      <View style={[styles.mainContent, fullWidth && styles.mainContentFullWidth]}>
+        {/* Header with title and screws */}
+        <View style={styles.header}>
+          <View style={styles.screw} />
+          <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
+          <View style={styles.screw} />
+        </View>
 
-      {/* Single centered reel */}
-      <View style={[styles.reelContainer, compact && styles.reelContainerCompact]}>
-        <TapeReel
-          size={reelSize}
-          isSpinning={isSpinning}
+        {/* Single centered reel */}
+        <View style={[styles.reelContainer, compact && styles.reelContainerCompact]}>
+          <TapeReel
+            size={reelSize}
+            isSpinning={isSpinning}
+            isRecording={state === 'recording'}
+          />
+        </View>
+
+        {/* VU Meter - using unified VUMeterDisplay component */}
+        <VUMeterDisplay
+          mode="recording"
+          audioLevel={recording.audioLevelLeft}
           isRecording={state === 'recording'}
-        />
-      </View>
-
-      {/* VU Meter - using unified VUMeterDisplay component */}
-      <VUMeterDisplay
-        mode="recording"
-        audioLevel={recording.audioLevelLeft}
-        isRecording={state === 'recording'}
-        isPlaying={state === 'playing'}
-        compact={compact}
-        embedded
-        showTimeDisplay={false}
-      />
-
-      {/* Transport controls */}
-      <View style={[styles.transportContainer, compact && styles.transportContainerCompact]}>
-        <TransportControls
-          state={state}
-          hasRecording={hasRecording}
-          onPress={handleTransportPress}
+          isPlaying={state === 'playing'}
           compact={compact}
+          embedded
+          showTimeDisplay={false}
         />
       </View>
+
+      {/* Transport controls - pinned at bottom in fullWidth mode */}
+      {showTransport && (
+        <View style={[
+          styles.transportContainer,
+          compact && styles.transportContainerCompact,
+          fullWidth && styles.transportContainerFullWidth,
+        ]}>
+          <TransportControls
+            state={state}
+            hasRecording={hasRecording}
+            onPress={handleTransportPress}
+            compact={compact}
+          />
+        </View>
+      )}
 
       {/* Action buttons (when recording exists) - beveled style matching metronome */}
       {hasRecording && state !== 'recording' && (
@@ -259,6 +271,12 @@ const styles = StyleSheet.create({
     elevation: 0,
     paddingHorizontal: 24,
     paddingVertical: 20,
+  },
+  mainContent: {
+    alignItems: 'center',
+  },
+  mainContentFullWidth: {
+    flex: 1,
     justifyContent: 'center',
   },
   header: {
@@ -300,6 +318,10 @@ const styles = StyleSheet.create({
   },
   transportContainerCompact: {
     marginBottom: 14,
+  },
+  transportContainerFullWidth: {
+    paddingVertical: 24,
+    marginBottom: 0,
   },
   actionButtons: {
     flexDirection: 'row',

@@ -47,6 +47,7 @@ interface TunerPanelProps {
   // Options
   fullWidth?: boolean;
   compact?: boolean;
+  showControls?: boolean;
 }
 
 export const TunerPanel: React.FC<TunerPanelProps> = ({
@@ -64,6 +65,7 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
   onStringSelect,
   fullWidth = false,
   compact = false,
+  showControls = true,
 }) => {
   const isActive = status !== 'idle';
 
@@ -107,16 +109,18 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
       </View>
 
       {/* Transport controls */}
-      <View style={styles.controlsSection}>
-        <TunerControls
-          status={status}
-          signalStrength={signalStrength}
-          hasPermission={hasPermission}
-          permissionStatus={permissionStatus}
-          onStart={onStart}
-          onStop={onStop}
-        />
-      </View>
+      {showControls && (
+        <View style={styles.controlsSection}>
+          <TunerControls
+            status={status}
+            signalStrength={signalStrength}
+            hasPermission={hasPermission}
+            permissionStatus={permissionStatus}
+            onStart={onStart}
+            onStop={onStop}
+          />
+        </View>
+      )}
     </View>
   );
 };

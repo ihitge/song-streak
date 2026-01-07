@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { MetronomePanel } from '@/components/ui/metronome';
+import { MetronomePanel, TransportControls } from '@/components/ui/metronome';
 import { RamsTapeCounterDisplay } from '@/components/ui/practice/RamsTapeCounterDisplay';
 import { Colors } from '@/constants/Colors';
 import { useMetronome } from '@/hooks/useMetronome';
@@ -107,39 +107,55 @@ export default function TimingScreen() {
     <View style={styles.container}>
       <PageHeader />
 
-      {/* Metronome Panel - centered in available space */}
-      <View style={styles.metronomeSection}>
-        <MetronomePanel
-          beatPosition={metronome.beatPosition}
-          isMetronomePlaying={metronome.isPlaying}
-          currentBeat={metronome.currentBeat}
-          beatsPerMeasure={metronome.beatsPerMeasure}
-          metronomeStartTime={metronome.metronomeStartTime}
-          timeSignature={metronome.timeSignature}
-          onTimeSignatureChange={metronome.setTimeSignature}
-          soundType={metronome.soundType}
-          onSoundTypeChange={metronome.setSoundType}
-          subdivision={metronome.subdivision}
-          onSubdivisionChange={handleSubdivisionChange}
-          bpm={metronome.bpm}
-          onBpmChange={metronome.setBpm}
-          onTapTempo={metronome.tapTempo}
-          onPlayPause={handlePlayPause}
-          onReset={handleReset}
-          onComplete={handleComplete}
-          showComplete={true}
-          sessionSeconds={sessionSeconds}
+      {/* Dark container - full height below header */}
+      <View style={styles.darkContainer}>
+        {/* Metronome Panel - centered in available space */}
+        <View style={styles.metronomeSection}>
+          <MetronomePanel
+            beatPosition={metronome.beatPosition}
+            isMetronomePlaying={metronome.isPlaying}
+            currentBeat={metronome.currentBeat}
+            beatsPerMeasure={metronome.beatsPerMeasure}
+            metronomeStartTime={metronome.metronomeStartTime}
+            timeSignature={metronome.timeSignature}
+            onTimeSignatureChange={metronome.setTimeSignature}
+            soundType={metronome.soundType}
+            onSoundTypeChange={metronome.setSoundType}
+            subdivision={metronome.subdivision}
+            onSubdivisionChange={handleSubdivisionChange}
+            bpm={metronome.bpm}
+            onBpmChange={metronome.setBpm}
+            onTapTempo={metronome.tapTempo}
+            onPlayPause={handlePlayPause}
+            onReset={handleReset}
+            onComplete={handleComplete}
+            showComplete={true}
+            sessionSeconds={sessionSeconds}
+            fullWidth={true}
+            showTimer={false}
+            showTransport={false}
+          />
+        </View>
+
+        {/* FAB section - pinned at bottom, centered */}
+        <View style={styles.fabSection}>
+          <TransportControls
+            isPlaying={metronome.isPlaying}
+            onPlayPause={handlePlayPause}
+            onReset={handleReset}
+            onComplete={handleComplete}
+            sessionSeconds={sessionSeconds}
+            showComplete={true}
+          />
+        </View>
+
+        {/* Session Timer pinned at bottom */}
+        <RamsTapeCounterDisplay
+          seconds={sessionSeconds}
           fullWidth={true}
-          showTimer={false}
+          label="PRACTICE TIME"
         />
       </View>
-
-      {/* Session Timer pinned at bottom */}
-      <RamsTapeCounterDisplay
-        seconds={sessionSeconds}
-        fullWidth={true}
-        label="PRACTICE TIME"
-      />
     </View>
   );
 }
@@ -149,7 +165,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.matteFog,
   },
+  darkContainer: {
+    flex: 1,
+    backgroundColor: Colors.ink,
+  },
   metronomeSection: {
     flex: 1,
+  },
+  fabSection: {
+    paddingVertical: 24,
+    alignItems: 'center',
   },
 });
