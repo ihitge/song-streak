@@ -1,19 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { Platform, Image } from 'react-native';
 import { MetronomeSoundType } from '@/types/metronome';
-
-// Conditional import for react-native-audio-api (native only)
-// On web, the .web.ts version of this file is used instead
-let AudioContext: any;
-let AudioBuffer: any;
-let GainNode: any;
-
-if (Platform.OS !== 'web') {
-  const audioApi = require('react-native-audio-api');
-  AudioContext = audioApi.AudioContext;
-  AudioBuffer = audioApi.AudioBuffer;
-  GainNode = audioApi.GainNode;
-}
 
 // Audio asset imports for bundler
 const clickAccent = require('@/assets/audio/sound-click-04.wav');
@@ -28,16 +14,16 @@ interface UseMetronomeSoundOptions {
 }
 
 interface AudioBuffers {
-  clickAccent: any | null;
-  clickTick: any | null;
-  clickSubdiv: any | null;
-  snare: any | null;
-  kick: any | null;
-  hihat: any | null;
+  clickAccent: AudioBuffer | null;
+  clickTick: AudioBuffer | null;
+  clickSubdiv: AudioBuffer | null;
+  snare: AudioBuffer | null;
+  kick: AudioBuffer | null;
+  hihat: AudioBuffer | null;
 }
 
 interface UseMetronomeSoundReturn {
-  audioContext: any | null;
+  audioContext: AudioContext | null;
   isLoaded: boolean;
   scheduleSound: (
     type: 'accent' | 'tick' | 'subdivision',
@@ -53,28 +39,14 @@ interface UseMetronomeSoundReturn {
 }
 
 /**
- * Get the asset URI for a sound file (Native version)
- */
-function getAssetUri(asset: any): string {
-  const resolved = Image.resolveAssetSource(asset);
-  return resolved?.uri || '';
-}
-
-/**
- * Load an audio file into an AudioBuffer (Native version)
+ * Load an audio file into an AudioBuffer (Web version)
  */
 async function loadAudioBuffer(
-  audioContext: any,
-  asset: any
-): Promise<any | null> {
+  audioContext: AudioContext,
+  assetUri: string
+): Promise<AudioBuffer | null> {
   try {
-    const uri = getAssetUri(asset);
-    if (!uri) {
-      console.warn('Failed to resolve asset URI');
-      return null;
-    }
-
-    const response = await fetch(uri);
+    const response = await fetch(assetUri);
     const arrayBuffer = await response.arrayBuffer();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     return audioBuffer;
@@ -85,21 +57,18 @@ async function loadAudioBuffer(
 }
 
 /**
- * Hook for metronome sound playback using react-native-audio-api (Native version)
+ * Hook for metronome sound playback using Web Audio API (Web version)
  *
- * Uses AudioContext for precise, hardware-scheduled audio timing.
+ * Uses the browser's native AudioContext for precise, hardware-scheduled audio timing.
  * Sounds can be scheduled ahead of time using audioContext.currentTime + offset.
- *
- * Note: On web, the .web.ts version of this file is used which uses the browser's
- * native Web Audio API directly.
  */
 export function useMetronomeSound(
   options: UseMetronomeSoundOptions = {}
 ): UseMetronomeSoundReturn {
   const { soundType = 'click' } = options;
 
-  const audioContextRef = useRef<any | null>(null);
-  const [audioContext, setAudioContext] = useState<any | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const buffersRef = useRef<AudioBuffers>({
     clickAccent: null,
     clickTick: null,
@@ -110,15 +79,12 @@ export function useMetronomeSound(
   });
   const [isLoaded, setIsLoaded] = useState(false);
   const isLoadingRef = useRef(false);
-  const masterGainRef = useRef<any | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
 
   /**
    * Initialize AudioContext and load all sound buffers
    */
   useEffect(() => {
-    // Skip initialization on web (handled by .web.ts version)
-    if (Platform.OS === 'web') return;
-
     let mounted = true;
 
     const init = async () => {
@@ -126,8 +92,9 @@ export function useMetronomeSound(
       isLoadingRef.current = true;
 
       try {
-        // Create AudioContext
-        const ctx = new AudioContext();
+        // Create native browser AudioContext
+        const ctx = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
         audioContextRef.current = ctx;
         setAudioContext(ctx);
 
@@ -161,9 +128,9 @@ export function useMetronomeSound(
         };
 
         setIsLoaded(true);
-        console.log('[Metronome Native] Audio buffers loaded successfully');
+        console.log('[Metronome Web] Audio buffers loaded successfully');
       } catch (error) {
-        console.error('[Metronome Native] Failed to initialize audio:', error);
+        console.error('[Metronome Web] Failed to initialize audio:', error);
       } finally {
         isLoadingRef.current = false;
       }
@@ -188,7 +155,10 @@ export function useMetronomeSound(
    * Get the appropriate buffer for a sound type and role
    */
   const getBuffer = useCallback(
-    (role: 'accent' | 'tick' | 'subdivision', type: MetronomeSoundType): any | null => {
+    (
+      role: 'accent' | 'tick' | 'subdivision',
+      type: MetronomeSoundType
+    ): AudioBuffer | null => {
       const buffers = buffersRef.current;
 
       // For drums mode, role determines which instrument
@@ -260,42 +230,45 @@ export function useMetronomeSound(
   /**
    * Schedule a drum beat (kick + hihat or snare + hihat)
    */
-  const scheduleDrumBeat = useCallback((beat: number, time: number) => {
-    const ctx = audioContextRef.current;
-    const masterGain = masterGainRef.current;
-    if (!ctx || !masterGain) return;
+  const scheduleDrumBeat = useCallback(
+    (beat: number, time: number) => {
+      const ctx = audioContextRef.current;
+      const masterGain = masterGainRef.current;
+      if (!ctx || !masterGain) return;
 
-    const buffers = buffersRef.current;
+      const buffers = buffersRef.current;
 
-    try {
-      // Always play hi-hat
-      if (buffers.hihat) {
-        const hihatSource = ctx.createBufferSource();
-        hihatSource.buffer = buffers.hihat;
-        hihatSource.connect(masterGain);
-        hihatSource.start(time);
-      }
-
-      // Kick on beats 1 & 3, Snare on beats 2 & 4
-      if (beat === 1 || beat === 3) {
-        if (buffers.kick) {
-          const kickSource = ctx.createBufferSource();
-          kickSource.buffer = buffers.kick;
-          kickSource.connect(masterGain);
-          kickSource.start(time);
+      try {
+        // Always play hi-hat
+        if (buffers.hihat) {
+          const hihatSource = ctx.createBufferSource();
+          hihatSource.buffer = buffers.hihat;
+          hihatSource.connect(masterGain);
+          hihatSource.start(time);
         }
-      } else if (beat === 2 || beat === 4) {
-        if (buffers.snare) {
-          const snareSource = ctx.createBufferSource();
-          snareSource.buffer = buffers.snare;
-          snareSource.connect(masterGain);
-          snareSource.start(time);
+
+        // Kick on beats 1 & 3, Snare on beats 2 & 4
+        if (beat === 1 || beat === 3) {
+          if (buffers.kick) {
+            const kickSource = ctx.createBufferSource();
+            kickSource.buffer = buffers.kick;
+            kickSource.connect(masterGain);
+            kickSource.start(time);
+          }
+        } else if (beat === 2 || beat === 4) {
+          if (buffers.snare) {
+            const snareSource = ctx.createBufferSource();
+            snareSource.buffer = buffers.snare;
+            snareSource.connect(masterGain);
+            snareSource.start(time);
+          }
         }
+      } catch (error) {
+        // Silently ignore scheduling errors
       }
-    } catch (error) {
-      // Silently ignore scheduling errors
-    }
-  }, []);
+    },
+    []
+  );
 
   /**
    * Legacy API: Play accent immediately

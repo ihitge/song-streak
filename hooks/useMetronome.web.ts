@@ -1,6 +1,4 @@
 import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import { Platform } from 'react-native';
-import * as Haptics from 'expo-haptics';
 import {
   Subdivision,
   MetronomeSoundType,
@@ -37,19 +35,11 @@ interface ScheduledNote {
 }
 
 /**
- * useMetronome - Core metronome hook with lookahead scheduling
+ * useMetronome - Core metronome hook with lookahead scheduling (Web version)
  *
- * Uses Web Audio API's hardware-scheduled timing for sample-accurate playback.
+ * Uses the browser's native Web Audio API for sample-accurate playback.
  * JavaScript timers only "wake up" the scheduler; actual audio timing is handled
  * by the audio hardware clock.
- *
- * Features:
- * - Lookahead scheduling (100ms ahead)
- * - Hardware-accurate audio timing via AudioContext.currentTime
- * - Subdivision support (quarter, eighth, triplet, sixteenth)
- * - Tap tempo with averaging
- * - Visual beat position for VU meter
- * - Haptic feedback on native platforms
  */
 export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeReturn {
   const {
@@ -91,7 +81,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   const lastBeatTimeRef = useRef(0);
 
   // Sound hook with AudioContext access
-  const { audioContext, scheduleSound, scheduleDrumBeat } = useMetronomeSound({
+  const { audioContext, scheduleSound, scheduleDrumBeat, isLoaded } = useMetronomeSound({
     soundType,
   });
 
@@ -133,10 +123,10 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
   }, []);
 
   /**
-   * Schedule a single note and trigger haptics/callbacks
+   * Schedule a single note and trigger callbacks
    */
   const scheduleNote = useCallback(
-    (note: ScheduledNote, ctx: any) => {
+    (note: ScheduledNote, ctx: AudioContext) => {
       const type = soundTypeRef.current;
 
       // Schedule audio at precise time
@@ -149,27 +139,10 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
         scheduleSound('subdivision', note.time, type);
       }
 
-      // Schedule haptics to fire close to the note time
-      // We use setTimeout since haptics can't be precisely scheduled
-      // The delay is the time until the note plays
+      // Schedule UI update and callbacks
+      // Web doesn't have haptics, so we only schedule the UI update
       const delay = Math.max(0, (note.time - ctx.currentTime) * 1000);
 
-      if (note.isBeat && Platform.OS !== 'web') {
-        setTimeout(() => {
-          if (!isPlayingRef.current) return;
-          try {
-            if (note.isDownbeat) {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-            } else {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }
-          } catch {
-            // Haptics may fail on simulator
-          }
-        }, delay);
-      }
-
-      // Schedule UI update and callbacks
       setTimeout(() => {
         if (!isPlayingRef.current) return;
 
@@ -384,15 +357,6 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
     // Clamp and set
     const clampedBpm = Math.min(BPM_MAX, Math.max(BPM_MIN, calculatedBpm));
     setBpm(clampedBpm);
-
-    // Haptic feedback
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      } catch {
-        // Ignore haptics errors
-      }
-    }
 
     return clampedBpm;
   }, [setBpm]);

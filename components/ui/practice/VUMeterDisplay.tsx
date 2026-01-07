@@ -21,8 +21,8 @@ interface VUMeterDisplayProps {
   fullWidth?: boolean;                // Full viewport width, no rounded corners
   embedded?: boolean;                 // Remove housing borders when embedded in another component
   mode?: VUMeterMode;                 // Default: 'progress'
-  beatPosition?: number;              // 0 (left) or 1 (right) for metronome pendulum
-  isMetronomePlaying?: boolean;       // For LED beat effects
+  beatPosition?: number;              // 0 (left) or 1 (right) for metronome pendulum (legacy, not used in pendulum mode)
+  isMetronomePlaying?: boolean;       // For LED beat effects and pendulum animation
   currentBeat?: number;               // Current beat number (1-indexed)
   beatsPerMeasure?: number;           // Total beats in measure
   sessionSeconds?: number;            // Session time for metronome mode display
@@ -30,6 +30,9 @@ interface VUMeterDisplayProps {
   showTimeDisplay?: boolean;          // Show embedded time display (default: true)
   headerContent?: React.ReactNode;    // Content to render at top of housing (e.g., time signature)
   children?: React.ReactNode;         // Content to render at bottom of housing (e.g., BPM display)
+  // Pendulum animation props (metronome mode)
+  bpm?: number;                       // BPM for pendulum swing speed
+  metronomeStartTime?: number;        // Timestamp when metronome started (for pendulum sync)
   // Recording mode props
   audioLevel?: number;                // 0-1 audio level for recording mode
   isRecording?: boolean;              // Show REC LED in recording mode
@@ -57,21 +60,20 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   showTimeDisplay = true,
   headerContent,
   children,
+  // Pendulum animation props
+  bpm = 120,
+  metronomeStartTime = 0,
   // Recording mode props
   audioLevel = 0,
   isRecording = false,
   isPlaying = false,
 }) => {
   const needleRotation = useRef(new Animated.Value(50)).current;
+  const animationFrameRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
 
-  // Calculate target value based on mode
+  // Calculate target value for non-metronome modes
   const targetValue = useMemo(() => {
-    if (mode === 'metronome') {
-      // Map beat position (0-1) directly to needle rotation (0-100)
-      // 0 = left (-45deg), 0.5 = center (0deg), 1 = right (+45deg)
-      // Beat markers are absolutely positioned to match needle arc geometry
-      return beatPosition * 100;
-    }
     if (mode === 'recording') {
       // Map audioLevel 0-1 to 0-100 for needle rotation
       // Use logarithmic scaling for natural VU meter feel
@@ -85,14 +87,58 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     }
     // Progress mode: calculate from totalSeconds
     return calculateProgress(totalSeconds);
-  }, [mode, beatPosition, totalSeconds, audioLevel]);
+  }, [mode, totalSeconds, audioLevel]);
 
+  // Metronome mode: Continuous pendulum animation using requestAnimationFrame
   useEffect(() => {
-    // Animate needle to new position
-    // Use different spring parameters for each mode
-    const springConfig = mode === 'metronome'
-      ? { tension: 120, friction: 8 }   // Snappy for pendulum
-      : mode === 'recording'
+    if (mode !== 'metronome') return;
+
+    if (!isMetronomePlaying) {
+      // Reset to center when stopped
+      needleRotation.setValue(50);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
+    }
+
+    // Capture start time for phase sync
+    startTimeRef.current = metronomeStartTime || performance.now() / 1000;
+
+    const animate = () => {
+      const now = performance.now() / 1000;
+      const beatPeriod = 60 / bpm; // seconds per beat
+      const elapsed = now - startTimeRef.current;
+
+      // -cos gives us: -1 at t=0 (left), +1 at t=period/2 (right), -1 at t=period (left)
+      // This creates a smooth pendulum swing where:
+      // - Left extreme (-45deg) = where click sounds (Wittner style)
+      // - Right extreme (+45deg) = silent peak of swing
+      const position = -Math.cos((2 * Math.PI * elapsed) / beatPeriod);
+
+      // Map -1...+1 to 0...100 for needle interpolation
+      // -1 (left) -> 0, +1 (right) -> 100
+      needleRotation.setValue((position + 1) * 50);
+
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+  }, [mode, isMetronomePlaying, bpm, metronomeStartTime, needleRotation]);
+
+  // Non-metronome modes: Spring animation to target value
+  useEffect(() => {
+    if (mode === 'metronome') return; // Pendulum handles its own animation
+
+    const springConfig = mode === 'recording'
       ? { tension: 100, friction: 12 }  // Responsive for audio level
       : { tension: 50, friction: 10 };  // Smooth for progress
 
@@ -193,11 +239,16 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
         {mode === 'metronome' ? 'BPM' : mode === 'recording' ? 'VU' : 'VU'}
       </Text>
 
-      {/* Meter face */}
+      {/* Meter face - deeper for metronome mode to separate pendulum from beat counter */}
       <InsetWindow
         variant="light"
         borderRadius={compact ? 8 : 12}
-        style={compact ? { ...styles.meterFace, ...styles.meterFaceCompact } : styles.meterFace}
+        style={{
+          ...styles.meterFace,
+          ...(compact ? styles.meterFaceCompact : {}),
+          ...(mode === 'metronome' ? styles.meterFaceMetronome : {}),
+          ...(mode === 'metronome' && compact ? styles.meterFaceMetronomeCompact : {}),
+        }}
         showGlassOverlay
       >
         {/* Scale markings with labels at top and LEDs below (matches TunerVUMeter) */}
@@ -224,27 +275,32 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
             ))}
           </View>
         ) : mode === 'metronome' ? (
-          // Metronome mode: absolute positioning to align with needle arc
-          <View style={styles.metronomeScaleMarkings}>
-            {beatMarkers.map((marker) => (
-              <View
-                key={marker.label}
-                style={[
-                  styles.metronomeMarkerContainer,
-                  { left: `${marker.position * 100}%` },
-                ]}
-              >
-                <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
-                  {marker.label}
-                </Text>
-                <LEDIndicator
-                  size={compact ? 12 : 16}
-                  isActive={isLedActiveForBeat(marker.beat)}
-                  color={marker.beat === 1 ? '#FF6B35' : '#16A34A'}
-                />
-              </View>
-            ))}
-          </View>
+          // Metronome mode: Beat counter at top, pendulum swings below
+          <>
+            {/* Beat counter with LEDs */}
+            <View style={[styles.metronomeScaleMarkings, compact && styles.metronomeScaleMarkingsCompact]}>
+              {beatMarkers.map((marker) => (
+                <View
+                  key={marker.label}
+                  style={[
+                    styles.metronomeMarkerContainer,
+                    { left: `${marker.position * 100}%` },
+                  ]}
+                >
+                  <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
+                    {marker.label}
+                  </Text>
+                  <LEDIndicator
+                    size={compact ? 12 : 16}
+                    isActive={isLedActiveForBeat(marker.beat)}
+                    color={marker.beat === 1 ? '#FF6B35' : '#16A34A'}
+                  />
+                </View>
+              ))}
+            </View>
+            {/* Visual separator between beat counter and pendulum area */}
+            <View style={[styles.pendulumSeparator, compact && styles.pendulumSeparatorCompact]} />
+          </>
         ) : (
           // Progress mode: evenly spaced with space-between
           <View style={styles.scaleMarkings}>
@@ -384,6 +440,13 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
   },
+  // Deeper meter face for metronome mode to accommodate visual separation
+  meterFaceMetronome: {
+    height: 140, // Increased from 112 to separate beat counter from pendulum
+  },
+  meterFaceMetronomeCompact: {
+    height: 100, // Increased from 80
+  },
   // Scale markings at top inside meter (matches TunerVUMeter)
   scaleMarkings: {
     position: 'absolute',
@@ -411,6 +474,25 @@ const styles = StyleSheet.create({
     left: 89,  // Where needle tip reaches at -45°
     right: 89, // 280 - 191 = 89 (where needle reaches at +45°)
     height: 40,
+  },
+  metronomeScaleMarkingsCompact: {
+    left: 64,
+    right: 64,
+    height: 32,
+  },
+  // Visual separator between beat counter and pendulum area
+  pendulumSeparator: {
+    position: 'absolute',
+    top: 56,  // Below beat counter LEDs
+    left: 20,
+    right: 20,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  pendulumSeparatorCompact: {
+    top: 44,
+    left: 16,
+    right: 16,
   },
   metronomeMarkerContainer: {
     position: 'absolute',

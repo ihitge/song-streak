@@ -114,6 +114,7 @@ export default function TimingScreen() {
           isMetronomePlaying={metronome.isPlaying}
           currentBeat={metronome.currentBeat}
           beatsPerMeasure={metronome.beatsPerMeasure}
+          metronomeStartTime={metronome.metronomeStartTime}
           timeSignature={metronome.timeSignature}
           onTimeSignatureChange={metronome.setTimeSignature}
           soundType={metronome.soundType}

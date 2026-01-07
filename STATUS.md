@@ -23,6 +23,15 @@ This document shows the current implementation status and what's ready to test.
 
 ## 🎯 Latest Updates (January 7, 2026)
 
+### Metronome Pendulum Animation - COMPLETE ✅
+- True pendulum swing animation (Wittner mechanical metronome style)
+- Continuous 60fps motion via `requestAnimationFrame` (decoupled from React state)
+- Formula: `-cos(2π × t / beatPeriod)` for smooth sine wave motion
+- Click at left extreme only (one full swing cycle per beat)
+- Beat counter LEDs remain independent (light up on `currentBeat`)
+- Deeper meter face with visual separator between pendulum and beat counter
+- New `metronomeStartTime` prop for phase synchronization
+
 ### iOS Development Scripts - COMPLETE ✅
 - `npm run ios` now uses `--localhost` flag (fixes simulator timeout error 60)
 - Added `ios:lan` for physical device testing on same network

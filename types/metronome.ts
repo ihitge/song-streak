@@ -95,6 +95,7 @@ export interface UseMetronomeReturn {
   isPlaying: boolean;
   beatPosition: number;
   beatsPerMeasure: number;
+  metronomeStartTime: number; // Timestamp when metronome started (for pendulum sync)
 
   // Actions
   start: () => void;

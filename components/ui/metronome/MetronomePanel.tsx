@@ -20,6 +20,7 @@ interface MetronomePanelProps {
   isMetronomePlaying: boolean;
   currentBeat: number;
   beatsPerMeasure: number;
+  metronomeStartTime: number; // For pendulum animation sync
 
   // Time signature
   timeSignature: string;
@@ -69,6 +70,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   isMetronomePlaying,
   currentBeat,
   beatsPerMeasure,
+  metronomeStartTime,
   timeSignature,
   onTimeSignatureChange,
   soundType,
@@ -114,6 +116,8 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
         isMetronomePlaying={isMetronomePlaying}
         currentBeat={currentBeat}
         beatsPerMeasure={beatsPerMeasure}
+        bpm={bpm}
+        metronomeStartTime={metronomeStartTime}
         compact={compact}
         fullWidth={fullWidth}
         showTimeDisplay={false}

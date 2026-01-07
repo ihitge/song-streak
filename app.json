@@ -52,7 +52,13 @@
           "photosPermission": "Allow Song Streak to access your photos to set your profile picture."
         }
       ],
-      "expo-audio"
+      "expo-audio",
+      [
+        "react-native-audio-api",
+        {
+          "iosBackgroundMode": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

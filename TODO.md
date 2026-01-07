@@ -2,6 +2,31 @@
 
 ## Recent Changes (January 7, 2026)
 
+### Metronome Pendulum Animation (Wittner Style)
+
+**Problem**: The metronome needle was jumping between discrete beat positions (1, 2, 3, 4) instead of swinging smoothly like a real mechanical metronome.
+
+**Solution**: Implemented true pendulum animation using continuous sine wave motion:
+- **Formula**: `position = -cos(2π × t / beatPeriod)` for smooth pendulum swing
+- **Timing**: Click occurs at left extreme only (Wittner mechanical style)
+- **Animation**: 60fps via `requestAnimationFrame` (decoupled from React state)
+- **Sync**: `metronomeStartTime` exported from hook for phase synchronization
+
+**Files Changed**:
+- `hooks/useMetronome.ts` - Added `metronomeStartTime` state
+- `hooks/useMetronome.web.ts` - Added `metronomeStartTime` state
+- `hooks/useMetronome.legacy.ts` - Added stub for backward compatibility
+- `types/metronome.ts` - Added `metronomeStartTime` to return interface
+- `components/ui/practice/VUMeterDisplay.tsx` - New pendulum animation using RAF
+- `components/ui/metronome/MetronomePanel.tsx` - Pass new props to VUMeterDisplay
+- `app/(tabs)/timing.tsx` - Pass `metronomeStartTime` to panel
+- `app/(tabs)/practice.tsx` - Pass `metronomeStartTime` to panel
+
+**Visual Updates**:
+- Deeper meter face height (112→140px full, 80→100px compact)
+- Visual separator line between beat counter and pendulum area
+- Beat counter LEDs remain independent (light up on `currentBeat`)
+
 ### iOS Simulator Timeout Fix
 
 **Problem**: iOS simulator failed to open `exp://` URLs with error code 60 (Operation timed out). Expo uses LAN mode by default, broadcasting on the machine's local IP which the simulator couldn't reliably reach.

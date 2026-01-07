@@ -99,7 +99,7 @@
 | `useSetlists` | Setlist management for bands | N/A | `hooks/useSetlists.ts` |
 | `usePracticeData` | Practice session tracking and achievements | N/A | `hooks/usePracticeData.ts` |
 | `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
-| `useMetronome` | Core metronome logic with drift-corrected timing | N/A | `hooks/useMetronome.ts` |
+| `useMetronome` | Core metronome logic with drift-corrected timing + pendulum sync | N/A | `hooks/useMetronome.ts` |
 | `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | metronome-*.wav, sound-click-*.wav | `hooks/useMetronomeSound.ts` |
 | `usePracticePlayer` | **Audio playback with speed control (pitch preserved)** | N/A | `hooks/usePracticePlayer.ts` |
 | `useTunerMachine` | **Guitar tuner state machine with pitch detection** | N/A | `hooks/tuner/useTunerMachine.ts` |
@@ -694,7 +694,7 @@ Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches, beveled modal
 
 The `VUMeterDisplay` supports three modes:
 - **Progress mode** (default): Shows total practice time with static needle position
-- **Metronome mode**: Shows pendulum swing synchronized with metronome beats
+- **Metronome mode**: Shows continuous pendulum swing (Wittner mechanical metronome style)
 - **Recording mode**: Shows audio level for voice recorder with dB scale
 
 **Props**:
@@ -703,8 +703,8 @@ interface VUMeterDisplayProps {
   totalSeconds?: number;              // For progress mode
   compact?: boolean;
   mode?: 'progress' | 'metronome' | 'recording';  // Default: 'progress'
-  beatPosition?: number;              // 0 (left) or 1 (right) for pendulum
-  isMetronomePlaying?: boolean;       // For LED beat effects
+  beatPosition?: number;              // 0 (left) to 1 (right) - legacy, now uses RAF animation
+  isMetronomePlaying?: boolean;       // For LED beat effects & pendulum animation
   currentBeat?: number;               // Current beat (1-indexed)
   beatsPerMeasure?: number;           // Beats in measure
   sessionSeconds?: number;            // Session time display
@@ -712,6 +712,9 @@ interface VUMeterDisplayProps {
   showTimeDisplay?: boolean;          // Show embedded time (default: true)
   headerContent?: React.ReactNode;    // Content at top of housing
   children?: React.ReactNode;         // Content at bottom of housing
+  // Pendulum animation props (metronome mode)
+  bpm?: number;                       // BPM for calculating swing period
+  metronomeStartTime?: number;        // Timestamp when metronome started (for phase sync)
   // Recording mode props
   audioLevel?: number;                // 0-1 audio level
   isRecording?: boolean;              // Show REC LED
@@ -719,12 +722,26 @@ interface VUMeterDisplayProps {
 }
 ```
 
+**Metronome Mode - Pendulum Animation (Jan 7, 2026)**:
+- **True pendulum swing**: Continuous 60fps animation via `requestAnimationFrame`
+- **Formula**: `position = -cos(2π × t / beatPeriod)` for smooth sine wave motion
+- **Click timing**: Left extreme only (Wittner mechanical style - one full swing per beat)
+- **Decoupled from state**: Animation runs independently of React state updates for smoothness
+- **Phase sync**: Uses `metronomeStartTime` prop to stay synchronized with audio
+- **Beat counter**: LEDs light up independently based on `currentBeat` prop
+- **Visual separator**: Subtle line between beat counter and pendulum area
+
 **Recording Mode Specifics**:
 - Labels: `-40`, `-25`, `-10`, `-2`, `+3` (dB scale)
 - `-10` is centered at needle base (50% position) for precise alignment
 - Uses absolute positioning for labels (not space-between) to ensure center alignment
 - LED colors: green for 0dB+, vermilion for negative dB
 - Direction labels: "LOW" (left) and "PEAK" (right)
+
+**Visual Updates (Jan 7, 2026)**:
+- **Deeper meter face**: Height increased (112→140px full, 80→100px compact)
+- **Visual separator**: Subtle line between beat counter and pendulum area
+- **Pendulum area**: More vertical space for smooth pendulum arc
 
 **Visual Updates (Dec 15, 2025)**:
 - **LED Indicators**: Uses the new `LEDIndicator` Skia primitive (16px size) with realistic bloom.
@@ -749,6 +766,7 @@ interface MetronomePanelProps {
   isMetronomePlaying: boolean;
   currentBeat: number;
   beatsPerMeasure: number;
+  metronomeStartTime: number;          // For pendulum animation sync (Jan 7, 2026)
 
   // Time signature
   timeSignature: string;
