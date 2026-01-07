@@ -41,3 +41,12 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Playwright MCP test screenshots
+.playwright-mcp/
+
+# Temporary test images
+*.jpeg
+*.png
+!assets/**/*.png
+!assets/**/*.jpeg
