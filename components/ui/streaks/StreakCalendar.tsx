@@ -17,6 +17,7 @@ interface StreakCalendarProps {
   onPreviousMonth: () => void;
   onNextMonth: () => void;
   dailyGoalMinutes: number;
+  variant?: 'light' | 'dark';
 }
 
 const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -30,8 +31,10 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
   onPreviousMonth,
   onNextMonth,
   dailyGoalMinutes,
+  variant = 'dark',
 }) => {
   const weeks = generateCalendarGrid(currentMonth);
+  const isDark = variant === 'dark';
 
   const handleNavigation = async (direction: 'prev' | 'next') => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -63,7 +66,7 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDark && styles.containerDark]}>
       {/* Month navigation header */}
       <View style={styles.header}>
         <Pressable
@@ -109,6 +112,7 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
                   key={dayIndex}
                   style={[
                     styles.dayCell,
+                    isDark && styles.dayCellDark,
                     !inMonth && styles.dayCellOutsideMonth,
                     today && styles.dayCellToday,
                   ]}
@@ -172,6 +176,9 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(0,0,0,0.4)',
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
+  containerDark: {
+    backgroundColor: Colors.charcoal,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -218,6 +225,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
+  },
+  dayCellDark: {
+    backgroundColor: '#0a1520',
   },
   dayCellOutsideMonth: {
     opacity: 0.3,

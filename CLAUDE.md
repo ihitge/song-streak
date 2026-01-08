@@ -26,6 +26,7 @@
 | Need | Use This Component |
 |------|-------------------|
 | **Page header (new pages)** | `PageHeader` |
+| **Dark device screen wrapper** | `DeviceCasing` (includes noise, screws, title bar) |
 | Page header with filters | `LibraryHeader` (uses PageHeader) |
 | Navigation button | `NavButton` |
 | Selection Switch | `GangSwitch` |

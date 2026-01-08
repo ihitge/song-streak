@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { MetronomePanel, TransportControls } from '@/components/ui/metronome';
 import { RamsTapeCounterDisplay } from '@/components/ui/practice/RamsTapeCounterDisplay';
 import { Colors } from '@/constants/Colors';
+import { DeviceCasing } from '@/components/ui/DeviceCasing';
 import { useMetronome } from '@/hooks/useMetronome';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 import { Subdivision } from '@/types/metronome';
@@ -107,8 +108,8 @@ export default function TimingScreen() {
     <View style={styles.container}>
       <PageHeader />
 
-      {/* Dark container - full height below header */}
-      <View style={styles.darkContainer}>
+      {/* Dark device casing */}
+      <DeviceCasing title="METRONOME">
         {/* Metronome Panel - centered in available space */}
         <View style={styles.metronomeSection}>
           <MetronomePanel
@@ -155,7 +156,7 @@ export default function TimingScreen() {
           fullWidth={true}
           label="PRACTICE TIME"
         />
-      </View>
+      </DeviceCasing>
     </View>
   );
 }
@@ -164,10 +165,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.matteFog,
-  },
-  darkContainer: {
-    flex: 1,
-    backgroundColor: Colors.ink,
   },
   metronomeSection: {
     flex: 1,

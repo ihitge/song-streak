@@ -4,6 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { TunerPanel, TunerControls } from '@/components/ui/tuner';
 import { Colors } from '@/constants/Colors';
+import { DeviceCasing } from '@/components/ui/DeviceCasing';
 import { useTunerMachine } from '@/hooks/tuner';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 
@@ -63,36 +64,39 @@ export default function TunerScreen() {
     <View style={styles.container}>
       <PageHeader />
 
-      {/* Tuner Panel - takes up available space */}
-      <View style={styles.tunerSection}>
-        <TunerPanel
-          detectedString={tuner.detectedString}
-          frequency={tuner.frequency}
-          cents={tuner.cents}
-          direction={tuner.direction}
-          status={tuner.status}
-          isInTune={tuner.isInTune}
-          signalStrength={tuner.signalStrength}
-          hasPermission={tuner.hasPermission}
-          permissionStatus={tuner.permissionStatus}
-          onStart={handleStart}
-          onStop={handleStop}
-          onStringSelect={handleStringSelect}
-          showControls={false}
-        />
-      </View>
+      {/* Dark device casing */}
+      <DeviceCasing title="TUNER">
+        {/* Tuner Panel - takes up available space */}
+        <View style={styles.tunerSection}>
+          <TunerPanel
+            detectedString={tuner.detectedString}
+            frequency={tuner.frequency}
+            cents={tuner.cents}
+            direction={tuner.direction}
+            status={tuner.status}
+            isInTune={tuner.isInTune}
+            signalStrength={tuner.signalStrength}
+            hasPermission={tuner.hasPermission}
+            permissionStatus={tuner.permissionStatus}
+            onStart={handleStart}
+            onStop={handleStop}
+            onStringSelect={handleStringSelect}
+            showControls={false}
+          />
+        </View>
 
-      {/* FAB section - pinned at bottom, centered */}
-      <View style={styles.fabSection}>
-        <TunerControls
-          status={tuner.status}
-          signalStrength={tuner.signalStrength}
-          hasPermission={tuner.hasPermission}
-          permissionStatus={tuner.permissionStatus}
-          onStart={handleStart}
-          onStop={handleStop}
-        />
-      </View>
+        {/* FAB section - pinned at bottom, centered */}
+        <View style={styles.fabSection}>
+          <TunerControls
+            status={tuner.status}
+            signalStrength={tuner.signalStrength}
+            hasPermission={tuner.hasPermission}
+            permissionStatus={tuner.permissionStatus}
+            onStart={handleStart}
+            onStop={handleStop}
+          />
+        </View>
+      </DeviceCasing>
     </View>
   );
 }
@@ -100,7 +104,7 @@ export default function TunerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.ink,
+    backgroundColor: Colors.matteFog,
   },
   tunerSection: {
     flex: 1,

@@ -9,6 +9,7 @@ interface DailyGoalSelectorProps {
   selectedMinutes: DailyGoalMinutes;
   onSelect: (minutes: DailyGoalMinutes) => void;
   disabled?: boolean;
+  variant?: 'light' | 'dark';
 }
 
 /**
@@ -18,8 +19,10 @@ export const DailyGoalSelector: React.FC<DailyGoalSelectorProps> = ({
   selectedMinutes,
   onSelect,
   disabled = false,
+  variant = 'light',
 }) => {
   const { playSound } = useClickSound();
+  const isDark = variant === 'dark';
 
   const handleSelect = async (minutes: DailyGoalMinutes) => {
     if (disabled || minutes === selectedMinutes) return;
@@ -31,8 +34,8 @@ export const DailyGoalSelector: React.FC<DailyGoalSelectorProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Daily Goal</Text>
-      <View style={styles.optionsContainer}>
+      <Text style={[styles.label, isDark && styles.labelDark]}>Daily Goal</Text>
+      <View style={[styles.optionsContainer, isDark && styles.optionsContainerDark]}>
         {DAILY_GOAL_OPTIONS.map((option) => {
           const isSelected = option.value === selectedMinutes;
           return (
@@ -73,6 +76,9 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 2,
   },
+  labelDark: {
+    color: Colors.graphite,
+  },
   optionsContainer: {
     flexDirection: 'row',
     backgroundColor: Colors.charcoal,
@@ -83,6 +89,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,0.3)',
     borderTopColor: 'rgba(0,0,0,0.4)',
     borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  optionsContainerDark: {
+    backgroundColor: Colors.charcoal,
   },
   option: {
     flex: 1,

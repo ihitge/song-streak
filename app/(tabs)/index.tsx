@@ -8,6 +8,7 @@ import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
 import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { DeviceCasing } from '@/components/ui/DeviceCasing';
 import { FAB } from '@/components/ui/FAB';
 import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
@@ -260,8 +261,8 @@ export default function SetListScreen() {
     <View style={styles.container}>
       <PageHeader />
 
-      {/* Songs List - Dark background to match Metronome/Tuner */}
-      <View style={styles.songListContainer}>
+      {/* Dark device casing */}
+      <DeviceCasing title="SONG LIBRARY">
         {/* Filter Controls inside dark area */}
         <LibraryHeader
           searchText={searchText}
@@ -321,15 +322,15 @@ export default function SetListScreen() {
             }
           />
         )}
-      </View>
 
-      {/* Hero Action Button - centered at bottom */}
-      <View style={styles.fabContainer}>
-        <FAB
-          onPress={() => router.push('/add-song')}
-          icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
-        />
-      </View>
+        {/* Hero Action Button - centered at bottom */}
+        <View style={styles.fabContainer}>
+          <FAB
+            onPress={() => router.push('/add-song')}
+            icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
+          />
+        </View>
+      </DeviceCasing>
     </View>
   );
 }
@@ -340,10 +341,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.matteFog, // Chassis Base
   },
   // --- Song List ---
-  songListContainer: {
-    flex: 1,
-    backgroundColor: Colors.ink,
-  },
   songListContent: {
     paddingHorizontal: 24,
     paddingVertical: 16,

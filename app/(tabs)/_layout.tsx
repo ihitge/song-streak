@@ -43,13 +43,13 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     width: '100%',
-    maxWidth: Platform.OS === 'web' ? 600 : undefined,
+    maxWidth: Platform.OS === 'web' ? 430 : undefined,
   },
   navbarWrapper: {
     alignItems: Platform.OS === 'web' ? 'center' : 'stretch',
   },
   navbarContainer: {
     width: '100%',
-    maxWidth: Platform.OS === 'web' ? 600 : undefined,
+    maxWidth: Platform.OS === 'web' ? 430 : undefined,
   },
 });

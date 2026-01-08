@@ -13,6 +13,7 @@ import { View, StyleSheet } from 'react-native';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { ReelToReelRecorder } from '@/components/ui/recorder';
 import { Colors } from '@/constants/Colors';
+import { DeviceCasing } from '@/components/ui/DeviceCasing';
 
 export default function IdeasScreen() {
   const handleRecordingComplete = async (blob: Blob, duration: number) => {
@@ -34,16 +35,16 @@ export default function IdeasScreen() {
     <View style={styles.container}>
       <PageHeader />
 
-      {/* Main content area - recorder handles its own title */}
-      <View style={styles.recorderSection}>
+      {/* Dark device casing - recorder handles its own title */}
+      <DeviceCasing title="VOICE RECORDER">
         <ReelToReelRecorder
           onRecordingComplete={handleRecordingComplete}
           onShare={handleShare}
           onDelete={handleDelete}
           fullWidth
-          title="VOICE RECORDER"
+          title=""
         />
-      </View>
+      </DeviceCasing>
     </View>
   );
 }
@@ -52,9 +53,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.matteFog,
-  },
-  recorderSection: {
-    flex: 1,
-    backgroundColor: Colors.ink,
   },
 });

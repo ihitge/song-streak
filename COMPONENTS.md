@@ -45,6 +45,10 @@
 | `GlassOverlay` | **Skia-based glass effect overlay (glare, specular highlight, bezel)** | `components/ui/GlassOverlay.tsx` |
 | `InsetShadowOverlay` | **Recessed depth effect via edge gradients** | `components/skia/primitives/InsetShadowOverlay.tsx` |
 | `SurfaceTextureOverlay` | **Noise/grain texture for dust/scratches on glass** | `components/skia/primitives/SurfaceTextureOverlay.tsx` |
+| `DeviceCasing` | **Universal dark "device screen" wrapper (screws, noise, title, rounded corners)** | `components/ui/DeviceCasing.tsx` |
+| `MatteNoiseOverlay` | **Subtle matte plastic texture overlay (Skia/SVG)** | `components/ui/MatteNoiseOverlay.tsx` |
+| `IndustrialScrewHoles` | **Hex/Allen screw holes in 4 corners (Skia/SVG)** | `components/ui/IndustrialScrewHoles.tsx` |
+| `IndustrialTitleBar` | **Title bar with circle motifs (METRONOME, TUNER, etc.)** | `components/ui/IndustrialTitleBar.tsx` |
 | `TheorySection` | **Section container with label + alloy content box** | `components/ui/theory/TheorySection.tsx` |
 | `TheoryMetricsRow` | **2x2 grid display for Tuning, Key, Tempo, Time Signature. Tap Key to open Circle of Fifths** | `components/ui/theory/TheoryMetricsRow.tsx` |
 | `TheoryChipGroup` | **Labeled chip container for chords/scales/techniques** | `components/ui/theory/TheoryChipGroup.tsx` |
@@ -60,14 +64,17 @@
 | `StreakStats` | Current/longest streak display | `components/ui/streaks/StreakStats.tsx` |
 | `StreakFreezeIndicator` | Snowflake icons for streak freezes | `components/ui/streaks/StreakFreezeIndicator.tsx` |
 | `DailyGoalProgress` | Today's progress bar toward goal | `components/ui/streaks/DailyGoalProgress.tsx` |
-| `DailyGoalSelector` | 15/30/60 min goal selector | `components/ui/streaks/DailyGoalSelector.tsx` |
-| `StreakCalendar` | **GitHub-style practice calendar** | `components/ui/streaks/StreakCalendar.tsx` |
+| `DailyGoalSelector` | 15/30/60 min goal selector (dark variant) | `components/ui/streaks/DailyGoalSelector.tsx` |
+| `StreakCalendar` | **GitHub-style practice calendar (dark variant)** | `components/ui/streaks/StreakCalendar.tsx` |
+| `TodayProgressHero` | **VU meter arc progress ring with centered flame** | `components/ui/streaks/TodayProgressHero.tsx` |
+| `StreakQuickStats` | **Inline stats row (current/best streak + freezes)** | `components/ui/streaks/StreakQuickStats.tsx` |
+| `NextMilestoneCard` | **Urgency card with progress bar to next milestone** | `components/ui/streaks/NextMilestoneCard.tsx` |
 | `SkillTree` | **Radial 3-path mastery visualization** | `components/ui/mastery/SkillTree.tsx` |
 | `SkillNode` | Individual skill tree node | `components/ui/mastery/SkillNode.tsx` |
 | `MiniSkillTree` | Compact 3-star mastery display | `components/ui/mastery/MiniSkillTree.tsx` |
 | `StarRating` | 0-3 star rating display | `components/ui/mastery/StarRating.tsx` |
 | `Trophy` | **Individual trophy with tier styling** | `components/ui/milestones/Trophy.tsx` |
-| `TrophyCase` | **Trophy shelves by category** | `components/ui/milestones/TrophyCase.tsx` |
+| `TrophyCase` | **Trophy shelves by category (dark variant + collapsible)** | `components/ui/milestones/TrophyCase.tsx` |
 | `MilestoneProgress` | Progress bar to next milestone | `components/ui/milestones/MilestoneProgress.tsx` |
 | `StatsDashboard` | **2x2 grid of global stats** | `components/ui/milestones/StatsDashboard.tsx` |
 | `DailyGoalModal` | **Celebration: daily goal achieved** | `components/ui/streaks/DailyGoalModal.tsx` |
