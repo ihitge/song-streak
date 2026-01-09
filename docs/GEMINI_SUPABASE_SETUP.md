@@ -30,6 +30,54 @@ User pastes video URL
 
 ---
 
+## Part 0: Environment Variables for EAS Builds
+
+### Understanding the Two Environments
+
+| Environment | How Variables Work | When Used |
+|-------------|-------------------|-----------|
+| **Local Dev** | `.env.local` file, accessed via `process.env.EXPO_PUBLIC_*` | `npm start`, `expo start` |
+| **EAS Build** | EAS Secrets, exposed via `app.config.js` → `expo.extra` → `expo-constants` | `eas build` for iOS/Android |
+
+### Required EAS Secrets
+
+Set these secrets for production builds:
+
+```bash
+# Supabase (required)
+eas secret:create --name EXPO_PUBLIC_SUPABASE_URL --value https://your-project.supabase.co
+eas secret:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value your-anon-key
+
+# Gemini API (required for video analysis)
+eas secret:create --name EXPO_PUBLIC_GEMINI_API_URL --value https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+eas secret:create --name EXPO_PUBLIC_GEMINI_API_KEY --value your-gemini-key
+
+# Google Sign-In (optional)
+eas secret:create --name EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID --value your-web-client-id
+eas secret:create --name EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID --value your-ios-client-id
+```
+
+### Verify Secrets Are Set
+
+```bash
+eas secret:list
+```
+
+### How It Works
+
+1. **Build time**: EAS reads secrets and injects them as `process.env.*`
+2. **app.config.js**: Reads `process.env.*` and exposes via `expo.extra`
+3. **Runtime**: App reads from `Constants.expoConfig.extra` (with fallback to `process.env` for local dev)
+
+```javascript
+// utils/supabase/client.ts
+import Constants from 'expo-constants';
+
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
+```
+
+---
+
 ## Part 1: Supabase Setup
 
 ### 1.1 Create Supabase Table
@@ -75,7 +123,9 @@ In the Supabase dashboard:
 
 ### 2.2 Add Environment Variables
 
-In your `.env.local` file (or Expo app config):
+#### Local Development
+
+In your `.env.local` file:
 
 ```
 EXPO_PUBLIC_GEMINI_API_KEY=your_api_key_here
@@ -83,6 +133,29 @@ EXPO_PUBLIC_GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/mode
 ```
 
 **Important:** Make sure to use `gemini-2.5-flash` (or `gemini-2.0-flash`) as the model. Older models like `gemini-1.5-flash` are deprecated and will not work.
+
+#### EAS Builds (Production)
+
+For EAS builds, environment variables must be set as **EAS Secrets**:
+
+```bash
+eas secret:create --name EXPO_PUBLIC_GEMINI_API_KEY --value your_api_key_here
+eas secret:create --name EXPO_PUBLIC_GEMINI_API_URL --value https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+```
+
+The `app.config.js` file exposes these secrets via `expo.extra` at build time, and the app reads them using `expo-constants`:
+
+```javascript
+// In app.config.js
+extra: {
+  geminiApiUrl: process.env.EXPO_PUBLIC_GEMINI_API_URL,
+  geminiApiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY,
+}
+
+// In utils/gemini.ts
+import Constants from 'expo-constants';
+const apiUrl = Constants.expoConfig?.extra?.geminiApiUrl || process.env.EXPO_PUBLIC_GEMINI_API_URL;
+```
 
 ### 2.3 Implement Gemini Integration
 

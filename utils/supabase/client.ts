@@ -2,9 +2,26 @@ import { AppState, Platform } from 'react-native'
 import 'react-native-url-polyfill/auto'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { createClient } from '@supabase/supabase-js'
+import Constants from 'expo-constants'
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+// Get config from expo-constants (works in EAS builds) with fallback to process.env (works in dev)
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+
+// Debug logging for builds - will help diagnose issues
+if (__DEV__) {
+  console.log('[Supabase] Config source:', Constants.expoConfig?.extra?.supabaseUrl ? 'expo-constants' : 'process.env');
+  console.log('[Supabase] URL defined:', !!supabaseUrl);
+  console.log('[Supabase] Key defined:', !!supabaseAnonKey);
+}
+
+// Runtime validation - prevent crashes with clear error
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('[Supabase] CRITICAL: Missing Supabase configuration!');
+  console.error('[Supabase] supabaseUrl:', supabaseUrl ? 'SET' : 'MISSING');
+  console.error('[Supabase] supabaseAnonKey:', supabaseAnonKey ? 'SET' : 'MISSING');
+  console.error('[Supabase] Constants.expoConfig?.extra:', JSON.stringify(Constants.expoConfig?.extra, null, 2));
+}
 
 // Check if we're in a browser environment (not SSR)
 const isBrowser = typeof window !== 'undefined'
@@ -22,7 +39,11 @@ const getStorage = () => {
   return AsyncStorage
 }
 
-export const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
+// Provide fallback values to prevent crash (will fail gracefully on API calls)
+const safeSupabaseUrl = supabaseUrl || 'https://placeholder.supabase.co'
+const safeSupabaseAnonKey = supabaseAnonKey || 'placeholder-key'
+
+export const supabase = createClient(safeSupabaseUrl, safeSupabaseAnonKey, {
   auth: {
     storage: getStorage(),
     autoRefreshToken: isBrowser,

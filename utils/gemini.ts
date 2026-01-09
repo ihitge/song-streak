@@ -2,6 +2,7 @@
  * Gemini API Integration for Video Analysis
  * Analyzes YouTube/video URLs to extract song metadata using multimodal AI
  */
+import Constants from 'expo-constants';
 
 export interface GeminiAnalysisResponse {
   title: string;
@@ -165,8 +166,9 @@ export async function analyzeVideoWithGemini(
   videoUrl: string
 ): Promise<GeminiAnalysisResponse> {
   try {
-    const apiUrl = process.env.EXPO_PUBLIC_GEMINI_API_URL || '';
-    const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
+    // Get config from expo-constants (works in EAS builds) with fallback to process.env (works in dev)
+    const apiUrl = Constants.expoConfig?.extra?.geminiApiUrl || process.env.EXPO_PUBLIC_GEMINI_API_URL || '';
+    const apiKey = Constants.expoConfig?.extra?.geminiApiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY || '';
 
     if (!apiUrl || !apiKey) {
       throw new Error('CONFIG_ERROR: Gemini API configuration missing. Check your environment variables.');

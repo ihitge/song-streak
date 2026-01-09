@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import Constants from 'expo-constants';
 import { supabase } from '@/utils/supabase/client';
 import { Colors } from '@/constants/Colors';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
@@ -30,8 +31,8 @@ export function GoogleSignInButton() {
     if (isNativeModuleAvailable && GoogleSignin) {
       try {
         GoogleSignin.configure({
-          webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-          iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+          webClientId: Constants.expoConfig?.extra?.googleWebClientId || process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+          iosClientId: Constants.expoConfig?.extra?.googleIosClientId || process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
         });
         setIsConfigured(true);
       } catch (e) {
