@@ -180,6 +180,42 @@
 
 ---
 
+## Ralph Loop Skill Available 🔄
+
+**Added**: January 10, 2026
+
+The `/ralph-loop` skill is available for iterative, self-referential development tasks. It creates a loop where Claude's output becomes the next iteration's input, allowing for progressive refinement.
+
+**Usage:**
+```bash
+/ralph-loop <task description> --max-iterations <n> --completion-promise '<phrase>'
+```
+
+**Examples:**
+```bash
+/ralph-loop Fix all TypeScript errors --max-iterations 10
+/ralph-loop Refactor auth module --completion-promise 'All tests passing'
+/ralph-loop Build REST API --max-iterations 20 --completion-promise 'DONE'
+```
+
+**Best For:**
+- Long refactoring tasks requiring multiple passes
+- Iterative code improvement until tests pass
+- Complex debugging with progressive context
+- Tasks where "keep going until done" is the goal
+
+**Caution:**
+- Without `--max-iterations` or `--completion-promise`, loop runs infinitely
+- Each iteration accumulates context (can get expensive)
+- Only output completion promise when genuinely complete
+
+**Commands:**
+- `/ralph-loop` - Start a new loop
+- `/cancel-ralph` - Cancel active loop
+- `/ralph-wiggum:help` - Show help
+
+---
+
 ## Browser Testing Now Available ✅
 
 **Updated**: December 18, 2025

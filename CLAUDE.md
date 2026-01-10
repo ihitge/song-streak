@@ -340,3 +340,31 @@ eas build --platform ios --profile production
 - Every interaction should feel tactile: visual + haptic + audio feedback.
 - **NEVER use native Alert.alert() - always use useStyledAlert hook.**
 - **Browser testing with Playwright MCP is now available** - use it to verify UI changes with confidence
+
+---
+
+## Available Skills
+
+### `/ralph-loop` - Iterative Development Loop
+
+For complex tasks requiring multiple iterations, use the Ralph loop skill:
+
+```bash
+/ralph-loop <task> --max-iterations <n> --completion-promise '<phrase>'
+```
+
+**Example:**
+```bash
+/ralph-loop Fix all TypeScript errors --max-iterations 10
+/ralph-loop Refactor module until tests pass --completion-promise 'All tests passing'
+```
+
+**When to use:**
+- Multi-step refactoring tasks
+- Iterative bug fixing
+- Tasks requiring "keep going until done"
+
+**Commands:**
+- `/ralph-loop` - Start loop
+- `/cancel-ralph` - Cancel active loop
+- `/ralph-wiggum:help` - Show help
