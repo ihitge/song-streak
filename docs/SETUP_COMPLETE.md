@@ -52,16 +52,39 @@ The Song Streak video analysis and persistence layer is now fully configured and
 ---
 
 ### 4. Environment Configuration ✅
-**File:** `.env`
+
+#### Local Development
+**File:** `.env.local`
 
 ```
 EXPO_PUBLIC_SUPABASE_URL=https://rqeokuqipkphsugzktit.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=...
-EXPO_PUBLIC_GEMINI_API_KEY=AIzaSyDJMZGszieQXmPmNENpYJtfMLeFcyrlX60
-EXPO_PUBLIC_GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent
+EXPO_PUBLIC_GEMINI_API_KEY=your-gemini-key
+EXPO_PUBLIC_GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=your-web-client-id
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=your-ios-client-id
 ```
 
-All credentials configured and ready to use.
+#### EAS Builds (Production/Preview)
+Environment variables are configured as **EAS environment variables** for the `preview` environment:
+
+```bash
+# List current variables
+eas env:list --environment preview
+
+# Create new variable
+eas env:create --environment preview --name VARIABLE_NAME --value "value" --visibility sensitive
+```
+
+**Required EAS Variables:**
+- `EXPO_PUBLIC_SUPABASE_URL`
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- `EXPO_PUBLIC_GEMINI_API_URL`
+- `EXPO_PUBLIC_GEMINI_API_KEY`
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
+
+The `app.config.js` exposes these via `expo.extra`, and the app reads them using `expo-constants` at runtime.
 
 ---
 
@@ -246,14 +269,44 @@ app.json                     # Expo app config
 
 ## Environment Variables
 
-All required environment variables are configured in `.env`:
+Environment variables are managed differently for local development vs EAS builds:
 
-| Variable | Value | Purpose |
-|----------|-------|---------|
-| `EXPO_PUBLIC_GEMINI_API_KEY` | AIzaSyDJMZGszieQXmPmNENpYJtfMLeFcyrlX60 | Authenticate with Gemini API |
-| `EXPO_PUBLIC_GEMINI_API_URL` | https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent | Gemini endpoint |
-| `EXPO_PUBLIC_SUPABASE_URL` | https://rqeokuqipkphsugzktit.supabase.co | Supabase project URL |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | eyJhbGciOi... (long key) | Authenticate with Supabase |
+### Local Development (`.env.local`)
+
+| Variable | Purpose |
+|----------|---------|
+| `EXPO_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | Authenticate with Supabase |
+| `EXPO_PUBLIC_GEMINI_API_KEY` | Authenticate with Gemini API |
+| `EXPO_PUBLIC_GEMINI_API_URL` | Gemini endpoint (use `gemini-2.5-flash`) |
+| `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | Google Sign-In (Web) |
+| `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` | Google Sign-In (iOS) |
+
+### EAS Builds (Production)
+
+Variables are stored as EAS environment variables (not in code):
+
+```bash
+# View all variables for preview environment
+eas env:list --environment preview
+
+# Delete a variable
+eas env:delete --variable-name VARIABLE_NAME
+
+# Create a variable
+eas env:create --environment preview --name VARIABLE_NAME --value "value" --visibility sensitive
+```
+
+**How it works:**
+1. EAS injects secrets as `process.env.*` during build
+2. `app.config.js` reads them and exposes via `expo.extra`
+3. App code reads from `Constants.expoConfig.extra` with fallback to `process.env`
+
+```javascript
+// utils/supabase/client.ts
+import Constants from 'expo-constants';
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL;
+```
 
 ---
 

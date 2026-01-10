@@ -282,6 +282,59 @@ Claude can now perform **full automated browser testing** for this project. This
 
 ---
 
+---
+
+## EAS Builds & Environment Variables
+
+### Environment Variable Architecture
+
+| Environment | Source | Access Method |
+|-------------|--------|---------------|
+| **Local Dev** | `.env.local` | `process.env.EXPO_PUBLIC_*` |
+| **EAS Build** | EAS env variables | `Constants.expoConfig.extra.*` |
+
+### Key Files
+
+- **`app.config.js`** - Exposes env vars via `expo.extra` at build time
+- **`utils/supabase/client.ts`** - Reads config with fallback pattern
+- **`eas.json`** - Build profiles (development, preview, production)
+
+### EAS Commands
+
+```bash
+# List environment variables
+eas env:list --environment preview
+
+# Create new variable
+eas env:create --environment preview --name VAR_NAME --value "value" --visibility sensitive
+
+# Delete variable
+eas env:delete --variable-name VAR_NAME
+
+# Build for preview (ad-hoc distribution)
+eas build --platform ios --profile preview
+
+# Build for production (App Store)
+eas build --platform ios --profile production
+```
+
+### Required EAS Variables (preview environment)
+
+- `EXPO_PUBLIC_SUPABASE_URL`
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+- `EXPO_PUBLIC_GEMINI_API_URL`
+- `EXPO_PUBLIC_GEMINI_API_KEY`
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
+
+### Testing EAS Builds
+
+1. Build: `eas build --platform ios --profile preview`
+2. Install on registered device (Developer Mode required on iOS 16+)
+3. Check logs for `[Supabase] Config source:` to verify env vars loaded
+
+---
+
 **GOLDEN RULES**:
 - Never make assumptions. Never get lazy. Never hallucinate. Never take the easy route. Always engineer for scalability and the long-term view. Ask when unsure.
 - Every interaction should feel tactile: visual + haptic + audio feedback.
