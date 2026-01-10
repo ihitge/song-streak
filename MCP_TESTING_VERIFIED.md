@@ -94,7 +94,7 @@ Claude will:
 ## Architecture
 
 ```
-Song Streak App (localhost:8081)
+SongStreak App (localhost:8081)
           ↑
           │ HTTP requests
           │

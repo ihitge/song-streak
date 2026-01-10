@@ -7,7 +7,7 @@
  */
 module.exports = {
   expo: {
-    name: "Song Streak",
+    name: "SongStreak",
     slug: "song-streak",
     version: "1.0.0",
     orientation: "portrait",
@@ -27,9 +27,9 @@ module.exports = {
       usesAppleSignIn: true,
       infoPlist: {
         UIBackgroundModes: ["audio"],
-        NSCameraUsageDescription: "Song Streak needs camera access to take a photo for your profile picture.",
-        NSPhotoLibraryUsageDescription: "Song Streak needs access to your photos to set your profile picture.",
-        NSMicrophoneUsageDescription: "Song Streak uses the microphone for audio features during practice sessions.",
+        NSCameraUsageDescription: "SongStreak needs camera access to take a photo for your profile picture.",
+        NSPhotoLibraryUsageDescription: "SongStreak needs access to your photos to set your profile picture.",
+        NSMicrophoneUsageDescription: "SongStreak uses the microphone for audio features during practice sessions.",
         ITSAppUsesNonExemptEncryption: false
       }
     },
@@ -61,7 +61,7 @@ module.exports = {
       [
         "expo-image-picker",
         {
-          photosPermission: "Allow Song Streak to access your photos to set your profile picture."
+          photosPermission: "Allow SongStreak to access your photos to set your profile picture."
         }
       ],
       "expo-audio",

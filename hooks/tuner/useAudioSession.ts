@@ -5,7 +5,7 @@
  * - Web: Uses Web Audio API with getUserMedia
  * - Native (future): Will use react-native-live-audio-stream or expo-av
  *
- * Currently implements web-first approach since Song Streak
+ * Currently implements web-first approach since SongStreak
  * runs on web via Expo.
  */
 

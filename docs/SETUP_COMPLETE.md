@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Song Streak video analysis and persistence layer is now fully configured and ready for testing. All backend infrastructure is in place, and the app is ready to analyze videos using Gemini AI and save songs to Supabase.
+The SongStreak video analysis and persistence layer is now fully configured and ready for testing. All backend infrastructure is in place, and the app is ready to analyze videos using Gemini AI and save songs to Supabase.
 
 ---
 
@@ -492,7 +492,7 @@ Before deploying to production:
 
 ## Summary
 
-🎉 **Your Song Streak video analysis workflow is now production-ready!**
+🎉 **Your SongStreak video analysis workflow is now production-ready!**
 
 All backend infrastructure is configured and tested. The app can:
 - ✅ Analyze music videos with Gemini AI

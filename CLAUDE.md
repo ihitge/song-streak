@@ -1,10 +1,10 @@
-# Claude Instructions for Song Streak
+# Claude Instructions for SongStreak
 
 ## Related Projects
 
 | Project | Description | Location |
 |---------|-------------|----------|
-| **Song Streak App** | React Native mobile app (Expo) | This repository |
+| **SongStreak App** | React Native mobile app (Expo) | This repository |
 | **[Marketing Site](../song-streak-site/)** | Landing page at [songstreak.app](https://songstreak.app) | `../song-streak-site/` |
 
 ---

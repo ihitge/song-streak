@@ -1,17 +1,17 @@
-# Privacy Policy for Song Streak
+# Privacy Policy for SongStreak
 
 **Effective Date:** December 19, 2025
 **Last Updated:** December 19, 2025
 
 ## 1. Introduction
 
-Welcome to **Song Streak**. We are committed to protecting your personal data and your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application ("Song Streak" or the "App").
+Welcome to **SongStreak**. We are committed to protecting your personal data and your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our mobile application ("SongStreak" or the "App").
 
 This policy complies with the UK General Data Protection Regulation (UK GDPR), the EU General Data Protection Regulation (EU GDPR), the California Consumer Privacy Act (CCPA), and other applicable data protection laws.
 
 ## 2. Data Controller
 
-For the purposes of data protection laws, the developer of Song Streak is the "Data Controller" responsible for your personal data.
+For the purposes of data protection laws, the developer of SongStreak is the "Data Controller" responsible for your personal data.
 
 **Data Controller:** Adriaan Hitge
 **Email:** ihitge@gmail.com
@@ -180,15 +180,15 @@ To exercise any of these rights, please contact us at ihitge@gmail.com. We will 
 
 ## 11. Children's Privacy
 
-Song Streak is not intended for children under the age of 13. We do not knowingly collect personal data from children under 13. Age verification is handled through the authentication providers (Apple, Google) which require users to meet their minimum age requirements.
+SongStreak is not intended for children under the age of 13. We do not knowingly collect personal data from children under 13. Age verification is handled through the authentication providers (Apple, Google) which require users to meet their minimum age requirements.
 
 If you believe we have inadvertently collected data from a child under 13, please contact us immediately and we will delete it.
 
 ## 12. Cookies & Local Storage
 
-The Song Streak mobile app does not use cookies. We use local device storage (AsyncStorage) to save your preferences and authentication session. This data never leaves your device unless you explicitly sync with our servers.
+The SongStreak mobile app does not use cookies. We use local device storage (AsyncStorage) to save your preferences and authentication session. This data never leaves your device unless you explicitly sync with our servers.
 
-The Song Streak website uses minimal cookies for essential functionality (such as remembering your cookie consent preference). We do not use tracking or advertising cookies.
+The SongStreak website uses minimal cookies for essential functionality (such as remembering your cookie consent preference). We do not use tracking or advertising cookies.
 
 ## 13. Changes to This Policy
 

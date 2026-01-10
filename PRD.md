@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-# Song Streak
+# SongStreak
 
 **Version:** 1.1
 **Date:** December 17, 2025
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-Song Streak is an iOS and Android mobile application designed to help musicians organize their song repertoire, track practice sessions, and leverage AI to analyze music theory from video tutorial references. The app combines a personal song library with integrated practice tools (metronome, practice streak, practice time to track how long a specific song has been practiced), interactive chord diagrams, and analytics to help musicians build consistent practice habits. Progress will be gamified with rewards and achievements to keep users motivated based on practice streaks and fluency levels.
+SongStreak is an iOS and Android mobile application designed to help musicians organize their song repertoire, track practice sessions, and leverage AI to analyze music theory from video tutorial references. The app combines a personal song library with integrated practice tools (metronome, practice streak, practice time to track how long a specific song has been practiced), interactive chord diagrams, and analytics to help musicians build consistent practice habits. Progress will be gamified with rewards and achievements to keep users motivated based on practice streaks and fluency levels.
 
 **Key capabilities include:**
 - AI-powered theory extraction from YouTube videos (BPM, key, chords, scales, lyrics)

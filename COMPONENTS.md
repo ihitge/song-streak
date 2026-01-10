@@ -1,4 +1,4 @@
-# Song Streak Component Library
+# SongStreak Component Library
 
 > **For Claude AI**: Always check this file before creating new UI components. Reuse existing components to avoid tech debt.
 

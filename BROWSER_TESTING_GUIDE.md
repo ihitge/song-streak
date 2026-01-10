@@ -1,4 +1,4 @@
-# Browser Testing Guide for Song Streak
+# Browser Testing Guide for SongStreak
 
 This guide explains how Claude Code now has access to automated browser testing via Playwright MCP.
 

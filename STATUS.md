@@ -1,4 +1,4 @@
-# 🎵 Song Streak - Project Status
+# 🎵 SongStreak - Project Status
 
 **Last Updated:** January 10, 2026
 **Status:** ✅ **UAT/QA COMPLETE - All 17 Test Items Passed**
@@ -7,7 +7,7 @@
 
 ## 📊 Project Overview
 
-Song Streak is a music learning companion app that helps users track songs they're learning to play, organized by instrument, difficulty, and practice progress.
+SongStreak is a music learning companion app that helps users track songs they're learning to play, organized by instrument, difficulty, and practice progress.
 
 This document shows the current implementation status and what's ready to test.
 
@@ -15,7 +15,7 @@ This document shows the current implementation status and what's ready to test.
 
 | Project | Description | Location |
 |---------|-------------|----------|
-| **Song Streak App** | React Native mobile app (Expo) | This repository |
+| **SongStreak App** | React Native mobile app (Expo) | This repository |
 | **[Marketing Site](../song-streak-site/)** | Landing page at [songstreak.app](https://songstreak.app) | `../song-streak-site/` |
 | **[@SongStreak](https://x.com/SongStreak)** | Official X (Twitter) account | x.com/SongStreak |
 
@@ -525,7 +525,7 @@ If you need to understand or modify the implementation:
 - [Row Level Security](https://supabase.com/docs/guides/auth/row-level-security)
 - [JavaScript Client](https://supabase.com/docs/reference/javascript)
 
-### Song Streak Codebase
+### SongStreak Codebase
 - See `CLAUDE.md` for component-first development guidelines
 - Check `COMPONENTS.md` for reusable UI components
 - Review `constants/Colors.ts` for design tokens
@@ -616,7 +616,7 @@ Check the relevant documentation files first, then review the code comments.
 
 ## 🎉 Summary
 
-**Song Streak Phase 4 is complete with Chord Generator System.**
+**SongStreak Phase 4 is complete with Chord Generator System.**
 
 All core features implemented:
 - ✅ Gemini API for video analysis

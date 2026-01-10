@@ -1,6 +1,6 @@
 # Gemini Interaction Log
 
-This document serves as a log of interactions with the Gemini AI assistant for the Song Streak project.
+This document serves as a log of interactions with the Gemini AI assistant for the SongStreak project.
 
 ---
 
@@ -25,10 +25,10 @@ This document serves as a log of interactions with the Gemini AI assistant for t
 
 ---
 
-**Prompt:** Rename app to "Song Streak".
+**Prompt:** Rename app to "SongStreak".
 
 **Key Outcomes:**
-- All textual references to "Sonic Sanctum Mobile" and "Practice Machine" updated to "Song Streak" in `app.json`, `package.json`, `PRD.md`, and `design_system.md`.
+- All textual references to "Sonic Sanctum Mobile" and "Practice Machine" updated to "SongStreak" in `app.json`, `package.json`, `PRD.md`, and `design_system.md`.
 - Project directory renamed from `practice-machine` to `song-streak`.
 
 ---

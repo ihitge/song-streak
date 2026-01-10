@@ -306,7 +306,7 @@ Claude Code can now perform **full automated browser testing** via Playwright MC
 - **Secure Gemini API**: Move API key and analysis logic to Supabase Edge Functions to prevent client-side exposure.
 - **Account Deletion**: Add mandatory "Delete Account" button in Support tab with cascading deletion of user data.
 - **Social Auth Verification**: Ensure Apple and Google Sign-In are fully configured for Production (production bundle identifiers and client IDs).
-- **Branding Audit**: Standardize app name spelling ("Song Streak") across all UI elements and metadata.
+- **Branding Audit**: ✅ **COMPLETED** - Standardized app name spelling ("SongStreak") across all UI elements and metadata.
 - **Legal Requirements [CRITICAL]**: ✅ **COMPLETED** - Privacy Policy and Terms of Service fully rewritten and aligned with app.
     - Privacy Policy: 14 sections, UK GDPR + EU GDPR + CCPA compliant
     - Terms of Service: 16 sections, Apple App Store compliant (account deletion rights)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide walks you through setting up the Gemini API for video analysis and Supabase for data persistence in Song Streak.
+This guide walks you through setting up the Gemini API for video analysis and Supabase for data persistence in SongStreak.
 
 ## Architecture
 

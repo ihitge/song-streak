@@ -1,17 +1,17 @@
-# Terms of Service for Song Streak
+# Terms of Service for SongStreak
 
 **Effective Date:** December 19, 2025
 **Last Updated:** December 19, 2025
 
 ## 1. Acceptance of Terms
 
-By downloading, installing, or using **Song Streak** (the "App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the App.
+By downloading, installing, or using **SongStreak** (the "App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the App.
 
-These Terms constitute a legally binding agreement between you and the developer of Song Streak.
+These Terms constitute a legally binding agreement between you and the developer of SongStreak.
 
 ## 2. Description of Service
 
-Song Streak is a music practice companion app that provides the following features:
+SongStreak is a music practice companion app that provides the following features:
 
 - **Song Library:** Store and manage songs you want to learn.
 - **AI Video Analysis:** Extract music theory (key, BPM, chords, etc.) from video tutorials using Google Gemini AI.

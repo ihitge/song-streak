@@ -1,5 +1,5 @@
 /**
- * Logger utility for Song Streak
+ * Logger utility for SongStreak
  *
  * Provides conditional logging that only outputs in development mode.
  * This prevents console.log statements from appearing in production builds.

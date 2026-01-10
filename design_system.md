@@ -1,4 +1,4 @@
-The "Song Streak Design System"
+The "SongStreak Design System"
 
 Codename: Soft Industrial
 Philosophy: "Weniger, aber besser" (Less, but better).
