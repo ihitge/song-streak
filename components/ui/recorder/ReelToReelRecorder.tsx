@@ -159,12 +159,14 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
     ]}>
       {/* Main content section - flex: 1 in fullWidth mode */}
       <View style={[styles.mainContent, fullWidth && styles.mainContentFullWidth]}>
-        {/* Header with title and screws */}
-        <View style={styles.header}>
-          <View style={styles.screw} />
-          <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
-          <View style={styles.screw} />
-        </View>
+        {/* Header with title and screws - only show when NOT fullWidth (DeviceCasing provides title) */}
+        {!fullWidth && (
+          <View style={styles.header}>
+            <View style={styles.screw} />
+            <Text style={[styles.title, compact && styles.titleCompact]}>{title}</Text>
+            <View style={styles.screw} />
+          </View>
+        )}
 
         {/* Single centered reel */}
         <View style={[styles.reelContainer, compact && styles.reelContainerCompact]}>
@@ -267,6 +269,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     borderTopWidth: 0,
     borderBottomWidth: 0,
+    backgroundColor: 'transparent',
     shadowOpacity: 0,
     elevation: 0,
     paddingHorizontal: 24,

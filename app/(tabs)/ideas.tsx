@@ -52,6 +52,6 @@ export default function IdeasScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.matteFog,
+    backgroundColor: Colors.ink,
   },
 });

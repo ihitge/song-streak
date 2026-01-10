@@ -338,7 +338,7 @@ export default function SetListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.matteFog, // Chassis Base
+    backgroundColor: Colors.ink, // Unified dark casing
   },
   // --- Song List ---
   songListContent: {

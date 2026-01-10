@@ -99,16 +99,8 @@ export default function StreaksScreen() {
     unlockedIds
   );
 
-  if (isLoading && !refreshing) {
-    return (
-      <View style={styles.container}>
-        <PageHeader />
-        <DeviceCasing title="STREAKS">
-          <View style={styles.loadingPlaceholder} />
-        </DeviceCasing>
-      </View>
-    );
-  }
+  // No blocking loading state - show content progressively as data arrives
+  // Each component handles its own loading/empty state
 
   return (
     <View style={styles.container}>
@@ -193,7 +185,7 @@ export default function StreaksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.matteFog,
+    backgroundColor: Colors.ink,
   },
   scrollView: {
     flex: 1,
@@ -201,13 +193,6 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     gap: 16,
-  },
-  loadingPlaceholder: {
-    flex: 1,
-    backgroundColor: Colors.deepSpaceBlue,
-    margin: 16,
-    borderRadius: 12,
-    opacity: 0.5,
   },
   bottomPadding: {
     height: 40,

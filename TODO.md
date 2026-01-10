@@ -2,6 +2,37 @@
 
 ## Recent Changes (January 10, 2026)
 
+### Unified Page Layout - Single Dark Device Casing
+
+**Problem**: Pages had inconsistent visual structure - PageHeader had light background while DeviceCasing had dark background, creating a visual seam. Additionally, some panel components (ReelToReelRecorder, VUMeterDisplay) had their own internal housing/titles that duplicated DeviceCasing's styling.
+
+**Solution**: Unified all pages to use a single dark container from top to bottom:
+
+**PageHeader Changes** (`components/ui/PageHeader.tsx`):
+- Background: `Colors.matteFog` → `Colors.ink` (dark)
+- Logo SVG fill: `#221310` → `#E4DFDA` (light for dark bg)
+- Avatar button: Dark styling with `Colors.charcoal` bg, `Colors.warmGray` border
+- Logout icon: `Colors.charcoal` → `Colors.softWhite`
+
+**Page Container Changes** (5 files):
+- `app/(tabs)/timing.tsx`, `tuner.tsx`, `ideas.tsx`, `streaks.tsx`, `index.tsx`
+- All changed from `Colors.matteFog` → `Colors.ink`
+
+**Panel Component Fixes**:
+- `ReelToReelRecorder.tsx`: Internal header (title + screws) now hidden when `fullWidth=true`
+- `VUMeterDisplay.tsx`: `housingFullWidth` now includes `backgroundColor: 'transparent'`
+- Both components no longer create nested visual containers when embedded in DeviceCasing
+
+### Streaks Page Performance Improvement
+
+**Problem**: Streaks page showed a dark blue/teal (`Colors.deepSpaceBlue`) loading placeholder and felt slow because it blocked rendering until ALL 4 data hooks completed.
+
+**Solution**:
+- Removed blocking loading state with `loadingPlaceholder`
+- Page now renders immediately with progressive content loading
+- Each component uses fallback values (`?? 0`) to render before data arrives
+- Removed unused `Colors.deepSpaceBlue` loading placeholder style
+
 ### Branding Standardization
 
 **Change**: Renamed all instances of "Song Streak" to "SongStreak" (one word, both S's capitalized).

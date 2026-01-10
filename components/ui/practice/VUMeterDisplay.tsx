@@ -403,9 +403,12 @@ const styles = StyleSheet.create({
   housingFullWidth: {
     width: '100%',
     borderRadius: 0,
-    // Remove borders when full width (embedded in DeviceCasing)
+    // Remove borders, background, shadow when full width (embedded in DeviceCasing)
     borderTopWidth: 0,
     borderBottomWidth: 0,
+    backgroundColor: 'transparent',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   housingEmbedded: {
     // Remove borders and shadow when embedded in another component

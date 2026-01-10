@@ -138,6 +138,13 @@ export default function TimingScreen() {
           />
         </View>
 
+        {/* Session Timer - above transport controls */}
+        <RamsTapeCounterDisplay
+          seconds={sessionSeconds}
+          fullWidth={true}
+          label="PRACTICE TIME"
+        />
+
         {/* FAB section - pinned at bottom, centered */}
         <View style={styles.fabSection}>
           <TransportControls
@@ -149,13 +156,6 @@ export default function TimingScreen() {
             showComplete={true}
           />
         </View>
-
-        {/* Session Timer pinned at bottom */}
-        <RamsTapeCounterDisplay
-          seconds={sessionSeconds}
-          fullWidth={true}
-          label="PRACTICE TIME"
-        />
       </DeviceCasing>
     </View>
   );
@@ -164,7 +164,7 @@ export default function TimingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.matteFog,
+    backgroundColor: Colors.ink,
   },
   metronomeSection: {
     flex: 1,
