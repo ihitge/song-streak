@@ -82,10 +82,10 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
  * Individual digit wheel with 3D mechanical appearance
  */
 const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, compact = false }) => {
-  // Dimensions based on compact mode
-  const width = compact ? 22 : 34;
-  const height = compact ? 31 : 45;
-  const borderRadius = compact ? 2 : 3;
+  // Dimensions based on compact mode (reduced by 40%)
+  const width = compact ? 13 : 20;
+  const height = compact ? 19 : 27;
+  const borderRadius = compact ? 1 : 2;
 
   return (
     <View style={styles.digitWheelContainer}>
@@ -133,30 +133,30 @@ const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, com
 
 const styles = StyleSheet.create({
   housing: {
-    width: 310,  // Match VU meter housing width
+    width: 186,  // Reduced by 40% from 310
     backgroundColor: Colors.ink,
-    borderRadius: 8,  // Reduced from 12
-    padding: 11,  // Reduced from 16
+    borderRadius: 5,  // Reduced by 40%
+    padding: 7,  // Reduced by 40%
     alignItems: 'center',
     // Outer bevel
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.1)',
-    borderBottomWidth: 2,
+    borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.3)',
     // Shadow
     shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 4 },  // Reduced from 6
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
-    shadowRadius: 6,  // Reduced from 8
-    elevation: 6,  // Reduced from 8
+    shadowRadius: 4,
+    elevation: 4,
   },
   housingCompact: {
-    width: 218,  // Match VU meter compact width (200 + 9*2 padding)
-    borderRadius: 6,  // Reduced from 8
-    padding: 7,  // Reduced from 10
-    shadowOffset: { width: 0, height: 2 },  // Reduced from 3
-    shadowRadius: 3,  // Reduced from 4
-    elevation: 3,  // Reduced from 4
+    width: 131,  // Reduced by 40%
+    borderRadius: 4,
+    padding: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+    elevation: 2,
   },
   housingFullWidth: {
     width: '100%',
@@ -168,12 +168,12 @@ const styles = StyleSheet.create({
   },
   recessedWell: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 6,  // Reduced from 8
-    padding: 8,  // Reduced from 12
+    borderRadius: 4,  // Reduced by 40%
+    padding: 5,  // Reduced by 40%
     // Inset effect
-    borderTopWidth: 2,
+    borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.5)',
-    borderLeftWidth: 2,
+    borderLeftWidth: 1,
     borderLeftColor: 'rgba(0,0,0,0.3)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.1)',
@@ -182,26 +182,26 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   recessedWellCompact: {
-    borderRadius: 4,  // Reduced from 6
-    padding: 6,  // Reduced from 8
+    borderRadius: 2,
+    padding: 4,
   },
   digitsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 2,  // Reduced by 40%
   },
   digitWheelContainer: {
     position: 'relative',
     overflow: 'hidden',
-    borderRadius: 3,  // Reduced from 4
+    borderRadius: 2,  // Reduced by 40%
   },
   digitWheel: {
-    width: 34,  // Reduced from 48
-    height: 45,  // Reduced from 64
+    width: 20,  // Reduced by 40% from 34
+    height: 27,  // Reduced by 40% from 45
     backgroundColor: Colors.softWhite,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 3,  // Reduced from 4
+    borderRadius: 2,  // Reduced by 40%
     // Subtle emboss
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.8)',
@@ -209,64 +209,65 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.15)',
   },
   digitWheelCompact: {
-    width: 22,  // Reduced from 32
-    height: 31,  // Reduced from 44
-    borderRadius: 2,  // Reduced from 3
+    width: 13,  // Reduced by 40%
+    height: 19,  // Reduced by 40%
+    borderRadius: 1,
   },
   digitText: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 25,  // Reduced from 36
+    fontSize: 15,  // Reduced by 40% from 25
     color: Colors.charcoal,
     letterSpacing: -1,
   },
   digitTextCompact: {
-    fontSize: 17,  // Reduced from 24
+    fontSize: 10,  // Reduced by 40%
   },
   digitInnerShadow: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 3,  // Reduced from 4
+    borderRadius: 2,  // Reduced by 40%
   },
   spacer: {
-    width: 11,  // Reduced from 16
-    height: 45,  // Reduced from 64
+    width: 7,  // Reduced by 40% from 11
+    height: 27,  // Reduced by 40% from 45
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,  // Reduced from 8
+    gap: 4,  // Reduced by 40%
   },
   spacerCompact: {
-    width: 8,  // Reduced from 12
-    height: 31,  // Reduced from 44
-    gap: 4,  // Reduced from 6
+    width: 5,  // Reduced by 40%
+    height: 19,  // Reduced by 40%
+    gap: 2,
   },
   spacerDot: {
-    width: 4,  // Reduced from 6
-    height: 4,  // Reduced from 6
-    borderRadius: 2,  // Reduced from 3
+    width: 2,  // Reduced by 40%
+    height: 2,  // Reduced by 40%
+    borderRadius: 1,
     backgroundColor: Colors.vermilion,
     // Glow effect
     shadowColor: Colors.vermilion,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
-    shadowRadius: 3,  // Reduced from 4
+    shadowRadius: 2,
   },
   spacerDotCompact: {
-    width: 3,  // Reduced from 4
-    height: 3,  // Reduced from 4
-    borderRadius: 1.5,  // Reduced from 2
+    width: 2,
+    height: 2,
+    borderRadius: 1,
   },
   cylinderOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 6,  // Reduced from 8
+    borderRadius: 4,  // Reduced by 40%
   },
   label: {
     ...Typography.label,
+    fontSize: 8,  // Reduced by 40%
     color: Colors.warmGray,
-    marginTop: 8,
+    marginTop: 5,  // Reduced by 40%
   },
   labelCompact: {
     ...Typography.label,
-    fontSize: 8,
+    fontSize: 6,
     color: Colors.warmGray,
-    marginTop: 6,
+    marginTop: 4,
   },
 });
