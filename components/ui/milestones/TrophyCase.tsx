@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   shelfDark: {
-    backgroundColor: Colors.deepSpaceBlue,
+    backgroundColor: Colors.charcoal,
   },
   shelfHeader: {
     flexDirection: 'row',
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255,255,255,0.05)',
   },
   shelfEdgeDark: {
-    backgroundColor: '#0a1520',
+    backgroundColor: '#1a1a1a',
   },
   viewAllButton: {
     alignItems: 'center',
