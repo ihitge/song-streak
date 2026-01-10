@@ -11,6 +11,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Linking,
+  Image,
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { Mail, Lock, User } from 'lucide-react-native';
@@ -113,7 +114,11 @@ export default function AuthScreen() {
           <View style={styles.deviceContainer}>
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>SongStreak</Text>
+              <Image
+                source={require('@/assets/images/icon.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
               <View style={styles.accentLine} />
               <Text style={styles.subtitle}>ACCESS CONTROL</Text>
             </View>
@@ -320,13 +325,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  title: {
-    fontFamily: 'MomoTrustDisplay',
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Colors.deepSpaceBlue,
-    letterSpacing: -0.5,
-    marginBottom: 4,
+  logo: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
   },
   accentLine: {
     width: 48,

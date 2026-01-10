@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, Text, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, Text, View, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 import { supabase } from '@/utils/supabase/client';
@@ -114,16 +114,24 @@ export function GoogleSignInButton() {
   };
 
   return (
-    <GoogleSigninButton
-      style={styles.button}
-      size={GoogleSigninButton.Size.Wide}
-      color={GoogleSigninButton.Color.Dark}
-      onPress={handleGoogleSignIn}
-    />
+    <View style={styles.buttonContainer}>
+      <GoogleSigninButton
+        style={styles.button}
+        size={GoogleSigninButton.Size.Wide}
+        color={GoogleSigninButton.Color.Dark}
+        onPress={handleGoogleSignIn}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  buttonContainer: {
+    width: '100%',
+    height: 50,
+    overflow: 'hidden',
+    borderRadius: 8,
+  },
   button: {
     width: '100%',
     height: 50,
@@ -135,7 +143,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    opacity: 0.7,
   },
   placeholderContent: {
     flexDirection: 'row',
