@@ -2,6 +2,60 @@
 
 ## Recent Changes (January 10, 2026)
 
+### Sound Recorder - Save, Playback & Band Sharing
+
+**Feature**: Complete voice memo management system for the Ideas/Idea Bank tab.
+
+**User Flow**:
+1. User opens Ideas tab → sees Sound Recorder in RECORD view
+2. Taps Record → Recording starts (30 sec max)
+3. Taps Stop → Save Panel slides in with title input + band picker
+4. User enters title, optionally selects band, taps SAVE
+5. Recording uploads to Supabase Storage
+6. User can toggle to LIBRARY view to see all saved memos
+7. In LIBRARY, can play/share/delete memos
+
+**New Files**:
+- `components/ui/recorder/SaveRecordingPanel.tsx` - Inline save panel with title + band picker
+- `components/ui/modals/ShareToBandModal.tsx` - Modal for sharing existing memos to bands
+
+**Modified Files**:
+- `app/(tabs)/ideas.tsx` - Complete rewrite with view toggle, save flow, playback, share modal
+- `components/ui/recorder/ReelToReelRecorder.tsx` - Added `enableSaveFlow`, `bands`, `onSave` props
+- `components/ui/recorder/index.ts` - Export SaveRecordingPanel
+- `components/ui/modals/index.ts` - Export ShareToBandModal
+
+**Features**:
+- VIEW toggle (RECORD/LIBRARY) using GangSwitch
+- Inline save panel after stopping recording
+- Optional band sharing at save time
+- Web audio playback with signed URLs (1-hour expiry)
+- Share existing memos to bands via modal
+- Delete with confirmation dialog
+- Empty state for library view
+
+---
+
+### Colors.deepSpaceBlue Deprecated
+
+**Change**: Removed all usages of `Colors.deepSpaceBlue` (#0E273C) from the codebase. This teal/dark blue color was inconsistent with the app's dark theme.
+
+**Replacement**: All instances now use `Colors.charcoal` (#333333) for consistent dark variant styling.
+
+**Files Updated (25+ total)**:
+- Filter components (RotaryKnob, FrequencyTuner, InsetWindow - native and web)
+- Tuner components (TunerMeter, TunerNoteDisplay)
+- Modal components (VoiceMemoModal, StyledAlertModal, CircleOfFifthsModal, ChordChartModal)
+- Milestone/Trophy components (Trophy, MilestoneProgress, TrophyCase)
+- LED indicators (LEDIndicator - native and web)
+- Mastery components (SkillNode - native and web)
+- Other components (VoiceMemosList, add-song.tsx)
+- Constants (Colors.ts now marks deepSpaceBlue as deprecated, Styles.ts)
+- Types (mastery.ts PATH_COLORS)
+- Documentation (CLAUDE.md, design_system.md, STATUS.md)
+
+**Note**: `Colors.deepSpaceBlue` still exists in Colors.ts for backwards compatibility but is marked as deprecated with a JSDoc comment.
+
 ### Unified Page Layout - Single Dark Device Casing
 
 **Problem**: Pages had inconsistent visual structure - PageHeader had light background while DeviceCasing had dark background, creating a visual seam. Additionally, some panel components (ReelToReelRecorder, VUMeterDisplay) had their own internal housing/titles that duplicated DeviceCasing's styling.

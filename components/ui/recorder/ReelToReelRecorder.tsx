@@ -3,9 +3,10 @@
  *
  * Voice recorder with unified single reel graphic.
  * Features a glowing reel that spins during recording/playback.
+ * Includes inline save panel for naming and sharing recordings.
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Share2, Trash2 } from 'lucide-react-native';
@@ -13,11 +14,13 @@ import { Colors } from '@/constants/Colors';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 import { TransportButton } from '@/types/voiceMemo';
+import { BandWithMemberCount } from '@/types/band';
 
 // Sub-components
 import { TapeReel } from './TapeReel';
 import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { TransportControls } from './TransportControls';
+import { SaveRecordingPanel } from './SaveRecordingPanel';
 
 interface ReelToReelRecorderProps {
   /** Called when a recording is completed and saved */
@@ -34,6 +37,16 @@ interface ReelToReelRecorderProps {
   title?: string;
   /** Show transport controls (default true) */
   showTransport?: boolean;
+  /** Enable save panel flow (shows save UI after recording stops) */
+  enableSaveFlow?: boolean;
+  /** Available bands for sharing (required if enableSaveFlow is true) */
+  bands?: BandWithMemberCount[];
+  /** Called when recording is saved with title and optional band */
+  onSave?: (blob: Blob, duration: number, title: string, bandId: string | null) => Promise<void>;
+  /** Whether upload is in progress */
+  isUploading?: boolean;
+  /** Upload progress (0-100) */
+  uploadProgress?: number;
 }
 
 // Layout constants
@@ -48,8 +61,14 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
   fullWidth = false,
   title = 'VOICE MEMO',
   showTransport = true,
+  enableSaveFlow = false,
+  bands = [],
+  onSave,
+  isUploading = false,
+  uploadProgress = 0,
 }) => {
-  const { showWarning } = useStyledAlert();
+  const { showWarning, showError } = useStyledAlert();
+  const [showSavePanel, setShowSavePanel] = useState(false);
 
   const {
     state,
@@ -145,8 +164,37 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
   const handleDelete = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     reset();
+    setShowSavePanel(false);
     onDelete?.();
   }, [reset, onDelete]);
+
+  // Show save panel when recording stops (if save flow is enabled)
+  useEffect(() => {
+    if (enableSaveFlow && state === 'stopped' && hasRecording && audioBlob) {
+      setShowSavePanel(true);
+    }
+  }, [enableSaveFlow, state, hasRecording, audioBlob]);
+
+  // Handle save from save panel
+  const handleSaveRecording = useCallback(async (saveTitle: string, bandId: string | null) => {
+    if (!audioBlob || !onSave) return;
+
+    try {
+      await onSave(audioBlob, recording.elapsedSeconds, saveTitle, bandId);
+      // Reset recorder after successful save
+      reset();
+      setShowSavePanel(false);
+    } catch (error) {
+      console.error('[ReelToReelRecorder] Save error:', error);
+      showError('Save Failed', 'Could not save recording. Please try again.');
+    }
+  }, [audioBlob, recording.elapsedSeconds, onSave, reset, showError]);
+
+  // Handle discard from save panel
+  const handleDiscardRecording = useCallback(() => {
+    reset();
+    setShowSavePanel(false);
+  }, [reset]);
 
   const reelSize = compact ? REEL_SIZE_COMPACT : REEL_SIZE;
   const isSpinning = state === 'recording' || state === 'playing';
@@ -205,8 +253,20 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
         </View>
       )}
 
-      {/* Action buttons (when recording exists) - beveled style matching metronome */}
-      {hasRecording && state !== 'recording' && (
+      {/* Save Recording Panel (when save flow is enabled) */}
+      {enableSaveFlow && (
+        <SaveRecordingPanel
+          visible={showSavePanel}
+          bands={bands}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          onSave={handleSaveRecording}
+          onDiscard={handleDiscardRecording}
+        />
+      )}
+
+      {/* Action buttons (when recording exists and NOT using save flow) - beveled style matching metronome */}
+      {!enableSaveFlow && hasRecording && state !== 'recording' && (
         <View style={[styles.actionButtons, compact && styles.actionButtonsCompact]}>
           {onShare && (
             <Pressable

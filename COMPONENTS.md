@@ -80,12 +80,14 @@
 | `DailyGoalModal` | **Celebration: daily goal achieved** | `components/ui/streaks/DailyGoalModal.tsx` |
 | `MilestoneModal` | **Celebration: lifetime trophy unlock** | `components/ui/milestones/MilestoneModal.tsx` |
 | `StreakMilestoneModal` | **Celebration: streak milestone reached** | `components/ui/streaks/StreakMilestoneModal.tsx` |
-| `ReelToReelRecorder` | **Full skeuomorphic voice recorder (uses VUMeterDisplay)** | `components/ui/recorder/ReelToReelRecorder.tsx` |
+| `ReelToReelRecorder` | **Full skeuomorphic voice recorder with save flow** | `components/ui/recorder/ReelToReelRecorder.tsx` |
+| `SaveRecordingPanel` | Inline save panel with title input + band picker | `components/ui/recorder/SaveRecordingPanel.tsx` |
 | `TapeReel` | Animated spinning tape reel (Skia) | `components/ui/recorder/TapeReel.tsx` |
 | `TapeCounter` | Mechanical flip time counter | `components/ui/recorder/TapeCounter.tsx` |
 | `TransportControls` | 5-button transport (REC/STOP/PLAY/REW/FF) | `components/ui/recorder/TransportControls.tsx` |
-| `VoiceMemosList` | List of voice memos with playback | `components/ui/recorder/VoiceMemosList.tsx` |
+| `VoiceMemosList` | List of voice memos with play/share/delete | `components/ui/recorder/VoiceMemosList.tsx` |
 | `VoiceMemoModal` | **Modal containing recorder + library** | `components/ui/modals/VoiceMemoModal.tsx` |
+| `ShareToBandModal` | **Modal for sharing memos to bands** | `components/ui/modals/ShareToBandModal.tsx` |
 
 ### Hooks
 
@@ -161,7 +163,7 @@ Import: `import { Colors } from '@/constants/Colors';`
 | `Colors.graphite` | `#888888` | Labels, secondary text |
 | `Colors.moss` | `#417B5A` | Success/Easy (Green) |
 | `Colors.lobsterPink` | `#DB5461` | Accent/Highlight (Lobster Pink) |
-| `Colors.deepSpaceBlue` | `#0E273C` | Dark Accent (Deep Space Blue) |
+| ~~`Colors.deepSpaceBlue`~~ | ~~`#0E273C`~~ | **DEPRECATED** - Use `Colors.charcoal` instead |
 | `Colors.warmGray` | `#847577` | Secondary Text (Warm Gray) |
 
 ### Typography
@@ -171,7 +173,7 @@ Import: `import { Colors } from '@/constants/Colors';`
 
 | Use Case | Font | Size | Weight | Notes |
 |----------|------|------|--------|-------|
-| App Logo | MomoTrustDisplay | 24-28px | Bold | deepSpaceBlue color |
+| App Logo | MomoTrustDisplay | 24-28px | Bold | charcoal color |
 | Page Titles | LexendDecaRegular | 12px | Regular | uppercase, warmGray |
 | Song Titles | LexendDecaBold | 14px | Bold | Title case |
 | Artist Names | LexendDecaRegular | 12px | Regular | uppercase |
@@ -209,7 +211,7 @@ interface PageHeaderProps {
 ```
 
 **Visual Behavior**:
-- SongStreak logo (MomoTrustDisplay, deepSpaceBlue)
+- SongStreak logo (MomoTrustDisplay, charcoal)
 - User avatar button - displays user initials from email, navigates to `/account` on tap
 - Logout button with audio + haptic feedback (uses `useSignOut` hook)
 
@@ -375,7 +377,7 @@ interface LibraryHeaderProps {
 ```
 
 **Visual Behavior**:
-- **Top Bar**: "SongStreak" logo (MomoTrustDisplay, deepSpaceBlue) + User Avatar/Logout
+- **Top Bar**: "SongStreak" logo (MomoTrustDisplay, charcoal) + User Avatar/Logout
 - **Filter Deck**: Two-row grid configuration
   - Row 1: Search Widget (no label, placeholder: "Search songs...")
   - Row 2: Instrument Widget | Genre Widget
@@ -506,7 +508,7 @@ const handlePress = async () => {
 |------|------|-------|----------|
 | `error` | AlertCircle | vermilion | Validation errors, API failures |
 | `success` | CheckCircle | moss | Save success, operation complete |
-| `info` | Info | deepSpaceBlue | Instructions, coming soon |
+| `info` | Info | charcoal | Instructions, coming soon |
 | `warning` | AlertTriangle | amber | Warnings, quota exceeded |
 
 **Usage**:
@@ -1480,7 +1482,7 @@ interface TheoryMetricsRowProps {
 interface TheoryChipGroupProps {
   label: string;
   items: string[];
-  chipColor: string;  // Colors.vermilion, deepSpaceBlue, moss
+  chipColor: string;  // Colors.vermilion, charcoal, moss
   emptyText?: string;
   icon?: LucideIcon;
 }
@@ -1490,7 +1492,7 @@ interface TheoryChipGroupProps {
 | Group | Contents | Color |
 |-------|----------|-------|
 | SONG METRICS | Key, Tempo, Time Signature | vermilion icons |
-| HARMONY | Chords, Scales | vermilion / deepSpaceBlue chips |
+| HARMONY | Chords, Scales | vermilion / charcoal chips |
 | TECHNIQUE | Techniques, Strumming Pattern | moss chips |
 
 ### Label & Styling Updates

@@ -9,3 +9,4 @@ export { TapeReel } from './TapeReel';
 export { TapeCounter } from './TapeCounter';
 export { TransportControls } from './TransportControls';
 export { VoiceMemosList } from './VoiceMemosList';
+export { SaveRecordingPanel } from './SaveRecordingPanel';
