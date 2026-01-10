@@ -23,6 +23,16 @@ This document shows the current implementation status and what's ready to test.
 
 ## 🎯 Latest Updates (January 10, 2026)
 
+### Branding Standardization - COMPLETE ✅
+- Renamed all instances of "Song Streak" (two words) to "SongStreak" (one word)
+- Updated 18 files across configuration, source code, and documentation
+- Legal documents (TERMS.md, PRIVACY.md) updated for consistency
+
+### Login Page Updates - COMPLETE ✅
+- Replaced text logo with app icon image (80x80px)
+- Matched Google Sign-In button height (50px) with Apple Sign-In button
+- Both social login buttons now have consistent styling
+
 ### UAT/QA Testing Complete - ALL PASSED ✅
 
 Full browser-based testing completed via Playwright MCP. All 17 test items passed:

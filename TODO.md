@@ -1,5 +1,31 @@
 # Development Notes & Future Features
 
+## Recent Changes (January 10, 2026)
+
+### Branding Standardization
+
+**Change**: Renamed all instances of "Song Streak" to "SongStreak" (one word, both S's capitalized).
+
+**Files Updated (18 total)**:
+- `app.json`, `app.config.js` - App name and iOS permission strings
+- `utils/logger.ts`, `hooks/tuner/useAudioSession.ts` - Code comments
+- Documentation files (CLAUDE.md, STATUS.md, PRD.md, COMPONENTS.md, etc.)
+- Legal documents (docs/TERMS.md, docs/PRIVACY.md)
+
+### Login Page Updates
+
+**Changes**:
+- Replaced text "SongStreak" with app icon image (80x80px)
+- Added Image import and logo style in `app/(auth)/index.tsx`
+- Matched Google Sign-In button height (50px) with Apple Sign-In
+- Both social login buttons now have consistent styling
+
+**Files**:
+- `app/(auth)/index.tsx` - Logo image display
+- `components/auth/GoogleSignInButton.tsx` - Fixed 50px height container
+
+---
+
 ## Recent Changes (January 7, 2026)
 
 ### FAB Centering & Consistent Position
