@@ -98,6 +98,7 @@
 | `useStyledAlert` | **Styled alert system (replaces native Alert.alert)** | `hooks/useStyledAlert.tsx` |
 | `useAccountDeletion` | **Account deletion with confirmation (Apple requirement)** | `hooks/useAccountDeletion.ts` |
 | `useReducedMotion` | **Detects iOS/Android "Reduce Motion" accessibility setting** | `hooks/useReducedMotion.ts` |
+| `useAccessibleAnimation` | **Returns animation duration respecting reduced motion** | `hooks/useAccessibleAnimation.ts` |
 | `useBands` | Band management (create, join, list bands) | `hooks/useBands.ts` |
 | `useSetlists` | Setlist management for bands | `hooks/useSetlists.ts` |
 | `usePracticeData` | Practice session tracking and achievements | `hooks/usePracticeData.ts` |
@@ -128,6 +129,10 @@
 | Constant | Purpose | Location |
 |----------|---------|----------|
 | `Colors` | Design system color tokens | `constants/Colors.ts` |
+| `ICON_SIZES` | Standardized icon sizes (xs/sm/md/lg/xl/hero) | `constants/Styles.ts` |
+| `TOUCH_TARGETS` | Minimum touch target sizes for accessibility | `constants/Styles.ts` |
+| `SPACING` | Spacing scale (4px grid) | `constants/Styles.ts` |
+| `ANIMATION_DURATIONS` | Animation timing tokens | `constants/Animations.ts` |
 | `Animations` | Shared animation keyframes (glitch effects) | `constants/Animations.ts` |
 | `UI_VOLUMES` | Sound volume levels per component | `constants/Audio.ts` |
 | `TunerConfig` | Audio, YIN, volume, and tuning thresholds for tuner | `constants/TunerConfig.ts` |
@@ -154,12 +159,30 @@ Import: `import { Colors } from '@/constants/Colors';`
 | `Colors.charcoal` | `#333333` | Dark controls, primary text |
 | `Colors.alloy` | `#d6d6d6` | Light controls, wells |
 | `Colors.vermilion` | `#EE6C4D` | Action/accent (hero color) |
+| `Colors.vermilionDark` | `#d04620` | Pressed/gradient end state |
 | `Colors.ink` | `#221E22` | Text primary (Off-Black) |
 | `Colors.graphite` | `#888888` | Labels, secondary text |
+| `Colors.graphiteDark` | `#666666` | Pressed state for graphite |
 | `Colors.moss` | `#417B5A` | Success/Easy (Green) |
 | `Colors.lobsterPink` | `#DB5461` | Accent/Highlight (Lobster Pink) |
-| ~~`Colors.deepSpaceBlue`~~ | ~~`#0E273C`~~ | **DEPRECATED** - Use `Colors.charcoal` instead |
+| `Colors.warning` | `#D4A017` | Warning/Caution (Gold) |
 | `Colors.warmGray` | `#847577` | Secondary Text (Warm Gray) |
+| `Colors.capPressed` | `#e6e6e6` | NavButton pressed state |
+| `Colors.rimHighlight` | `#ffffff` | FAB border ring |
+| ~~`Colors.deepSpaceBlue`~~ | ~~`#0E273C`~~ | **DEPRECATED** - Use `Colors.charcoal` instead |
+
+**Shadow Tokens** (use for consistent shadows):
+```typescript
+Colors.shadows.xs   // 'rgba(0,0,0,0.05)'
+Colors.shadows.sm   // 'rgba(0,0,0,0.1)'
+Colors.shadows.md   // 'rgba(0,0,0,0.15)'
+Colors.shadows.lg   // 'rgba(0,0,0,0.2)'
+Colors.shadows.xl   // 'rgba(0,0,0,0.3)'
+Colors.shadows.overlay  // 'rgba(0,0,0,0.85)'
+
+Colors.highlights.sm  // 'rgba(255,255,255,0.3)'
+Colors.highlights.md  // 'rgba(255,255,255,0.5)'
+```
 
 ### Typography
 
@@ -694,6 +717,154 @@ interface JoinBandModalProps {
 
 ---
 
+## Accessibility Patterns
+
+### Touch Targets (iOS & Android)
+
+All interactive elements must meet minimum touch target sizes for accessibility compliance.
+
+**Requirements**:
+- **Minimum**: 44x44pt (Apple HIG minimum)
+- **Comfortable**: 48x48dp (Android recommended)
+- **Use tokens**: Import from `constants/Styles.ts`
+
+```typescript
+import { TOUCH_TARGETS } from '@/constants/Styles';
+
+// In StyleSheet
+button: {
+  minWidth: TOUCH_TARGETS.minimum,   // 44
+  minHeight: TOUCH_TARGETS.minimum,  // 44
+  // ... other styles
+}
+```
+
+**Pattern for small visual elements**:
+```typescript
+// Wrap small icons in larger pressable areas
+<Pressable
+  style={{
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }}
+  onPress={handlePress}
+>
+  <Icon size={16} />  {/* Visual size can be smaller */}
+</Pressable>
+```
+
+---
+
+### Reduced Motion (iOS & Android)
+
+Respect user's accessibility preference for reduced motion.
+
+**Detection**: Both platforms use `AccessibilityInfo.isReduceMotionEnabled()`
+- **iOS**: Settings > Accessibility > Motion > Reduce Motion
+- **Android**: Settings > Accessibility > Remove animations
+
+**Hooks**:
+```typescript
+import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useAccessibleAnimation, useAccessibleSpringConfig } from '@/hooks/useAccessibleAnimation';
+
+// Basic usage
+const prefersReducedMotion = useReducedMotion();
+const duration = prefersReducedMotion ? 0 : 300;
+
+// Using utility hooks
+const duration = useAccessibleAnimation(300);  // Returns 0 if reduced motion
+const springConfig = useAccessibleSpringConfig(100, 10);  // High tension if reduced motion
+```
+
+**Pattern for Animated components**:
+```typescript
+const prefersReducedMotion = useReducedMotion();
+
+useEffect(() => {
+  if (visible) {
+    if (prefersReducedMotion) {
+      // Skip animation, set final values immediately
+      scaleAnim.setValue(1);
+      opacityAnim.setValue(1);
+    } else {
+      // Run animations normally
+      Animated.parallel([
+        Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }),
+        Animated.timing(opacityAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]).start();
+    }
+  }
+}, [visible, prefersReducedMotion]);
+```
+
+**Components with reduced motion support**:
+- `StyledAlertModal` - Skips spring animation
+- `PracticeCompleteModal` - Skips spring animation
+- `StreakFlame` - Disables pulsing animation
+- `GangSwitch` - Instant position changes
+
+---
+
+### Icon Sizes
+
+Use standardized icon sizes for visual hierarchy consistency.
+
+```typescript
+import { ICON_SIZES } from '@/constants/Styles';
+
+// Available sizes
+ICON_SIZES.xs    // 12 - metadata, labels
+ICON_SIZES.sm    // 16 - inline icons, secondary
+ICON_SIZES.md    // 20 - standard controls
+ICON_SIZES.lg    // 24 - primary controls
+ICON_SIZES.xl    // 28 - featured elements, FAB
+ICON_SIZES.hero  // 32 - large displays, modals
+```
+
+**Usage**:
+```typescript
+<Settings size={ICON_SIZES.sm} color={Colors.graphite} />
+<Mic size={ICON_SIZES.xl} color={Colors.softWhite} />
+<Check size={ICON_SIZES.hero} color={Colors.moss} />
+```
+
+---
+
+### Haptic Feedback Types
+
+Use appropriate haptic feedback for different interactions:
+
+| Feedback | Use Case | Example |
+|----------|----------|---------|
+| `ImpactFeedbackStyle.Light` | Standard button press | Navigation, toggles |
+| `ImpactFeedbackStyle.Medium` | Important actions | Start/Stop recording |
+| `ImpactFeedbackStyle.Heavy` | Destructive/significant | Delete confirmation |
+| `NotificationFeedbackType.Success` | Success alerts | Practice logged |
+| `NotificationFeedbackType.Warning` | Warning alerts | Quota exceeded |
+| `NotificationFeedbackType.Error` | Error alerts | API failure |
+| `selectionAsync()` | Fine adjustments | BPM slider, knob rotation |
+
+---
+
+### Accessibility Labels
+
+Always include proper accessibility attributes:
+
+```typescript
+<Pressable
+  onPress={handlePress}
+  accessibilityLabel="Start tuning"
+  accessibilityRole="button"
+  accessibilityState={{ disabled: isDisabled }}
+  accessibilityHint="Activates the microphone to detect pitch"
+>
+```
+
+---
+
 ## Anti-Patterns
 
 ### Don't use native Alert.alert
@@ -716,6 +887,41 @@ Extract to `StyleSheet.create`.
 
 ### Don't mix UI metaphors
 Keep to the "Industrial/Analog" aesthetic (wells, knobs, switches, beveled modals).
+
+### Don't ignore touch targets
+Never create buttons smaller than 44x44pt. Wrap small icons in larger pressable areas.
+
+```typescript
+// ❌ WRONG - Touch target too small
+<Pressable style={{ width: 24, height: 24 }}>
+  <Icon size={24} />
+</Pressable>
+
+// ✅ CORRECT - Adequate touch target with smaller visual
+<Pressable style={{ minWidth: 44, minHeight: 44, justifyContent: 'center' }}>
+  <Icon size={24} />
+</Pressable>
+```
+
+### Don't ignore reduced motion
+Always check `useReducedMotion()` for animated components.
+
+```typescript
+// ❌ WRONG - Animation always runs
+useEffect(() => {
+  Animated.spring(value, { toValue: 1 }).start();
+}, []);
+
+// ✅ CORRECT - Respects accessibility setting
+const prefersReducedMotion = useReducedMotion();
+useEffect(() => {
+  if (prefersReducedMotion) {
+    value.setValue(1);
+  } else {
+    Animated.spring(value, { toValue: 1 }).start();
+  }
+}, [prefersReducedMotion]);
+```
 
 ---
 

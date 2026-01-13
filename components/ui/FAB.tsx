@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     elevation: 8,
     // White ring effect
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: Colors.rimHighlight,
   },
   fabSecondary: {
     backgroundColor: Colors.graphite,

@@ -93,6 +93,7 @@ console.log(token);
 | **Alert dialogs (NEVER use native Alert)** | `useStyledAlert` |
 | Sign out functionality | `useSignOut` |
 | **Reduced motion accessibility** | `useReducedMotion` |
+| **Accessible animation durations** | `useAccessibleAnimation` |
 | Band management | `useBands` |
 | Setlist management | `useSetlists` |
 | Practice tracking | `usePracticeData` |
@@ -117,12 +118,37 @@ Colors.matteFog      // #E4DFDA - Background/chassis (Warm Bone)
 Colors.softWhite     // #f0f0f0 - Inset surfaces
 Colors.charcoal      // #333333 - Dark controls/text
 Colors.vermilion     // #EE6C4D - Action/accent (use sparingly)
+Colors.vermilionDark // #d04620 - Pressed/gradient end state
 Colors.ink           // #221E22 - Primary text (Off-Black)
 Colors.graphite      // #888888 - Labels/secondary text
+Colors.graphiteDark  // #666666 - Pressed state for graphite
 Colors.moss          // #417B5A - Success/positive states (Green)
 Colors.lobsterPink   // #DB5461 - Accent/Highlight (Lobster Pink)
+Colors.warning       // #D4A017 - Warning/Caution (Gold)
 // Colors.deepSpaceBlue is DEPRECATED - use Colors.charcoal instead
 Colors.warmGray      // #847577 - Secondary Text (Warm Gray)
+
+// Shadow tokens (use instead of inline rgba)
+Colors.shadows.sm    // 'rgba(0,0,0,0.1)'
+Colors.shadows.md    // 'rgba(0,0,0,0.15)'
+Colors.shadows.lg    // 'rgba(0,0,0,0.2)'
+```
+
+**Icon Sizes & Touch Targets** (from `constants/Styles.ts`):
+```typescript
+import { ICON_SIZES, TOUCH_TARGETS } from '@/constants/Styles';
+
+// Standardized icon sizes
+ICON_SIZES.xs    // 12 - metadata, labels
+ICON_SIZES.sm    // 16 - inline icons
+ICON_SIZES.md    // 20 - standard controls
+ICON_SIZES.lg    // 24 - primary controls
+ICON_SIZES.xl    // 28 - FAB icons
+ICON_SIZES.hero  // 32 - modal icons
+
+// Minimum touch targets (accessibility)
+TOUCH_TARGETS.minimum     // 44 - Apple HIG minimum
+TOUCH_TARGETS.comfortable // 48 - Android recommended
 ```
 
 ### Haptic Feedback (All Interactive Components)

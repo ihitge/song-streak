@@ -194,16 +194,16 @@ const styles = StyleSheet.create({
     gap: 8,  // Reduced from 12
   },
   adjustButton: {
-    width: 28,  // Reduced from 40
-    height: 28,  // Reduced from 40
-    borderRadius: 14,  // Reduced from 20
+    width: 44,  // Minimum touch target (Apple HIG / Android accessibility)
+    height: 44,  // Minimum touch target
+    borderRadius: 22,
     backgroundColor: Colors.alloy,
     justifyContent: 'center',
     alignItems: 'center',
     // Bevel effect
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.5)',
-    borderBottomWidth: 1,  // Reduced from 2
+    borderBottomWidth: 1,
     borderBottomColor: 'rgba(0,0,0,0.15)',
     shadowColor: Colors.ink,
     shadowOffset: { width: 0, height: 1 },
@@ -212,15 +212,15 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   adjustButtonCompact: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 44,  // Keep minimum touch target even in compact mode
+    height: 44,
+    borderRadius: 22,
   },
   adjustButtonText: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 17,  // Reduced from 24
+    fontSize: 22,  // Sized for 44pt button
     color: Colors.charcoal,
-    marginTop: -1,
+    marginTop: -2,
   },
   bpmContainer: {
     width: 84,  // Reduced from 120

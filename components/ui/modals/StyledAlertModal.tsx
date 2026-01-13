@@ -39,7 +39,7 @@ const getIconForType = (type: AlertType) => {
     case 'success':
       return <CheckCircle size={32} color={Colors.moss} strokeWidth={2.5} />;
     case 'warning':
-      return <AlertTriangle size={32} color="#D4A017" strokeWidth={2.5} />;
+      return <AlertTriangle size={32} color={Colors.warning} strokeWidth={2.5} />;
     case 'info':
     default:
       return <Info size={32} color={Colors.charcoal} strokeWidth={2.5} />;
@@ -53,7 +53,7 @@ const getHeaderColorForType = (type: AlertType) => {
     case 'success':
       return Colors.moss;
     case 'warning':
-      return '#D4A017';
+      return Colors.warning;
     case 'info':
     default:
       return Colors.charcoal;
@@ -63,11 +63,11 @@ const getHeaderColorForType = (type: AlertType) => {
 const getButtonColorsForStyle = (style?: 'default' | 'cancel' | 'destructive'): [string, string] => {
   switch (style) {
     case 'destructive':
-      return [Colors.vermilion, '#d04620'];
+      return [Colors.vermilion, Colors.vermilionDark];
     case 'cancel':
-      return [Colors.graphite, '#666666'];
+      return [Colors.graphite, Colors.graphiteDark];
     default:
-      return [Colors.vermilion, '#d04620'];
+      return [Colors.vermilion, Colors.vermilionDark];
   }
 };
 

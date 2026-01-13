@@ -14,6 +14,7 @@ import { View, Text, StyleSheet, Pressable, Linking, Platform, ActivityIndicator
 import { Mic, MicOff, Volume2, Settings } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { ICON_SIZES } from '@/constants/Styles';
 import { FAB } from '@/components/ui/FAB';
 import type { TunerStatus } from '@/types/tuner';
 
@@ -79,7 +80,7 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
     <View style={[styles.container, compact && styles.containerCompact]}>
       {/* Signal strength indicator */}
       <View style={styles.signalContainer}>
-        <Volume2 size={14} color={Colors.warmGray} />
+        <Volume2 size={ICON_SIZES.sm} color={Colors.warmGray} />
         <View style={styles.signalBarContainer}>
           {[0.2, 0.4, 0.6, 0.8, 1.0].map((threshold, index) => (
             <View
@@ -111,10 +112,10 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
           isInitializing ? (
             <ActivityIndicator size="small" color={Colors.softWhite} />
           ) : isActive ? (
-            <MicOff size={28} color={Colors.softWhite} strokeWidth={2.5} />
+            <MicOff size={ICON_SIZES.xl} color={Colors.softWhite} strokeWidth={2.5} />
           ) : (
             <Mic
-              size={28}
+              size={ICON_SIZES.xl}
               color={permissionStatus === 'denied' ? Colors.graphite : Colors.softWhite}
               strokeWidth={2.5}
             />
@@ -159,7 +160,7 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
             accessibilityRole="button"
             accessibilityHint="Opens device settings to enable microphone"
           >
-            <Settings size={14} color={Colors.softWhite} />
+            <Settings size={ICON_SIZES.sm} color={Colors.softWhite} />
             <Text style={styles.settingsButtonText}>OPEN SETTINGS</Text>
           </Pressable>
         </View>
@@ -226,8 +227,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.charcoal,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    minHeight: 44,  // Minimum touch target (Apple HIG / Android accessibility)
     borderRadius: 6,
     gap: 6,
   },

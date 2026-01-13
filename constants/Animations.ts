@@ -57,11 +57,22 @@ export const ExitToRight = new Keyframe({
 // --- Animation Timing Constants ---
 
 export const ANIMATION_DURATIONS = {
+  /** Instant - for reduced motion or immediate state changes */
+  instant: 0,
+  /** Fast - quick feedback animations (150ms) */
+  fast: 150,
+  /** Glitch enter animation (250ms) */
   glitchEnter: 250,
+  /** Glitch exit animation (200ms) */
   glitchExit: 200,
+  /** Standard fade animation (200ms) */
   fade: 200,
+  /** Standard slide animation (300ms) */
   slide: 300,
+  /** Spring-based animation (400ms) */
   spring: 400,
+  /** Slow animation for emphasis (500ms) */
+  slow: 500,
 } as const;
 
 // --- Easing Presets ---

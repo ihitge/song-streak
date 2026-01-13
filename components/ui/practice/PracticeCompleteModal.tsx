@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Clock, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface PracticeCompleteModalProps {
   visible: boolean;
@@ -27,6 +28,7 @@ export const PracticeCompleteModal: React.FC<PracticeCompleteModalProps> = ({
   seconds,
   onClose,
 }) => {
+  const prefersReducedMotion = useReducedMotion();
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -38,26 +40,32 @@ export const PracticeCompleteModal: React.FC<PracticeCompleteModalProps> = ({
       // Trigger haptic feedback
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-      // Animate in
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 100,
-          friction: 10,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      // Skip animation if reduced motion preferred (iOS/Android accessibility)
+      if (prefersReducedMotion) {
+        scaleAnim.setValue(1);
+        opacityAnim.setValue(1);
+      } else {
+        // Animate in
+        Animated.parallel([
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            tension: 100,
+            friction: 10,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
     } else {
       // Reset animations
       scaleAnim.setValue(0.9);
       opacityAnim.setValue(0);
     }
-  }, [visible, scaleAnim, opacityAnim]);
+  }, [visible, scaleAnim, opacityAnim, prefersReducedMotion]);
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -114,7 +122,7 @@ export const PracticeCompleteModal: React.FC<PracticeCompleteModalProps> = ({
               activeOpacity={0.8}
             >
               <LinearGradient
-                colors={[Colors.vermilion, '#d04620']}
+                colors={[Colors.vermilion, Colors.vermilionDark]}
                 style={styles.closeButtonGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
