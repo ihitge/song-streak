@@ -13,22 +13,18 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { ReelToReelRecorder } from '@/components/ui/recorder';
 import { VoiceMemoModal } from '@/components/ui/modals';
-import { useClickSound } from '@/hooks/useClickSound';
 
 export default function TestRecorderPage() {
   const router = useRouter();
-  const { playSound } = useClickSound();
   const [showModal, setShowModal] = useState(false);
 
   const handleBack = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     router.back();
   };
 
   const handleOpenModal = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setShowModal(true);
   };
 
@@ -43,7 +39,7 @@ export default function TestRecorderPage() {
         <Pressable onPress={handleBack} style={styles.backButton}>
           <ArrowLeft size={24} color={Colors.charcoal} />
         </Pressable>
-        <Text style={styles.title}>VOICE RECORDER TEST</Text>
+        <Text style={styles.title}>SOUND RECORDER TEST</Text>
         <Pressable onPress={handleOpenModal} style={styles.modalButton}>
           <Mic size={20} color={Colors.softWhite} />
         </Pressable>

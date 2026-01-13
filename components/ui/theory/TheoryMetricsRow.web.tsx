@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Music, Clock, Hash, Guitar, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 // Explicitly import web version
 import { CircleOfFifthsModal } from './CircleOfFifthsModal.web';
 
@@ -29,12 +28,10 @@ export const TheoryMetricsRow: React.FC<TheoryMetricsRowProps> = ({
   songTitle,
   artist,
 }) => {
-  const { playSound } = useClickSound();
   const [showCircleOfFifths, setShowCircleOfFifths] = useState(false);
 
   const handleKeyPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setShowCircleOfFifths(true);
   };
 

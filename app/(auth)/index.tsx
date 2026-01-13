@@ -88,6 +88,9 @@ export default function AuthScreen() {
     } = await supabase.auth.signUp({
       email: email,
       password: password,
+      options: {
+        emailRedirectTo: 'songstreak://auth-callback',
+      },
     });
 
     if (error) showError('Sign Up Failed', error.message);
@@ -284,6 +287,8 @@ function RamsInput({ label, icon, ...props }: any) {
         <TextInput
           style={styles.input}
           placeholderTextColor="#a0a0a0"
+          accessibilityLabel={label}
+          accessibilityHint={`Enter your ${label.toLowerCase()}`}
           {...props}
         />
         <View style={styles.etchedLine} />

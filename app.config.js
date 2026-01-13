@@ -9,7 +9,7 @@ module.exports = {
   expo: {
     name: "SongStreak",
     slug: "song-streak",
-    version: "1.0.0",
+    version: "2.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "songstreak",
@@ -23,14 +23,21 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.songstreak.app",
-      buildNumber: "1",
+      buildNumber: "13",
       usesAppleSignIn: true,
       infoPlist: {
         UIBackgroundModes: ["audio"],
         NSCameraUsageDescription: "SongStreak needs camera access to take a photo for your profile picture.",
         NSPhotoLibraryUsageDescription: "SongStreak needs access to your photos to set your profile picture.",
         NSMicrophoneUsageDescription: "SongStreak uses the microphone for audio features during practice sessions.",
-        ITSAppUsesNonExemptEncryption: false
+        ITSAppUsesNonExemptEncryption: false,
+        CFBundleURLTypes: [
+          {
+            CFBundleURLSchemes: [
+              "com.googleusercontent.apps.669073219812-jm3blji91bj03ifr033l1g2sv2mvuumh"
+            ]
+          }
+        ]
       }
     },
     android: {

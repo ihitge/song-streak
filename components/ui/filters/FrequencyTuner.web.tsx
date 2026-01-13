@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useClickSound } from '@/hooks/useClickSound';
 import type { FrequencyTunerProps } from '@/types/filters';
 
 type TunerVariant = 'dark' | 'light';
@@ -25,14 +24,13 @@ export const FrequencyTuner = <T extends string>({
   height: customHeight,
 }: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean; labelColor?: string }) => {
   const [width, setWidth] = useState(200);
-  const { playSound } = useClickSound();
   const selectedIndex = options.findIndex((opt) => opt.value === value);
   const currentOption = options[selectedIndex];
   const height = customHeight ?? (size === 'compact' ? 40 : TUNER_HEIGHT);
 
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.charcoal : Colors.softWhite;
   const scaleMarkingColor = isDark ? 'rgba(255,255,255,0.2)' : Colors.charcoal;
   const textColor = isDark ? '#e0e0e0' : Colors.charcoal;
   const chevronColor = isDark ? Colors.graphite : Colors.charcoal;
@@ -50,7 +48,6 @@ export const FrequencyTuner = <T extends string>({
     if (nextIndex >= options.length) nextIndex = 0;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onChange(options[nextIndex].value);
   };
 
@@ -81,7 +78,7 @@ export const FrequencyTuner = <T extends string>({
         styles.tunerWindow,
         { height, backgroundColor },
         // @ts-ignore - web-specific CSS for radial gradient with darker corners
-        isDark && { backgroundImage: 'radial-gradient(circle, #0E273C 0%, #0B1F30 100%)' }
+        isDark && { backgroundImage: 'radial-gradient(circle, #333333 0%, #2a2a2a 100%)' }
       ]} onLayout={handleLayout}>
         {/* Inset shadow effect (CSS) */}
         <View style={[styles.insetShadow, isDark ? styles.insetShadowDark : styles.insetShadowLight]} />

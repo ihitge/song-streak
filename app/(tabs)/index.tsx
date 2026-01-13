@@ -5,7 +5,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
-import { useClickSound } from '@/hooks/useClickSound';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DeviceCasing } from '@/components/ui/DeviceCasing';
@@ -100,7 +99,6 @@ const SongCard = ({ song, onDelete, onEdit, onPress }: {
 
 export default function SetListScreen() {
   const router = useRouter();
-  const { playSound: playClickSound } = useClickSound();
   const { showInfo, showError, showSuccess, showConfirm } = useStyledAlert();
   const [instrument, setInstrument] = useState<Instrument>('Guitar');
   const [genre, setGenre] = useState<Genre>('All');
@@ -108,13 +106,17 @@ export default function SetListScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch songs from Supabase
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   const fetchSongs = useCallback(async () => {
     try {
       setIsLoading(true);
+      setFetchError(null);
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        console.log('No user logged in, showing mock songs');
+        // Demo mode: show mock songs for logged-out users
+        console.log('No user logged in, showing demo songs');
         setSongs(MOCK_SONGS);
         setIsLoading(false);
         return;
@@ -129,10 +131,11 @@ export default function SetListScreen() {
 
       if (error) {
         console.error('Error fetching songs:', error);
-        setSongs(MOCK_SONGS); // Fallback to mock data
+        setFetchError('Failed to load songs');
+        setSongs([]); // Show empty state on error
       } else {
         console.log('Fetched songs:', data?.length || 0);
-        // Map Supabase data to Song type, merge with MOCK_SONGS for demo
+        // Map Supabase data to Song type - real user data only
         const dbSongs: Song[] = (data || []).map((row: any) => ({
           id: row.id,
           title: row.title,
@@ -143,12 +146,12 @@ export default function SetListScreen() {
           genres: row.genres || [],
           artwork: row.artwork_url,
         }));
-        // Show DB songs first, then mock songs for demo
-        setSongs([...dbSongs, ...MOCK_SONGS]);
+        setSongs(dbSongs);
       }
     } catch (err) {
       console.error('Fetch songs error:', err);
-      setSongs(MOCK_SONGS);
+      setFetchError('Failed to load songs');
+      setSongs([]);
     } finally {
       setIsLoading(false);
     }
@@ -196,7 +199,6 @@ export default function SetListScreen() {
       'Are you sure you want to delete this song?',
       async () => {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        await playClickSound();
 
         try {
           const { error } = await supabase
@@ -222,14 +224,13 @@ export default function SetListScreen() {
       'Cancel',
       'error'
     );
-  }, [fetchSongs, playClickSound, showInfo, showConfirm, showError]);
+  }, [fetchSongs, showInfo, showConfirm, showError]);
 
   // Handle song card press - navigate to view song
   const handleSongPress = useCallback(async (song: Song) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playClickSound();
     router.push(`/add-song?songId=${song.id}`);
-  }, [playClickSound, router]);
+  }, [router]);
 
   // Handle edit button press - navigate to edit song directly in edit mode
   const handleEditSong = useCallback(async (songId: string) => {
@@ -241,9 +242,8 @@ export default function SetListScreen() {
     }
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playClickSound();
     router.push(`/add-song?songId=${songId}&edit=true`);
-  }, [playClickSound, router, showInfo]);
+  }, [router, showInfo]);
 
 
   const filteredSongs = useMemo(() => {
@@ -298,6 +298,17 @@ export default function SetListScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={Colors.vermilion} />
             <Text style={styles.loadingText}>Loading songs...</Text>
+          </View>
+        ) : fetchError ? (
+          <View style={styles.errorContainer}>
+            <Music size={48} color={Colors.vermilion} />
+            <Text style={styles.errorText}>{fetchError}</Text>
+            <Pressable
+              style={styles.retryButton}
+              onPress={fetchSongs}
+            >
+              <Text style={styles.retryButtonText}>TRY AGAIN</Text>
+            </Pressable>
           </View>
         ) : (
           <FlatList
@@ -493,6 +504,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.warmGray,
     marginTop: 4,
+  },
+  // --- Error State ---
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    gap: 16,
+  },
+  errorText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 14,
+    color: Colors.warmGray,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: Colors.vermilion,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  retryButtonText: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 12,
+    color: Colors.softWhite,
+    letterSpacing: 2,
   },
 
 });

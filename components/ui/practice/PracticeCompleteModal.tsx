@@ -11,7 +11,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Clock, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface PracticeCompleteModalProps {
   visible: boolean;
@@ -30,7 +29,6 @@ export const PracticeCompleteModal: React.FC<PracticeCompleteModalProps> = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
 
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -63,7 +61,6 @@ export const PracticeCompleteModal: React.FC<PracticeCompleteModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 

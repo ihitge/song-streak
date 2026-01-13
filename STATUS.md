@@ -1,7 +1,7 @@
 # 🎵 SongStreak - Project Status
 
-**Last Updated:** January 10, 2026
-**Status:** ✅ **UAT/QA COMPLETE - All 17 Test Items Passed**
+**Last Updated:** January 13, 2026
+**Status:** ✅ **Build 13 - UX Improvements Complete**
 
 ---
 
@@ -21,7 +21,44 @@ This document shows the current implementation status and what's ready to test.
 
 ---
 
-## 🎯 Latest Updates (January 10, 2026)
+## 🎯 Latest Updates (January 13, 2026)
+
+### Build 13 - Auth & UX Fixes
+
+**Auth Fixes:**
+- Email verification now redirects to `songstreak://auth-callback` (was localhost)
+- Google Sign-In URL scheme added (`CFBundleURLTypes` with reversed client ID)
+- Build number bumped to 13
+
+**Sprint 1: Accessibility Improvements ✅**
+- FAB: Added `accessibilityLabel`, `accessibilityRole`, `accessibilityState`, `accessibilityHint` props
+- ChordChip: Full accessibility with contextual labels
+- TransportControls: Accessibility for Reset, Play/Pause, Complete buttons
+- Trophy: Accessibility with unlock status and progress hints
+- VoiceMemosList: Touch targets increased from 32px to 44px (WCAG 2.1 AA compliance)
+- VoiceMemoModal: Accessibility hint on close button
+- Auth screen: Accessibility on form inputs
+
+**Sprint 2: Empty/Loading/Error States ✅**
+
+| Component | Change |
+|-----------|--------|
+| Song Library | Real empty state for logged-in users (no more mock data fallback) |
+| Song Library | Error state with "TRY AGAIN" retry button |
+| Tuner Controls | Loading spinner during `initializing` state |
+| Tuner Controls | "ENABLE MIC" label for undetermined permission |
+| Tuner Controls | "OPEN SETTINGS" button for denied permission (opens iOS/Android settings) |
+| ProfileTab | Error state with "TAP TO RETRY" recovery |
+
+**Account Tabs - Verified Complete:**
+- ProfileTab: Has loading state ✅
+- SettingsTab: Static content (no async) ✅
+- BillingTab: Static content ✅
+- SupportTab: Static content ✅
+
+---
+
+## Previous Updates (January 10, 2026)
 
 ### Branding Standardization - COMPLETE ✅
 - Renamed all instances of "Song Streak" (two words) to "SongStreak" (one word)
@@ -240,7 +277,7 @@ Test 3: Multiple Instruments
 - [x] `useStyledAlert` hook with `showError`, `showSuccess`, `showInfo`, `showWarning`, `showConfirm`
 - [x] `StyledAlertProvider` wrapping app in `_layout.tsx`
 - [x] All native `Alert.alert()` calls replaced across codebase
-- [x] Types: error (vermilion), success (moss), info (deepSpaceBlue), warning (amber)
+- [x] Types: error (vermilion), success (moss), info (charcoal), warning (amber)
 - [x] Spring animations, haptic feedback per type
 - [x] `PracticeCompleteModal` - practice session logged
 

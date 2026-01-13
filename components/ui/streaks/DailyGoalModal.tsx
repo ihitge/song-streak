@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Check, Target, Zap } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface DailyGoalModalProps {
   visible: boolean;
@@ -27,7 +26,6 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const checkAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
 
   useEffect(() => {
     if (visible) {
@@ -67,7 +65,6 @@ export const DailyGoalModal: React.FC<DailyGoalModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 

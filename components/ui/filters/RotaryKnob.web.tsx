@@ -4,7 +4,6 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing, Keyfram
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useRotaryKnobSound } from '@/hooks/useRotaryKnobSound';
 import type { RotaryKnobProps } from '@/types/filters';
 
 const KNOB_SIZE = 44;
@@ -55,11 +54,10 @@ export const RotaryKnob = <T extends string>({
 }: RotaryKnobProps<T>) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1);
-  const { playSound } = useRotaryKnobSound();
 
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.charcoal : Colors.softWhite;
   const textColor = isDark ? '#e0e0e0' : Colors.charcoal;
   // Knob face color - lighter gray for light variant to match chassis
   const knobFaceColor = isDark ? Colors.charcoal : Colors.alloy;
@@ -102,7 +100,6 @@ export const RotaryKnob = <T extends string>({
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
-    await playSound();
     onChange(options[nextIndex].value);
   };
 

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { ListMusic, MapPin, Calendar, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import { SetlistWithSongs } from '@/types/band';
 
 interface SetlistCardProps {
@@ -21,11 +20,9 @@ export const SetlistCard: React.FC<SetlistCardProps> = ({
   onPress,
   compact = false,
 }) => {
-  const { playSound } = useClickSound();
 
   const handlePress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onPress();
   };
 

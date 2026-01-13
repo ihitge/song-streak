@@ -19,7 +19,6 @@ import { X, Mic, List } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useClickSound } from '@/hooks/useClickSound';
 import { useVoiceMemos } from '@/hooks/useVoiceMemos';
 import { ReelToReelRecorder } from '@/components/ui/recorder';
 import { VoiceMemosList } from '@/components/ui/recorder/VoiceMemosList';
@@ -49,7 +48,6 @@ export const VoiceMemoModal: React.FC<VoiceMemoModalProps> = ({
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('record');
   const [playingMemoId, setPlayingMemoId] = useState<string | null>(null);
-  const { playSound } = useClickSound();
 
   const {
     memos,
@@ -105,10 +103,9 @@ export const VoiceMemoModal: React.FC<VoiceMemoModalProps> = ({
   // Handle close
   const handleClose = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setPlayingMemoId(null);
     onClose();
-  }, [onClose, playSound]);
+  }, [onClose]);
 
   return (
     <Modal
@@ -126,8 +123,9 @@ export const VoiceMemoModal: React.FC<VoiceMemoModalProps> = ({
             style={styles.closeButton}
             accessibilityLabel="Close voice memo modal"
             accessibilityRole="button"
+            accessibilityHint="Returns to previous screen"
           >
-            <X size={24} color={Colors.graphite} />
+            <X size={24} color={Colors.graphite} accessibilityElementsHidden />
           </Pressable>
         </View>
 
@@ -230,7 +228,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: Colors.deepSpaceBlue,
+    backgroundColor: Colors.charcoal,
     paddingVertical: 12,
     paddingHorizontal: 20,
     alignItems: 'center',

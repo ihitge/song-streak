@@ -24,7 +24,7 @@ export const InsetWindow: React.FC<InsetWindowProps> = ({
 }) => {
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.charcoal : Colors.softWhite;
 
   return (
     <View

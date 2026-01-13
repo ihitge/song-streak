@@ -19,7 +19,6 @@ import * as Haptics from 'expo-haptics';
 import { X, Users, Check, UserMinus } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useClickSound } from '@/hooks/useClickSound';
 import { BandWithMemberCount } from '@/types/band';
 import { InsetWindow } from '@/components/ui/InsetWindow';
 
@@ -51,12 +50,10 @@ export const ShareToBandModal: React.FC<ShareToBandModalProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingBandId, setLoadingBandId] = useState<string | null>(null);
-  const { playSound } = useClickSound();
 
   const handleClose = async () => {
     if (isLoading) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 
@@ -64,7 +61,6 @@ export const ShareToBandModal: React.FC<ShareToBandModalProps> = ({
     if (isLoading || bandId === currentBandId) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
 
     setIsLoading(true);
     setLoadingBandId(bandId);
@@ -84,7 +80,6 @@ export const ShareToBandModal: React.FC<ShareToBandModalProps> = ({
     if (isLoading || !currentBandId) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
 
     setIsLoading(true);
     setLoadingBandId('unshare');

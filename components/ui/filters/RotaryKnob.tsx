@@ -6,7 +6,6 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight } from '@/constants/Animations';
-import { useRotaryKnobSound } from '@/hooks/useRotaryKnobSound';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
 import type { RotaryKnobProps } from '@/types/filters';
@@ -29,11 +28,10 @@ export const RotaryKnob = <T extends string>({
 }: RotaryKnobProps<T> & { showGlassOverlay?: boolean }) => {
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
-  const { playSound } = useRotaryKnobSound();
 
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.charcoal : Colors.softWhite;
   const innerShadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.40)';
   const outerHighlightColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,1)';
   const glassGradientColors: [string, string] = isDark
@@ -85,7 +83,6 @@ export const RotaryKnob = <T extends string>({
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
 
-    await playSound();
     onChange(options[nextIndex].value);
   };
 

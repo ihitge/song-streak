@@ -6,7 +6,6 @@ import * as Haptics from 'expo-haptics';
 import { useRouter, usePathname } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import { useSignOut } from '@/hooks/useSignOut';
-import { useClickSound } from '@/hooks/useClickSound';
 import { useAuth } from '@/ctx/AuthContext';
 
 // SongStreak logo SVG - cropped viewBox to text area only, no white background
@@ -37,7 +36,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   children,
 }) => {
   const { handleSignOut } = useSignOut();
-  const { playSound } = useClickSound();
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -47,7 +45,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   const handleAvatarPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     // Navigate to account page if not already there
     if (!isOnAccountPage) {
       router.push('/account');
@@ -56,7 +53,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   const handleLogoutPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     handleSignOut();
   };
 

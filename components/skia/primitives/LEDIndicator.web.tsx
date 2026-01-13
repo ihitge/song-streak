@@ -40,7 +40,7 @@ export const LEDIndicator: React.FC<LEDIndicatorProps> = ({
               width: size * 0.7,
               height: size * 0.7,
               borderRadius: (size * 0.7) / 2,
-              backgroundColor: isActive ? color : Colors.deepSpaceBlue,
+              backgroundColor: isActive ? color : Colors.charcoal,
               // Glow effect via box-shadow (web only)
               ...(isActive && {
                 shadowColor: color,

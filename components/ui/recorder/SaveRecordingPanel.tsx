@@ -20,7 +20,6 @@ import * as Haptics from 'expo-haptics';
 import { Save, X, Users, ChevronDown } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useClickSound } from '@/hooks/useClickSound';
 import { BandWithMemberCount } from '@/types/band';
 
 interface SaveRecordingPanelProps {
@@ -49,7 +48,6 @@ export const SaveRecordingPanel: React.FC<SaveRecordingPanelProps> = ({
   const [title, setTitle] = useState('');
   const [selectedBandId, setSelectedBandId] = useState<string | null>(null);
   const [showBandPicker, setShowBandPicker] = useState(false);
-  const { playSound } = useClickSound();
   const inputRef = useRef<TextInput>(null);
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -82,7 +80,6 @@ export const SaveRecordingPanel: React.FC<SaveRecordingPanelProps> = ({
   const handleSave = async () => {
     if (isUploading) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
     Keyboard.dismiss();
     onSave(title.trim() || 'Untitled', selectedBandId);
   };
@@ -90,20 +87,17 @@ export const SaveRecordingPanel: React.FC<SaveRecordingPanelProps> = ({
   const handleDiscard = async () => {
     if (isUploading) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     Keyboard.dismiss();
     onDiscard();
   };
 
   const handleBandPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setShowBandPicker(!showBandPicker);
   };
 
   const handleBandSelect = async (bandId: string | null) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setSelectedBandId(bandId);
     setShowBandPicker(false);
   };

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, PanResponder, Animated } from
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useClickSound } from '@/hooks/useClickSound';
 import { BPM_MIN, BPM_MAX } from '@/types/metronome';
 
 interface BPMDisplayProps {
@@ -32,7 +31,6 @@ export const BPMDisplay: React.FC<BPMDisplayProps> = ({
   compact = false,
   readonly = false,
 }) => {
-  const { playSound } = useClickSound();
   const flashOpacity = useRef(new Animated.Value(0)).current;
   const lastY = useRef(0);
   const accumulatedDelta = useRef(0);
@@ -56,14 +54,13 @@ export const BPMDisplay: React.FC<BPMDisplayProps> = ({
     if (readonly) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     flashTap();
 
     const calculatedBpm = onTapTempo();
     if (calculatedBpm !== null) {
       // BPM was calculated from taps
     }
-  }, [onTapTempo, playSound, flashTap, readonly]);
+  }, [onTapTempo, flashTap, readonly]);
 
   /**
    * Pan responder for swipe-to-adjust BPM
@@ -110,16 +107,14 @@ export const BPMDisplay: React.FC<BPMDisplayProps> = ({
   const handleIncrement = useCallback(async () => {
     if (readonly) return;
     await Haptics.selectionAsync();
-    await playSound();
     onBpmChange(Math.min(BPM_MAX, bpm + 1));
-  }, [bpm, onBpmChange, playSound, readonly]);
+  }, [bpm, onBpmChange, readonly]);
 
   const handleDecrement = useCallback(async () => {
     if (readonly) return;
     await Haptics.selectionAsync();
-    await playSound();
     onBpmChange(Math.max(BPM_MIN, bpm - 1));
-  }, [bpm, onBpmChange, playSound, readonly]);
+  }, [bpm, onBpmChange, readonly]);
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Users, ListMusic, ChevronRight, Crown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import { BandWithMemberCount, formatJoinCode } from '@/types/band';
 
 interface BandCardProps {
@@ -23,11 +22,9 @@ export const BandCard: React.FC<BandCardProps> = ({
   expanded = false,
   children,
 }) => {
-  const { playSound } = useClickSound();
 
   const handlePress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onPress();
   };
 

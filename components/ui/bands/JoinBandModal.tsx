@@ -14,7 +14,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface JoinBandModalProps {
   visible: boolean;
@@ -35,7 +34,6 @@ export const JoinBandModal: React.FC<JoinBandModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
 
   useEffect(() => {
     if (visible) {
@@ -67,7 +65,6 @@ export const JoinBandModal: React.FC<JoinBandModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 
@@ -82,7 +79,6 @@ export const JoinBandModal: React.FC<JoinBandModalProps> = ({
     if (joinCode.length !== 6 || isSubmitting) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
 
     setIsSubmitting(true);
     setError(null);

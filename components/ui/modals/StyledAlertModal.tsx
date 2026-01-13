@@ -11,7 +11,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 
 export type AlertType = 'error' | 'success' | 'info' | 'warning';
 
@@ -40,7 +39,7 @@ const getIconForType = (type: AlertType) => {
       return <AlertTriangle size={32} color="#D4A017" strokeWidth={2.5} />;
     case 'info':
     default:
-      return <Info size={32} color={Colors.deepSpaceBlue} strokeWidth={2.5} />;
+      return <Info size={32} color={Colors.charcoal} strokeWidth={2.5} />;
   }
 };
 
@@ -54,7 +53,7 @@ const getHeaderColorForType = (type: AlertType) => {
       return '#D4A017';
     case 'info':
     default:
-      return Colors.deepSpaceBlue;
+      return Colors.charcoal;
   }
 };
 
@@ -83,7 +82,6 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
 
   useEffect(() => {
     if (visible) {
@@ -121,7 +119,6 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
 
   const handleButtonPress = async (button: AlertButton) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     button.onPress?.();
     onClose();
   };

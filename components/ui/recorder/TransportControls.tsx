@@ -11,7 +11,6 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Rewind, Circle, Square, Play, FastForward, RotateCcw, Pause } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
-import { useNavButtonSound } from '@/hooks/useNavButtonSound';
 import { TransportButton, RecorderState } from '@/types/voiceMemo';
 
 interface TransportControlsProps {
@@ -42,7 +41,6 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   onPress,
   compact = false,
 }) => {
-  const { playSound } = useNavButtonSound();
 
   // Get primary button configuration based on state
   const getPrimaryConfig = () => {
@@ -91,25 +89,22 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
     if (!hasRecording && state !== 'playing') return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onPress(state === 'playing' ? 'rewind' : 'stop');
-  }, [disabled, hasRecording, state, onPress, playSound]);
+  }, [disabled, hasRecording, state, onPress]);
 
   const handlePrimaryPress = useCallback(async () => {
     if (disabled) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
     onPress(primaryConfig.id);
-  }, [disabled, primaryConfig.id, onPress, playSound]);
+  }, [disabled, primaryConfig.id, onPress]);
 
   const handleRightPress = useCallback(async () => {
     if (disabled || !hasRecording || state === 'recording') return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onPress('fastforward');
-  }, [disabled, hasRecording, state, onPress, playSound]);
+  }, [disabled, hasRecording, state, onPress]);
 
   // Button disabled states
   const leftDisabled = disabled || (!hasRecording && state !== 'recording');

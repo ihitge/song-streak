@@ -13,7 +13,6 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight } from '@/constants/Animations';
-import { useClickSound } from '@/hooks/useClickSound';
 import { PlaybackSpeed } from '@/types/voiceMemo';
 
 interface SpeedSelectorProps {
@@ -45,7 +44,6 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
 }) => {
   const [width, setWidth] = useState(160);
   const [direction, setDirection] = useState(1);
-  const { playSound } = useClickSound();
 
   const selectedIndex = SPEED_OPTIONS.findIndex((opt) => opt.value === value);
   const currentOption = SPEED_OPTIONS[selectedIndex] || SPEED_OPTIONS[1];
@@ -65,7 +63,6 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
     if (nextIndex >= SPEED_OPTIONS.length) nextIndex = 0;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onChange(SPEED_OPTIONS[nextIndex].value);
   };
 

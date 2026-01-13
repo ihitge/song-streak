@@ -97,13 +97,13 @@ Lobster Pink
 
 For subtle accents or highlights.
 
-Dark Accent
+~~Dark Accent~~
 
-Deep Space Blue
+~~Deep Space Blue~~
 
-#0E273C
+~~#0E273C~~
 
-For deep, dark accents.
+**DEPRECATED** - Use Charcoal (#333333) instead.
 
 Secondary Text
 
@@ -134,7 +134,7 @@ import { Typography } from '@/constants/Styles';
 
 | Use Case | Font | Size | Weight | Notes |
 |----------|------|------|--------|-------|
-| App Logo | MomoTrustDisplay | 24px | Bold | deepSpaceBlue color |
+| App Logo | MomoTrustDisplay | 24px | Bold | charcoal color |
 | Page Subtitles | LexendDecaRegular | 12px | Regular | uppercase, warmGray |
 | Song Titles | LexendDecaBold | 14px | Bold | Title case |
 | Artist Names | LexendDecaRegular | 12px | Regular | uppercase, warmGray |

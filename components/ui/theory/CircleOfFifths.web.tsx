@@ -7,7 +7,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import {
   CIRCLE_OF_FIFTHS_MAJOR,
   CIRCLE_OF_FIFTHS_MINOR,
@@ -100,7 +99,6 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
   onKeySelect,
   size = CIRCLE_SIZE,
 }) => {
-  const { playSound } = useClickSound();
   const [isDragging, setIsDragging] = useState(false);
   const lastAngleRef = useRef(0);
 
@@ -136,8 +134,7 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
     } catch {
       // Haptics not available on web
     }
-    await playSound();
-  }, [playSound]);
+  }, []);
 
   // Handle key selection
   const handleKeyPress = useCallback(

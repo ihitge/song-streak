@@ -5,7 +5,6 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Achievement, TIER_COLORS } from '@/types/practice';
 import { AchievementBadge } from './AchievementBadge';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface AchievementModalProps {
   visible: boolean;
@@ -23,7 +22,6 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
 
   useEffect(() => {
     if (visible && achievements.length > 0) {
@@ -53,7 +51,6 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 

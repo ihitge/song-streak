@@ -22,8 +22,6 @@ interface ChordChipProps {
   chipColor?: string;
   /** Whether the chip is selected/active */
   isSelected?: boolean;
-  /** Audio hook callback */
-  playSound?: () => Promise<void>;
   /** Whether to show delete icon */
   deletable?: boolean;
   /** Callback when delete is pressed */
@@ -36,7 +34,6 @@ export const ChordChip: React.FC<ChordChipProps> = ({
   onPress,
   chipColor = Colors.vermilion,
   isSelected = false,
-  playSound,
   deletable = false,
   onDelete,
 }) => {
@@ -51,11 +48,6 @@ export const ChordChip: React.FC<ChordChipProps> = ({
     // Haptic feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    // Audio feedback
-    if (playSound) {
-      await playSound();
-    }
-
     // Trigger callback
     if (onPress) {
       onPress(chordName);
@@ -65,11 +57,6 @@ export const ChordChip: React.FC<ChordChipProps> = ({
   const handleDelete = async () => {
     // Haptic feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    // Audio feedback
-    if (playSound) {
-      await playSound();
-    }
 
     // Trigger delete callback
     if (onDelete) {
@@ -86,12 +73,16 @@ export const ChordChip: React.FC<ChordChipProps> = ({
         isSelected && styles.chipSelected,
         pressed && styles.chipPressed,
       ]}
+      accessibilityLabel={`${lookupResult.displayName} chord${hasDiagram ? ', diagram available' : ''}`}
+      accessibilityRole="button"
+      accessibilityState={{ selected: isSelected }}
+      accessibilityHint={hasDiagram ? 'Tap to view chord diagram' : 'Tap to select this chord'}
     >
-      <Text style={styles.chipText}>{lookupResult.displayName}</Text>
+      <Text style={styles.chipText} accessibilityElementsHidden>{lookupResult.displayName}</Text>
 
       {/* Indicator for chords with diagrams */}
       {hasDiagram && (
-        <View style={styles.indicator}>
+        <View style={styles.indicator} accessibilityElementsHidden>
           {isGenerated ? (
             <Sparkles size={10} color={Colors.softWhite} strokeWidth={2.5} />
           ) : (
@@ -106,8 +97,11 @@ export const ChordChip: React.FC<ChordChipProps> = ({
           onPress={handleDelete}
           style={styles.deleteButton}
           hitSlop={{ top: 8, bottom: 8, left: 4, right: 8 }}
+          accessibilityLabel={`Delete ${lookupResult.displayName} chord`}
+          accessibilityRole="button"
+          accessibilityHint="Removes this chord from the list"
         >
-          <Trash2 size={12} color={Colors.softWhite} strokeWidth={2.5} />
+          <Trash2 size={12} color={Colors.softWhite} strokeWidth={2.5} accessibilityElementsHidden />
         </Pressable>
       )}
     </Pressable>

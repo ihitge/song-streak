@@ -24,7 +24,6 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import {
   CIRCLE_OF_FIFTHS_MAJOR,
   CIRCLE_OF_FIFTHS_MINOR,
@@ -76,7 +75,6 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
   onKeySelect,
   size = CIRCLE_SIZE,
 }) => {
-  const { playSound } = useClickSound();
   const font = useFont(require('@/assets/fonts/LexendDeca-Bold.ttf'), 14);
   const smallFont = useFont(require('@/assets/fonts/LexendDeca-Bold.ttf'), 11);
   const centerFont = useFont(require('@/assets/fonts/LexendDeca-Bold.ttf'), 18);
@@ -104,8 +102,7 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
   // Haptic and sound feedback
   const triggerFeedback = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
-  }, [playSound]);
+  }, []);
 
   // Handle key selection
   const handleKeyPress = useCallback(

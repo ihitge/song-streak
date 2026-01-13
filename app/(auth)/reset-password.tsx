@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     fontFamily: 'MomoTrustDisplay',
     fontSize: 28,
     fontWeight: 'bold',
-    color: Colors.deepSpaceBlue,
+    color: Colors.charcoal,
     letterSpacing: -0.5,
     marginBottom: 4,
   },

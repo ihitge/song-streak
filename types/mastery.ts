@@ -226,7 +226,7 @@ export const TECHNIQUE_THRESHOLDS: Record<string, number> = {
 
 // Path colors (consistent with app design system)
 export const PATH_COLORS: Record<MasteryPath, string> = {
-  theory: '#0E273C',      // Colors.deepSpaceBlue
+  theory: '#333333',      // Colors.charcoal
   technique: '#EE6C4D',   // Colors.vermilion
   performance: '#417B5A', // Colors.moss
 };

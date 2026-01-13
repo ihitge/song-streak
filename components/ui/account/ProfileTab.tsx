@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Pressable } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
-import { Camera } from 'lucide-react-native';
+import { Camera, RefreshCw } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/ctx/AuthContext';
 import { supabase } from '@/utils/supabase/client';
-import { useClickSound } from '@/hooks/useClickSound';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 /**
@@ -23,11 +22,11 @@ const getInitials = (email?: string | null): string => {
 
 export const ProfileTab: React.FC = () => {
   const { user } = useAuth();
-  const { playSound } = useClickSound();
   const { showInfo, showError } = useStyledAlert();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const initials = getInitials(user?.email);
   const memberSince = user?.created_at
@@ -44,9 +43,10 @@ export const ProfileTab: React.FC = () => {
     }
   }, [user?.id]);
 
-  async function fetchProfile() {
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchError(null);
       const { data, error } = await supabase
         .from('profiles')
         .select('avatar_url')
@@ -56,6 +56,7 @@ export const ProfileTab: React.FC = () => {
       if (error && error.code !== 'PGRST116') {
         // PGRST116 = no rows found (new user)
         console.error('Error fetching profile:', error);
+        setFetchError('Failed to load profile');
       }
 
       if (data?.avatar_url) {
@@ -63,15 +64,20 @@ export const ProfileTab: React.FC = () => {
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+      setFetchError('Failed to load profile');
     } finally {
       setLoading(false);
     }
-  }
+  }, [user?.id]);
+
+  const handleRetry = useCallback(async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    fetchProfile();
+  }, [fetchProfile]);
 
   async function uploadAvatar() {
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      await playSound();
 
       // Request permissions
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -156,12 +162,14 @@ export const ProfileTab: React.FC = () => {
         <TouchableOpacity
           style={styles.avatarTouchable}
           onPress={uploadAvatar}
-          disabled={uploading}
+          disabled={uploading || fetchError !== null}
           activeOpacity={0.8}
         >
           <View style={styles.avatar}>
             {loading ? (
               <ActivityIndicator size="small" color={Colors.charcoal} />
+            ) : fetchError ? (
+              <RefreshCw size={24} color={Colors.graphite} />
             ) : avatarUrl ? (
               <Image
                 source={{ uri: avatarUrl }}
@@ -179,13 +187,22 @@ export const ProfileTab: React.FC = () => {
             )}
           </View>
 
-          {/* Camera badge */}
-          <View style={styles.cameraBadge}>
-            <Camera size={14} color={Colors.softWhite} />
-          </View>
+          {/* Camera badge (hide on error) */}
+          {!fetchError && (
+            <View style={styles.cameraBadge}>
+              <Camera size={14} color={Colors.softWhite} />
+            </View>
+          )}
         </TouchableOpacity>
 
-        <Text style={styles.avatarHint}>Tap to change photo</Text>
+        {fetchError ? (
+          <Pressable onPress={handleRetry} style={styles.retryContainer}>
+            <Text style={styles.errorText}>{fetchError}</Text>
+            <Text style={styles.retryText}>TAP TO RETRY</Text>
+          </Pressable>
+        ) : (
+          <Text style={styles.avatarHint}>Tap to change photo</Text>
+        )}
       </View>
 
       {/* User Info */}
@@ -306,5 +323,20 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#ccc',
     marginVertical: 8,
+  },
+  retryContainer: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  errorText: {
+    fontSize: 11,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.vermilion,
+  },
+  retryText: {
+    fontSize: 10,
+    fontFamily: 'LexendDecaSemiBold',
+    color: Colors.graphite,
+    letterSpacing: 1,
   },
 });

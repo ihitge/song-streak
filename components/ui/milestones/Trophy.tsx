@@ -103,6 +103,10 @@ export const Trophy: React.FC<TrophyProps> = ({
       style={[styles.container, { width: size, height: size + (compact ? 0 : 24) }]}
       onPress={onPress}
       disabled={!onPress}
+      accessibilityLabel={`${milestone.title} trophy${unlocked ? ', unlocked' : ', locked'}`}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !onPress }}
+      accessibilityHint={unlocked ? 'Tap to view details' : `Progress: ${progress}%`}
     >
       {/* Trophy body with Skia */}
       <View style={{ width: size, height: size }}>
@@ -137,7 +141,7 @@ export const Trophy: React.FC<TrophyProps> = ({
               <LinearGradient
                 start={vec(0, 0)}
                 end={vec(size, size)}
-                colors={unlocked ? tierColors.gradient : ['#3a3a3a', Colors.deepSpaceBlue]}
+                colors={unlocked ? tierColors.gradient : ['#3a3a3a', Colors.charcoal]}
               />
             </RoundedRect>
 
@@ -164,7 +168,7 @@ export const Trophy: React.FC<TrophyProps> = ({
           {unlocked ? (
             <IconComponent
               size={iconSize}
-              color={milestone.tier === 'diamond' ? '#0E273C' : Colors.softWhite}
+              color={milestone.tier === 'diamond' ? Colors.charcoal : Colors.softWhite}
               strokeWidth={2}
             />
           ) : (

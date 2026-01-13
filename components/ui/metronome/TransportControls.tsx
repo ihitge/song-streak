@@ -3,7 +3,6 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Play, Pause, RotateCcw, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useNavButtonSound } from '@/hooks/useNavButtonSound';
 import { FAB } from '@/components/ui/FAB';
 
 interface TransportControlsProps {
@@ -31,25 +30,22 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   compact = false,
   showComplete = true,
 }) => {
-  const { playSound } = useNavButtonSound();
 
   /**
    * Handle play/pause button press
    */
   const handlePlayPause = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
     onPlayPause();
-  }, [onPlayPause, playSound]);
+  }, [onPlayPause]);
 
   /**
    * Handle reset button press
    */
   const handleReset = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onReset();
-  }, [onReset, playSound]);
+  }, [onReset]);
 
   /**
    * Handle complete button press
@@ -57,9 +53,8 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   const handleComplete = useCallback(async () => {
     if (sessionSeconds === 0 || !onComplete) return;
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await playSound();
     onComplete(sessionSeconds);
-  }, [sessionSeconds, onComplete, playSound]);
+  }, [sessionSeconds, onComplete]);
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
@@ -68,6 +63,9 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
         style={styles.secondaryButton}
         onPress={handleReset}
         activeOpacity={0.8}
+        accessibilityLabel="Reset timer"
+        accessibilityRole="button"
+        accessibilityHint="Resets the practice session timer to zero"
       >
         <View style={[styles.secondaryButtonInner, compact && styles.secondaryButtonInnerCompact]}>
           <RotateCcw size={compact ? 16 : 20} color={Colors.graphite} />
@@ -81,6 +79,8 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
           ? <Pause size={32} color={Colors.softWhite} />
           : <Play size={32} color={Colors.softWhite} style={{ marginLeft: 4 }} />
         }
+        accessibilityLabel={isPlaying ? 'Pause metronome' : 'Play metronome'}
+        accessibilityHint={isPlaying ? 'Stops the metronome' : 'Starts the metronome'}
       />
 
       {/* Complete/Log button */}
@@ -90,6 +90,10 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
           onPress={handleComplete}
           activeOpacity={0.8}
           disabled={sessionSeconds === 0}
+          accessibilityLabel="Complete practice session"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: sessionSeconds === 0 }}
+          accessibilityHint={sessionSeconds === 0 ? 'Start practicing to enable' : 'Log your practice session'}
         >
           <View
             style={[

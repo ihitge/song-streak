@@ -20,7 +20,6 @@ import { Play, Pause, Share2, Trash2, Music, Users } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { VoiceMemoWithMeta, formatTime } from '@/types/voiceMemo';
-import { useClickSound } from '@/hooks/useClickSound';
 import { InsetWindow } from '@/components/ui/InsetWindow';
 
 interface VoiceMemosListProps {
@@ -55,11 +54,9 @@ const MemoItem: React.FC<{
   onDelete?: () => void;
   compact: boolean;
 }> = ({ memo, isPlaying, onPlay, onShare, onDelete, compact }) => {
-  const { playSound } = useClickSound();
 
   const handlePress = async (action: () => void) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     action();
   };
 
@@ -101,7 +98,7 @@ const MemoItem: React.FC<{
             </Text>
             {memo.band_id && (
               <View style={styles.sharedBadge}>
-                <Users size={10} color={Colors.deepSpaceBlue} />
+                <Users size={10} color={Colors.charcoal} />
               </View>
             )}
           </View>
@@ -120,20 +117,22 @@ const MemoItem: React.FC<{
             <Pressable
               onPress={() => handlePress(onShare)}
               style={styles.actionButton}
-              accessibilityLabel="Share memo"
+              accessibilityLabel={`Share ${memo.title || 'memo'}`}
               accessibilityRole="button"
+              accessibilityHint="Opens share options for this voice memo"
             >
-              <Share2 size={compact ? 14 : 16} color={Colors.graphite} />
+              <Share2 size={compact ? 16 : 18} color={Colors.graphite} />
             </Pressable>
           )}
           {onDelete && memo.is_owner && (
             <Pressable
               onPress={() => handlePress(onDelete)}
               style={styles.actionButton}
-              accessibilityLabel="Delete memo"
+              accessibilityLabel={`Delete ${memo.title || 'memo'}`}
               accessibilityRole="button"
+              accessibilityHint="Permanently removes this voice memo"
             >
-              <Trash2 size={compact ? 14 : 16} color={Colors.vermilion} />
+              <Trash2 size={compact ? 16 : 18} color={Colors.vermilion} />
             </Pressable>
           )}
         </View>
@@ -250,7 +249,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.deepSpaceBlue,
+    backgroundColor: Colors.charcoal,
     justifyContent: 'center',
     alignItems: 'center',
     // Bevel
@@ -319,9 +318,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   actionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
+    width: 44,
+    height: 44,
+    borderRadius: 8,
     backgroundColor: Colors.alloy,
     justifyContent: 'center',
     alignItems: 'center',

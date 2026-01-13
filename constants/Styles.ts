@@ -8,7 +8,7 @@ export const Typography = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     letterSpacing: -0.5,
-    color: Colors.deepSpaceBlue,
+    color: Colors.charcoal,
     marginBottom: 4,
   },
 

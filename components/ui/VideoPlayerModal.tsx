@@ -6,7 +6,6 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { YouTubePlayer } from './YouTubePlayer';
 import { extractYouTubeVideoId } from '@/utils/youtube';
-import { useClickSound } from '@/hooks/useClickSound';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 interface VideoPlayerModalProps {
@@ -24,19 +23,16 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   title,
   artist,
 }) => {
-  const { playSound } = useClickSound();
   const { showError } = useStyledAlert();
   const videoId = extractYouTubeVideoId(videoUrl);
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 
   const handleOpenExternal = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     try {
       await Linking.openURL(videoUrl);
     } catch {

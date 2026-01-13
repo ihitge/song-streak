@@ -14,7 +14,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface CreateBandModalProps {
   visible: boolean;
@@ -34,7 +33,6 @@ export const CreateBandModal: React.FC<CreateBandModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
 
   useEffect(() => {
     if (visible) {
@@ -65,7 +63,6 @@ export const CreateBandModal: React.FC<CreateBandModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 
@@ -73,7 +70,6 @@ export const CreateBandModal: React.FC<CreateBandModalProps> = ({
     if (!bandName.trim() || isSubmitting) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
 
     setIsSubmitting(true);
     try {

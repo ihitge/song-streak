@@ -5,7 +5,6 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { LifetimeMilestone, MILESTONE_TIER_COLORS } from '@/types/milestones';
 import { Trophy } from './Trophy';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface MilestoneModalProps {
   visible: boolean;
@@ -24,7 +23,6 @@ export const MilestoneModal: React.FC<MilestoneModalProps> = ({
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const shineAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
 
   useEffect(() => {
     if (visible && milestones.length > 0) {
@@ -71,7 +69,6 @@ export const MilestoneModal: React.FC<MilestoneModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 

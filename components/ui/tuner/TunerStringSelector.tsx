@@ -14,7 +14,6 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useGangSwitchSound } from '@/hooks/useGangSwitchSound';
 import { GUITAR_STRINGS_ARRAY, type GuitarString } from '@/types/tuner';
 
 interface TunerStringSelectorProps {
@@ -38,11 +37,9 @@ export const TunerStringSelector: React.FC<TunerStringSelectorProps> = ({
   onStringSelect,
   isActive,
 }) => {
-  const { playSound } = useGangSwitchSound();
 
   const handlePress = async (guitarString: GuitarString) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onStringSelect?.(guitarString);
   };
 

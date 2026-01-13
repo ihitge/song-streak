@@ -101,7 +101,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       case 'locked':
       default:
         return {
-          fill: Colors.deepSpaceBlue,
+          fill: Colors.charcoal,
           glow: 'transparent',
           icon: Colors.warmGray,
         };

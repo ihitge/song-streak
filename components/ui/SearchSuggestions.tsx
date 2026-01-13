@@ -4,7 +4,6 @@ import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopi
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { SearchX, ChevronDown } from 'lucide-react-native';
-import { useClickSound } from '@/hooks/useClickSound';
 import type { SongSuggestion } from '@/types/song';
 
 // --- Constants ---
@@ -89,11 +88,9 @@ const SuggestionItem: React.FC<SuggestionItemProps> = ({
   itemWidth,
 }) => {
   const [isPressed, setIsPressed] = useState(false);
-  const { playSound } = useClickSound();
 
   const handlePress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onSelect();
   };
 
@@ -178,7 +175,6 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
 }) => {
   const [containerWidth, setContainerWidth] = useState(200);
   const [containerHeight, setContainerHeight] = useState(100);
-  const { playSound } = useClickSound();
 
   const handleLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
@@ -193,7 +189,6 @@ export const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
 
   const handleShowMore = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onShowMore?.();
   };
 

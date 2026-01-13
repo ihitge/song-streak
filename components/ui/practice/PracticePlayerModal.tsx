@@ -31,7 +31,6 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import { usePracticePlayer } from '@/hooks/usePracticePlayer';
 import { PlaybackControls } from './PlaybackControls';
 
@@ -64,7 +63,6 @@ export const PracticePlayerModal: React.FC<PracticePlayerModalProps> = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
   const player = usePracticePlayer();
 
   const [notes, setNotes] = useState(initialNotes);
@@ -106,7 +104,6 @@ export const PracticePlayerModal: React.FC<PracticePlayerModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     // Save notes before closing
     if (onNotesChange && notes !== initialNotes) {
       onNotesChange(notes);
@@ -116,7 +113,6 @@ export const PracticePlayerModal: React.FC<PracticePlayerModalProps> = ({
 
   const handlePickFile = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
 
     const file = await player.pickFile();
     if (file) {
@@ -164,7 +160,6 @@ export const PracticePlayerModal: React.FC<PracticePlayerModalProps> = ({
 
   const handleToggleNotes = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setShowNotes(!showNotes);
   };
 

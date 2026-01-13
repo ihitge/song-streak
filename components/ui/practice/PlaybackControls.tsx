@@ -14,7 +14,6 @@ import Slider from '@react-native-community/slider';
 import { Play, Pause, RotateCcw, Repeat } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import type { PlaybackStatus, LoopRegion } from '@/types/practicePlayer';
 import { PLAYBACK_RATES } from '@/types/practicePlayer';
 
@@ -61,11 +60,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onClearLoop,
   onToggleLoop,
 }) => {
-  const { playSound } = useClickSound();
 
   const handlePlayPause = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
     onPlayPause();
   };
 
@@ -96,7 +93,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
   const handleLoopAction = async (action: () => void) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     action();
   };
 

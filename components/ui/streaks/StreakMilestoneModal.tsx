@@ -5,7 +5,6 @@ import * as Haptics from 'expo-haptics';
 import { Flame, Snowflake } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { StreakFlame } from './StreakFlame';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface StreakMilestoneModalProps {
   visible: boolean;
@@ -29,7 +28,6 @@ export const StreakMilestoneModal: React.FC<StreakMilestoneModalProps> = ({
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const { playSound } = useClickSound();
 
   // Determine the milestone reached
   const milestoneReached = STREAK_MILESTONES.find(m => streakDays === m);
@@ -80,7 +78,6 @@ export const StreakMilestoneModal: React.FC<StreakMilestoneModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 

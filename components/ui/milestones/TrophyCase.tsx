@@ -19,7 +19,6 @@ import {
   ALL_MILESTONES,
 } from '@/types/milestones';
 import { Trophy } from './Trophy';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface TrophyCaseProps {
   stats: UserGlobalStats;
@@ -107,7 +106,6 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
   const expandProgress = useSharedValue(initiallyExpanded ? 1 : 0);
-  const { playSound } = useClickSound();
   const isDark = variant === 'dark';
 
   const categories: { category: MilestoneCategory; title: string }[] = [
@@ -123,7 +121,6 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
 
   const handleToggleExpand = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setIsExpanded(!isExpanded);
     expandProgress.value = withTiming(isExpanded ? 0 : 1, { duration: 300 });
   };

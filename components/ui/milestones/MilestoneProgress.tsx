@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   track: {
     height: 8,
-    backgroundColor: Colors.deepSpaceBlue,
+    backgroundColor: Colors.charcoal,
     borderRadius: 4,
     overflow: 'hidden',
     position: 'relative',

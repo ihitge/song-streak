@@ -7,7 +7,6 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight } from '@/constants/Animations';
-import { useClickSound } from '@/hooks/useClickSound';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
 import type { FrequencyTunerProps } from '@/types/filters';
@@ -32,14 +31,13 @@ export const FrequencyTuner = <T extends string>({
 }: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean; labelColor?: string }) => {
   const [width, setWidth] = useState(200); // default fallback
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
-  const { playSound } = useClickSound();
   const selectedIndex = options.findIndex((opt) => opt.value === value);
   const currentOption = options[selectedIndex];
   const height = customHeight ?? (size === 'compact' ? 40 : TUNER_HEIGHT);
 
   // Variant-specific colors
   const isDark = variant === 'dark';
-  const backgroundColor = isDark ? Colors.deepSpaceBlue : Colors.softWhite;
+  const backgroundColor = isDark ? Colors.charcoal : Colors.softWhite;
   const innerShadowColor = isDark ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.40)';
   const outerHighlightColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,1)';
   const scaleMarkingColor = isDark ? 'rgba(255,255,255,0.2)' : Colors.charcoal;
@@ -65,7 +63,6 @@ export const FrequencyTuner = <T extends string>({
     if (nextIndex >= options.length) nextIndex = 0;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onChange(options[nextIndex].value);
   };
 

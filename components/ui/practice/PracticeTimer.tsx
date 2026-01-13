@@ -5,7 +5,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { RamsTapeCounterDisplay } from './RamsTapeCounterDisplay';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface PracticeTimerProps {
   songTitle?: string;
@@ -25,7 +24,6 @@ export const PracticeTimer: React.FC<PracticeTimerProps> = ({
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const { playSound } = useClickSound();
 
   // Timer logic
   useEffect(() => {
@@ -49,23 +47,20 @@ export const PracticeTimer: React.FC<PracticeTimerProps> = ({
 
   const handlePlayPause = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
     setIsRunning((prev) => !prev);
-  }, [playSound]);
+  }, []);
 
   const handleReset = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setIsRunning(false);
     setSeconds(0);
-  }, [playSound]);
+  }, []);
 
   const handleComplete = useCallback(async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await playSound();
     setIsRunning(false);
     onComplete?.(seconds);
-  }, [playSound, onComplete, seconds]);
+  }, [onComplete, seconds]);
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>

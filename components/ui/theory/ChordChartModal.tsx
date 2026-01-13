@@ -16,7 +16,6 @@ import {
 import { X, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import { lookupChord, getDefaultVoicing } from '@/data/chords';
 import type { InstrumentType } from '@/types/chords';
 import { ChordVisualization } from './chords/ChordVisualization';
@@ -36,7 +35,6 @@ export const ChordChartModal: React.FC<ChordChartModalProps> = ({
 }) => {
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
-  const { playSound } = useClickSound();
   const [voicingIndex, setVoicingIndex] = useState(0);
 
   // Get chord data
@@ -86,14 +84,12 @@ export const ChordChartModal: React.FC<ChordChartModalProps> = ({
 
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 
   const handlePrevVoicing = async () => {
     if (voicingIndex > 0) {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      await playSound();
       setVoicingIndex(voicingIndex - 1);
     }
   };
@@ -101,7 +97,6 @@ export const ChordChartModal: React.FC<ChordChartModalProps> = ({
   const handleNextVoicing = async () => {
     if (voicingIndex < totalVoicings - 1) {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      await playSound();
       setVoicingIndex(voicingIndex + 1);
     }
   };
@@ -365,7 +360,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: Colors.deepSpaceBlue,
+    backgroundColor: Colors.charcoal,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },

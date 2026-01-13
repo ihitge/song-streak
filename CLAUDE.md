@@ -1,5 +1,47 @@
 # Claude Instructions for SongStreak
 
+---
+
+## ⚠️ IMPORTANT REMINDER: Apple Sign-In JWT Expires July 12, 2026
+
+**Created:** January 13, 2026
+**Expires:** ~July 13, 2026 (180 days)
+**Reminder:** Regenerate by **June 29, 2026**
+
+### To Regenerate the Apple JWT:
+
+1. Go to Apple Developer: https://developer.apple.com/account/resources/authkeys/list
+2. Create a new Sign in with Apple key (or use existing Key ID: `X3FAK48BC6`)
+3. Download the .p8 file to Downloads
+4. Run this command to generate JWT:
+
+```bash
+cd /Users/adriaanhitge/Dropbox/ai-apps/song-streak && node -e "
+const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+
+const privateKey = fs.readFileSync(path.join(process.env.HOME, 'Downloads/AuthKey_X3FAK48BC6.p8'), 'utf8');
+
+const token = jwt.sign({}, privateKey, {
+  algorithm: 'ES256',
+  expiresIn: '180d',
+  audience: 'https://appleid.apple.com',
+  issuer: '5W355DQFT6',
+  subject: 'com.songstreak.app',
+  keyid: 'X3FAK48BC6'
+});
+
+console.log(token);
+"
+```
+
+5. Copy the output JWT
+6. Go to Supabase Dashboard → Auth → Providers → Apple
+7. Paste into **Secret Key** field and save
+
+---
+
 ## Related Projects
 
 | Project | Description | Location |
@@ -82,7 +124,7 @@ Colors.ink           // #221E22 - Primary text (Off-Black)
 Colors.graphite      // #888888 - Labels/secondary text
 Colors.moss          // #417B5A - Success/positive states (Green)
 Colors.lobsterPink   // #DB5461 - Accent/Highlight (Lobster Pink)
-Colors.deepSpaceBlue // #0E273C - Dark Accent (Deep Space Blue)
+// Colors.deepSpaceBlue is DEPRECATED - use Colors.charcoal instead
 Colors.warmGray      // #847577 - Secondary Text (Warm Gray)
 ```
 

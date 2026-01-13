@@ -8,7 +8,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Music, Plus, Trash2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useChordChartSound } from '@/hooks/useChordChartSound';
 import type { InstrumentType } from '@/types/chords';
 // Explicitly import web version
 import { GuitarChordDiagram } from './chords/GuitarChordDiagram.web';
@@ -42,17 +41,14 @@ export const TheoryChordSection: React.FC<TheoryChordSectionProps> = ({
   onAddChord,
   onDeleteChord,
 }) => {
-  const { playSound } = useChordChartSound();
 
   const handleAddPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onAddChord?.();
   };
 
   const handleDeletePress = async (chord: string) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onDeleteChord?.(chord);
   };
 

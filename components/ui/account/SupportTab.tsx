@@ -5,7 +5,6 @@ import { HelpCircle, Shield, FileText, Info, LogOut, ChevronRight, Trash2 } from
 import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 import { useSignOut } from '@/hooks/useSignOut';
-import { useClickSound } from '@/hooks/useClickSound';
 import { useAccountDeletion } from '@/hooks/useAccountDeletion';
 
 interface SupportRowProps {
@@ -16,11 +15,9 @@ interface SupportRowProps {
 }
 
 const SupportRow: React.FC<SupportRowProps> = ({ icon, label, onPress, isLast }) => {
-  const { playSound } = useClickSound();
 
   const handlePress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onPress();
   };
 
@@ -44,7 +41,6 @@ const SupportRow: React.FC<SupportRowProps> = ({ icon, label, onPress, isLast })
 
 export const SupportTab: React.FC = () => {
   const { handleSignOut } = useSignOut();
-  const { playSound } = useClickSound();
   const { deleteAccount, isDeleting } = useAccountDeletion();
   const appVersion = Constants.expoConfig?.version || '1.0.0';
 
@@ -63,7 +59,6 @@ export const SupportTab: React.FC = () => {
 
   const handleDeleteAccountPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
     deleteAccount();
   };
 
@@ -74,7 +69,6 @@ export const SupportTab: React.FC = () => {
 
   const handleSignOutPress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await playSound();
     handleSignOut();
   };
 

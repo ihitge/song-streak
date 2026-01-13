@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { DAILY_GOAL_OPTIONS, DailyGoalMinutes } from '@/types/streak';
-import { useClickSound } from '@/hooks/useClickSound';
 
 interface DailyGoalSelectorProps {
   selectedMinutes: DailyGoalMinutes;
@@ -21,14 +20,12 @@ export const DailyGoalSelector: React.FC<DailyGoalSelectorProps> = ({
   disabled = false,
   variant = 'light',
 }) => {
-  const { playSound } = useClickSound();
   const isDark = variant === 'dark';
 
   const handleSelect = async (minutes: DailyGoalMinutes) => {
     if (disabled || minutes === selectedMinutes) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onSelect(minutes);
   };
 

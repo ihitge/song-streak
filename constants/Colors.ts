@@ -9,7 +9,8 @@ export const Colors = {
   graphite: '#888888',       // Text (Label)
   moss: '#417B5A',           // Success/Easy (Green)
   lobsterPink: '#DB5461',    // Accent/Highlight (Lobster Pink)
-  deepSpaceBlue: '#0E273C',  // Dark Accent (Deep Space Blue)
+  /** @deprecated Use Colors.charcoal instead */
+  deepSpaceBlue: '#0E273C',  // DEPRECATED - Use charcoal instead
   warmGray: '#847577',       // Secondary Text (Warm Gray)
 
   // PRD - "Industrial Play" palette (Color Semantics)

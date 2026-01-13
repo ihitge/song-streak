@@ -8,7 +8,6 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { TheorySection, TheoryMetricsRow, TheoryChipGroup, TheoryChordSection, AddChordModal } from '@/components/ui/theory';
 import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Guitar, Headphones } from 'lucide-react-native';
 import { FilterOption, Instrument } from '@/types/filters';
-import { useClickSound } from '@/hooks/useClickSound';
 import * as Haptics from 'expo-haptics';
 import { ProcessingSignal } from '@/components/ui/ProcessingSignal';
 import { VideoPlaceholder } from '@/components/ui/VideoPlaceholder';
@@ -98,7 +97,6 @@ export default function AddSongScreen() {
   // Celebration modal states
   const [dailyGoalModalVisible, setDailyGoalModalVisible] = useState(false);
   const [lastStreakUpdate, setLastStreakUpdate] = useState<StreakUpdateResult | null>(null);
-  const { playSound } = useClickSound();
   const { showError, showSuccess, showWarning, showInfo, showConfirm } = useStyledAlert();
 
   // Practice data hook - only active when viewing an existing song
@@ -188,7 +186,6 @@ export default function AddSongScreen() {
 
   const handleOpenVideo = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setIsVideoModalVisible(true);
   };
 
@@ -207,7 +204,6 @@ export default function AddSongScreen() {
     }
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
 
     setIsAnalyzing(true);
 
@@ -331,7 +327,6 @@ export default function AddSongScreen() {
 
     // Haptic + Audio feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
 
     setIsSaving(true);
 
@@ -409,7 +404,6 @@ export default function AddSongScreen() {
     }
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setIsSaving(true);
 
     try {
@@ -468,7 +462,6 @@ export default function AddSongScreen() {
   // Add chord to current instrument
   const handleAddChord = async (chordName: string) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
 
     const currentData = instrumentData[currentInstrument];
     const newChords = [...(currentData?.theoryData.chords || []), chordName];
@@ -525,7 +518,6 @@ export default function AddSongScreen() {
       `Remove "${chordToDelete}" from this song?`,
       async () => {
         await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        await playSound();
 
         const currentData = instrumentData[currentInstrument];
         const newChords = (currentData?.theoryData.chords || []).filter(
@@ -711,7 +703,6 @@ export default function AddSongScreen() {
                         style={styles.cancelButton}
                         onPress={async () => {
                           await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          await playSound();
                           setIsEditing(false);
                           if (songId) {
                             loadExistingSong(songId); // Reload original data
@@ -792,7 +783,7 @@ export default function AddSongScreen() {
                     <TheoryChipGroup
                       label="SCALES"
                       items={instrumentData[currentInstrument]?.theoryData.scales || []}
-                      chipColor={Colors.deepSpaceBlue}
+                      chipColor={Colors.charcoal}
                       emptyText="No scales detected"
                     />
                   </TheorySection>
@@ -898,7 +889,6 @@ export default function AddSongScreen() {
                 style={styles.practicePlayerButton}
                 onPress={async () => {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  await playSound();
                   setPracticePlayerModalVisible(true);
                 }}
                 activeOpacity={0.8}

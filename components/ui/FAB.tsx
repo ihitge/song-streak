@@ -17,7 +17,6 @@ import React from 'react';
 import { Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useFABSound } from '@/hooks/useFABSound';
 
 interface FABProps {
   /** Press handler */
@@ -30,6 +29,10 @@ interface FABProps {
   variant?: 'primary' | 'secondary';
   /** Additional styles (e.g., positioning) */
   style?: ViewStyle;
+  /** Accessibility label for screen readers */
+  accessibilityLabel?: string;
+  /** Accessibility hint for screen readers */
+  accessibilityHint?: string;
 }
 
 export const FAB: React.FC<FABProps> = ({
@@ -38,13 +41,12 @@ export const FAB: React.FC<FABProps> = ({
   disabled = false,
   variant = 'primary',
   style,
+  accessibilityLabel = 'Action button',
+  accessibilityHint,
 }) => {
-  const { playSound } = useFABSound();
-
   const handlePress = async () => {
     if (disabled) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onPress();
   };
 
@@ -58,6 +60,10 @@ export const FAB: React.FC<FABProps> = ({
       ]}
       onPress={handlePress}
       disabled={disabled}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      accessibilityHint={accessibilityHint}
     >
       {icon}
     </Pressable>

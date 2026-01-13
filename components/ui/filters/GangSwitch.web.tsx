@@ -5,7 +5,6 @@ import { useAnimatedStyle, interpolate, Extrapolate } from 'react-native-reanima
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { useGangSwitchSound } from '@/hooks/useGangSwitchSound';
 import { RefreshCw } from 'lucide-react-native';
 import type { GangSwitchProps } from '@/types/filters';
 
@@ -27,7 +26,6 @@ export const GangSwitch = <T extends string>({
   dataAvailable,
 }: GangSwitchProps<T>) => {
   const [wellWidth, setWellWidth] = useState(200);
-  const { playSound } = useGangSwitchSound();
   const spinValue = useSharedValue(0);
 
   useEffect(() => {
@@ -68,7 +66,6 @@ export const GangSwitch = <T extends string>({
     if (disabled) return;
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
 
     if (value === optValue) {
       if (allowDeselect) {

@@ -12,7 +12,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Info } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { useClickSound } from '@/hooks/useClickSound';
 import { CircleOfFifths } from './CircleOfFifths';
 import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
 import {
@@ -48,7 +47,6 @@ export const CircleOfFifthsModal: React.FC<CircleOfFifthsModalProps> = ({
   songTitle,
   artist,
 }) => {
-  const { playSound } = useClickSound();
 
   // Parse initial key
   const initialParsed = useMemo(() => parseKey(songKey), [songKey]);
@@ -84,7 +82,6 @@ export const CircleOfFifthsModal: React.FC<CircleOfFifthsModalProps> = ({
   // Handle close
   const handleClose = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     onClose();
   };
 
@@ -108,7 +105,6 @@ export const CircleOfFifthsModal: React.FC<CircleOfFifthsModalProps> = ({
   // Reset to song key
   const handleReset = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await playSound();
     setSelectedRoot(initialParsed.root);
     setSelectedQuality(initialParsed.quality);
     setSelectedMode(initialParsed.quality === 'minor' ? 'aeolian' : 'ionian');
@@ -379,7 +375,7 @@ const styles = StyleSheet.create({
   songKeyBadge: {
     alignSelf: 'center',
     marginTop: 20,
-    backgroundColor: Colors.deepSpaceBlue,
+    backgroundColor: Colors.charcoal,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
