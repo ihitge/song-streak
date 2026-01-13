@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export type AlertType = 'error' | 'success' | 'info' | 'warning';
 
@@ -80,6 +81,7 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
   buttons = [{ text: 'OK' }],
   onClose,
 }) => {
+  const prefersReducedMotion = useReducedMotion();
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
@@ -96,26 +98,31 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
 
-      // Animate in
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          tension: 100,
-          friction: 10,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      // Animate in (skip animation if reduced motion preferred)
+      if (prefersReducedMotion) {
+        scaleAnim.setValue(1);
+        opacityAnim.setValue(1);
+      } else {
+        Animated.parallel([
+          Animated.spring(scaleAnim, {
+            toValue: 1,
+            tension: 100,
+            friction: 10,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
     } else {
       // Reset animations
       scaleAnim.setValue(0.9);
       opacityAnim.setValue(0);
     }
-  }, [visible, type, scaleAnim, opacityAnim]);
+  }, [visible, type, scaleAnim, opacityAnim, prefersReducedMotion]);
 
   const handleButtonPress = async (button: AlertButton) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

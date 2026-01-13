@@ -19,6 +19,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { FlameLevel, FLAME_COLORS, getFlameLevel } from '@/types/streak';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface StreakFlameProps {
   streakDays: number;
@@ -35,14 +36,18 @@ export const StreakFlame: React.FC<StreakFlameProps> = ({
   size = 80,
   animated = true,
 }) => {
+  const prefersReducedMotion = useReducedMotion();
   const level = getFlameLevel(streakDays);
   const colors = FLAME_COLORS[level];
 
   // Animation values using Reanimated
   const scale = useSharedValue(1);
 
+  // Respect reduced motion preference
+  const shouldAnimate = animated && !prefersReducedMotion;
+
   useEffect(() => {
-    if (animated && streakDays > 0) {
+    if (shouldAnimate && streakDays > 0) {
       // Scale pulse animation
       scale.value = withRepeat(
         withSequence(
@@ -55,7 +60,7 @@ export const StreakFlame: React.FC<StreakFlameProps> = ({
     } else {
       scale.value = 1;
     }
-  }, [animated, streakDays, scale]);
+  }, [shouldAnimate, streakDays, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

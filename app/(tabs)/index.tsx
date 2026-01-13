@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, FlatList, Pressable, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, FlatList, Pressable, Image, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -104,6 +104,7 @@ export default function SetListScreen() {
   const [genre, setGenre] = useState<Genre>('All');
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch songs from Supabase
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -163,6 +164,14 @@ export default function SetListScreen() {
       fetchSongs();
     }, [fetchSongs])
   );
+
+  // Pull-to-refresh handler
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await fetchSongs();
+    setIsRefreshing(false);
+  }, [fetchSongs]);
 
   // Use the search hook for debounced search with relevance scoring
   const {
@@ -324,6 +333,14 @@ export default function SetListScreen() {
             )}
             contentContainerStyle={styles.songListContent}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={handleRefresh}
+                tintColor={Colors.vermilion}
+                colors={[Colors.vermilion]}
+              />
+            }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Music size={48} color={Colors.warmGray} />

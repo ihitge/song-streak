@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FlameLevel, FLAME_COLORS, getFlameLevel } from '@/types/streak';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface StreakFlameProps {
   streakDays: number;
@@ -18,15 +19,19 @@ export const StreakFlame: React.FC<StreakFlameProps> = ({
   size = 80,
   animated = true,
 }) => {
+  const prefersReducedMotion = useReducedMotion();
   const level = getFlameLevel(streakDays);
   const colors = FLAME_COLORS[level];
+
+  // Respect reduced motion preference
+  const shouldAnimate = animated && !prefersReducedMotion;
 
   // Animation values
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const flickerAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (animated && streakDays > 0) {
+    if (shouldAnimate && streakDays > 0) {
       // Pulse animation
       Animated.loop(
         Animated.sequence([

@@ -56,6 +56,15 @@ This document shows the current implementation status and what's ready to test.
 - BillingTab: Static content ✅
 - SupportTab: Static content ✅
 
+**Sprint 3: UX Enhancements ✅**
+
+| Feature | Description |
+|---------|-------------|
+| Pull-to-refresh | Song Library now supports pull-to-refresh with haptic feedback |
+| Reduced motion | New `useReducedMotion` hook respects iOS/Android accessibility settings |
+| StyledAlertModal | Skips spring animation when reduced motion enabled |
+| StreakFlame | Disables pulse animation when reduced motion enabled |
+
 ---
 
 ## Previous Updates (January 10, 2026)
