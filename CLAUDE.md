@@ -92,11 +92,7 @@ console.log(token);
 |------|---------------|
 | **Alert dialogs (NEVER use native Alert)** | `useStyledAlert` |
 | Sign out functionality | `useSignOut` |
-| Audio feedback for NavButton | `useNavButtonSound` |
-| Audio feedback for GangSwitch | `useGangSwitchSound` |
-| Audio feedback for RotaryKnob | `useRotaryKnobSound` |
-| Audio feedback for FAB button | `useFABSound` |
-| Audio feedback for other components | `useClickSound` |
+| **Reduced motion accessibility** | `useReducedMotion` |
 | Band management | `useBands` |
 | Setlist management | `useSetlists` |
 | Practice tracking | `usePracticeData` |
@@ -104,6 +100,7 @@ console.log(token);
 | **Guitar tuner state machine** | `useTunerMachine` |
 | Pitch detection (pitchy) | `usePitchDetection` |
 | Microphone audio streaming | `useAudioSession` |
+| Voice memo management | `useVoiceMemos` |
 
 ### Design Tokens
 
@@ -128,61 +125,32 @@ Colors.lobsterPink   // #DB5461 - Accent/Highlight (Lobster Pink)
 Colors.warmGray      // #847577 - Secondary Text (Warm Gray)
 ```
 
-### Audio Feedback (All Interactive Components)
+### Haptic Feedback (All Interactive Components)
 
-**IMPORTANT**: All interactive components **must** have audio + haptic feedback using component-specific sound hooks.
+**IMPORTANT**: All interactive components should provide haptic feedback for a tactile experience.
 
-**Component-Specific Sound Pattern**:
+**Pattern**:
 ```typescript
-import { useNavButtonSound } from '@/hooks/useNavButtonSound'; // Example: NavButton
 import * as Haptics from 'expo-haptics';
-
-const { playSound } = useNavButtonSound();
 
 const handlePress = async () => {
   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  await playSound();
   // Perform action
 };
 ```
 
-**Sound Hierarchy** (Sound files located in `/assets/audio/`):
-
-| Component | Sound File | Size | Purpose |
-|-----------|-----------|------|---------|
-| NavButton | sound-click-01.wav | 12 KB | Large primary navigation buttons |
-| GangSwitch | sound-click-02.wav | 18 KB | Small filter selectors |
-| FAB Button | sound-click-03.wav | 3.7 KB | Call-to-action (+ Add Song) |
-| FrequencyTuner | sound-click-07.mp3 | 9.2 KB | Tuner control |
-| RotaryKnob | sound-click-08.wav | TBD | Rotary genre selector |
-| SearchSuggestions, PageHeader | sound-click-07.mp3 | 9.2 KB | Secondary UI interactions |
-
-**Feedback Order** (Always):
-1. Haptic feedback (immediate, synchronous)
-2. Sound playback (async, non-blocking)
-3. Action execution (navigation, state change, etc.)
-
-**Components that Already Have Audio**:
-- ✅ NavButton (STREAK, SETLIST, METRONOME) - `useNavButtonSound`
-- ✅ GangSwitch (difficulty/fluency) - `useGangSwitchSound`
-- ✅ FAB Button (+ Add Song) - `useFABSound`
-- ✅ FrequencyTuner (instrument selector) - `useClickSound`
-- ✅ RotaryKnob (genre control) - `useRotaryKnobSound`
-- ✅ SearchSuggestions (suggestions + show more) - `useClickSound`
-- ✅ PageHeader (avatar + logout buttons) - `useClickSound`
-
-**When Adding New Interactive Components**:
-- Choose the appropriate sound hook based on component purpose
-- If component type is unique, create a new component-specific hook
-- Always add haptic feedback with `Haptics.impactAsync(ImpactFeedbackStyle.Light)`
-- Ensure both execute in the correct order
+**Feedback Types**:
+- `ImpactFeedbackStyle.Light` - Standard button press
+- `ImpactFeedbackStyle.Medium` - Important actions
+- `ImpactFeedbackStyle.Heavy` - Destructive/significant actions
+- `NotificationFeedbackType.Success/Warning/Error` - Alerts (handled by StyledAlertModal)
 
 ### Workflow
 
 1. Read `COMPONENTS.md` before starting UI work
 2. Check if an existing component can be used or extended
 3. If new component needed, follow existing patterns
-4. **For interactive components**: Always add audio + haptic feedback using the pattern above
+4. **For interactive components**: Always add haptic feedback using the pattern above
 5. Document new components in `COMPONENTS.md`
 6. Browser testing: Claude can now use Playwright MCP for automated browser testing
 
@@ -379,7 +347,7 @@ eas build --platform ios --profile production
 
 **GOLDEN RULES**:
 - Never make assumptions. Never get lazy. Never hallucinate. Never take the easy route. Always engineer for scalability and the long-term view. Ask when unsure.
-- Every interaction should feel tactile: visual + haptic + audio feedback.
+- Every interaction should feel tactile: visual + haptic feedback.
 - **NEVER use native Alert.alert() - always use useStyledAlert hook.**
 - **Browser testing with Playwright MCP is now available** - use it to verify UI changes with confidence
 

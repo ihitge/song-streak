@@ -91,34 +91,29 @@
 
 ### Hooks
 
-| Hook | Purpose | Sound File | Location |
-|------|---------|------------|----------|
-| `useSignOut` | Centralized sign-out logic with error handling | N/A | `hooks/useSignOut.ts` |
-| `useSettings` | App settings (dark mode, sound enabled) | N/A | `hooks/useSettings.ts` |
-| `useStyledAlert` | **Styled alert system (replaces native Alert.alert)** | N/A | `hooks/useStyledAlert.tsx` |
-| `useAccountDeletion` | **Account deletion with confirmation (Apple requirement)** | N/A | `hooks/useAccountDeletion.ts` |
-| `useUISound` | **Base hook for all UI sounds (consolidated)** | configurable | `hooks/useUISound.ts` |
-| `useNavButtonSound` | Audio feedback for NavButton (large nav) | sound-nav-button.wav | `hooks/useNavButtonSound.ts` |
-| `useGangSwitchSound` | Audio feedback for GangSwitch (small filters) | sound-gang-switch.wav | `hooks/useGangSwitchSound.ts` |
-| `useRotaryKnobSound` | Audio feedback for RotaryKnob (genre selector) | sound-rotary-knob.wav | `hooks/useRotaryKnobSound.ts` |
-| `useFABSound` | Audio feedback for FAB (add song button) | sound-fab.wav | `hooks/useFABSound.ts` |
-| `useClickSound` | Audio feedback for shared components | sound-shared-click.mp3 | `hooks/useClickSound.ts` |
-| `useChordChartSound` | Audio feedback for chord chart interactions | sound-shared-click.mp3 | `hooks/useChordChartSound.ts` |
-| `useBands` | Band management (create, join, list bands) | N/A | `hooks/useBands.ts` |
-| `useSetlists` | Setlist management for bands | N/A | `hooks/useSetlists.ts` |
-| `usePracticeData` | Practice session tracking and achievements | N/A | `hooks/usePracticeData.ts` |
-| `useSearch` | Debounced search with relevance scoring | N/A | `hooks/useSearch.ts` |
-| `useMetronome` | Core metronome logic with drift-corrected timing + pendulum sync | N/A | `hooks/useMetronome.ts` |
-| `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | metronome-*.wav, sound-click-*.wav | `hooks/useMetronomeSound.ts` |
-| `usePracticePlayer` | **Audio playback with speed control (pitch preserved)** | N/A | `hooks/usePracticePlayer.ts` |
-| `useTunerMachine` | **Guitar tuner state machine with pitch detection** | N/A | `hooks/tuner/useTunerMachine.ts` |
-| `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | N/A | `hooks/tuner/usePitchDetection.ts` |
-| `useAudioSession` | Web Audio API microphone streaming | N/A | `hooks/tuner/useAudioSession.ts` |
-| `useStreakData` | **Daily streak management & goal tracking** | N/A | `hooks/useStreakData.ts` |
-| `useStreakCalendar` | Calendar data with month navigation | N/A | `hooks/useStreakCalendar.ts` |
-| `useSongMastery` | **Per-song skill tree progress** | N/A | `hooks/useSongMastery.ts` |
-| `useGlobalStats` | **Lifetime stats aggregation** | N/A | `hooks/useGlobalStats.ts` |
-| `useMilestones` | **Lifetime milestone tracking** | N/A | `hooks/useMilestones.ts` |
+| Hook | Purpose | Location |
+|------|---------|----------|
+| `useSignOut` | Centralized sign-out logic with error handling | `hooks/useSignOut.ts` |
+| `useSettings` | App settings (dark mode, sound enabled) | `hooks/useSettings.ts` |
+| `useStyledAlert` | **Styled alert system (replaces native Alert.alert)** | `hooks/useStyledAlert.tsx` |
+| `useAccountDeletion` | **Account deletion with confirmation (Apple requirement)** | `hooks/useAccountDeletion.ts` |
+| `useReducedMotion` | **Detects iOS/Android "Reduce Motion" accessibility setting** | `hooks/useReducedMotion.ts` |
+| `useBands` | Band management (create, join, list bands) | `hooks/useBands.ts` |
+| `useSetlists` | Setlist management for bands | `hooks/useSetlists.ts` |
+| `usePracticeData` | Practice session tracking and achievements | `hooks/usePracticeData.ts` |
+| `useSearch` | Debounced search with relevance scoring | `hooks/useSearch.ts` |
+| `useMetronome` | Core metronome logic with drift-corrected timing + pendulum sync | `hooks/useMetronome.ts` |
+| `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | `hooks/useMetronomeSound.ts` |
+| `usePracticePlayer` | **Audio playback with speed control (pitch preserved)** | `hooks/usePracticePlayer.ts` |
+| `useTunerMachine` | **Guitar tuner state machine with pitch detection** | `hooks/tuner/useTunerMachine.ts` |
+| `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | `hooks/tuner/usePitchDetection.ts` |
+| `useAudioSession` | Web Audio API microphone streaming | `hooks/tuner/useAudioSession.ts` |
+| `useStreakData` | **Daily streak management & goal tracking** | `hooks/useStreakData.ts` |
+| `useStreakCalendar` | Calendar data with month navigation | `hooks/useStreakCalendar.ts` |
+| `useSongMastery` | **Per-song skill tree progress** | `hooks/useSongMastery.ts` |
+| `useGlobalStats` | **Lifetime stats aggregation** | `hooks/useGlobalStats.ts` |
+| `useMilestones` | **Lifetime milestone tracking** | `hooks/useMilestones.ts` |
+| `useVoiceMemos` | Voice memo recording, storage, and sharing | `hooks/useVoiceMemos.ts` |
 
 ### Utilities
 
