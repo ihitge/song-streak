@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TextInput,
+  TextInputProps,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
@@ -275,8 +276,18 @@ export default function AuthScreen() {
   );
 }
 
-// Custom Rams Input Component
-function RamsInput({ label, icon, ...props }: any) {
+/**
+ * RamsInput - Industrial-styled text input with label and icon
+ * Matches the "Industrial Play" aesthetic with etched line detail
+ */
+interface RamsInputProps extends TextInputProps {
+  /** Label displayed above the input */
+  label: string;
+  /** Icon displayed next to the label */
+  icon: React.ReactNode;
+}
+
+function RamsInput({ label, icon, ...props }: RamsInputProps) {
   return (
     <View style={styles.inputContainer}>
       <View style={styles.labelRow}>

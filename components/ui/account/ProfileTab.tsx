@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Pressable } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { Camera, RefreshCw } from 'lucide-react-native';
@@ -7,6 +8,7 @@ import { Colors } from '@/constants/Colors';
 import { useAuth } from '@/ctx/AuthContext';
 import { supabase } from '@/utils/supabase/client';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
+import { getErrorMessage } from '@/types/database';
 
 /**
  * Helper to extract initials from email
@@ -147,9 +149,9 @@ export const ProfileTab: React.FC = () => {
       setAvatarUrl(publicUrl);
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error uploading avatar:', error);
-      showError('Upload Failed', error.message || 'Unable to upload avatar. Please try again.');
+      showError('Upload Failed', getErrorMessage(error) || 'Unable to upload avatar. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -172,8 +174,11 @@ export const ProfileTab: React.FC = () => {
               <RefreshCw size={24} color={Colors.graphite} />
             ) : avatarUrl ? (
               <Image
-                source={{ uri: avatarUrl }}
+                source={avatarUrl}
                 style={styles.avatarImage}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+                transition={300}
               />
             ) : (
               <Text style={styles.avatarText}>{initials}</Text>

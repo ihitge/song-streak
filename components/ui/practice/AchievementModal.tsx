@@ -14,8 +14,9 @@ interface AchievementModalProps {
 
 /**
  * Celebration modal shown when user unlocks new achievements
+ * Memoized to prevent unnecessary re-renders when parent state changes
  */
-export const AchievementModal: React.FC<AchievementModalProps> = ({
+export const AchievementModal: React.FC<AchievementModalProps> = React.memo(({
   visible,
   achievements,
   onClose,
@@ -72,7 +73,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
       animationType="fade"
       onRequestClose={handleClose}
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} accessibilityViewIsModal={true}>
         <Animated.View
           style={[
             styles.container,
@@ -130,7 +131,7 @@ export const AchievementModal: React.FC<AchievementModalProps> = ({
       </View>
     </Modal>
   );
-};
+});
 
 const styles = StyleSheet.create({
   overlay: {

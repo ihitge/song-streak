@@ -177,6 +177,33 @@ Import: `import { Colors } from '@/constants/Colors';`
 | Values | LexendDecaBold | 12-16px | Bold | |
 | Inputs | LexendDecaRegular | 16px | Regular | |
 
+### Images
+
+**IMPORTANT**: Use `expo-image` instead of React Native's `Image` component for better performance and caching.
+
+```typescript
+// ✅ CORRECT - expo-image with caching
+import { Image } from 'expo-image';
+
+<Image
+  source={imageUrl}              // String URL (not { uri: ... })
+  style={styles.image}
+  contentFit="cover"             // Instead of resizeMode
+  cachePolicy="memory-disk"      // Enables disk + memory caching
+  transition={200}               // Smooth fade-in animation (ms)
+/>
+
+// ❌ WRONG - React Native Image (no caching)
+import { Image } from 'react-native';
+<Image source={{ uri: imageUrl }} style={styles.image} />
+```
+
+**Key differences from RN Image**:
+- `source` takes a string URL directly (not `{ uri: ... }`)
+- Use `contentFit` instead of `resizeMode`
+- `cachePolicy="memory-disk"` enables automatic disk + memory caching
+- `transition` adds smooth fade-in when image loads
+
 ---
 
 ## Component Catalog

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, FlatList, Pressable, Image, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, FlatList, Pressable, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
@@ -20,16 +21,20 @@ import { useStyledAlert } from '@/hooks/useStyledAlert';
 import type { Instrument, Fluency, Genre } from '@/types/filters';
 import type { Song } from '@/types/song';
 import type { BandWithMemberCount } from '@/types/band';
+import type { DbSong } from '@/types/database';
 import { MOCK_SONGS, isMockSong } from '@/data/mockSongs';
 
 // Re-export types for backwards compatibility
 export type { Instrument, Fluency, Genre } from '@/types/filters';
 
 
+// --- Constants for FlatList performance ---
+const SONG_CARD_HEIGHT = 98; // Fixed height for getItemLayout optimization
+
 // --- Components ---
 
-// Song Card (Data Cassette)
-const SongCard = ({ song, onDelete, onEdit, onPress }: {
+// Song Card (Data Cassette) - Memoized to prevent unnecessary re-renders
+const SongCard = React.memo(({ song, onDelete, onEdit, onPress }: {
   song: Song;
   onDelete?: (id: string) => void;
   onEdit?: (id: string) => void;
@@ -42,7 +47,13 @@ const SongCard = ({ song, onDelete, onEdit, onPress }: {
         <View style={styles.thumbnailContainer}>
             {song.artwork ? (
               <>
-                <Image source={{ uri: song.artwork }} style={styles.thumbnailImage} />
+                <Image
+                  source={song.artwork}
+                  style={styles.thumbnailImage}
+                  contentFit="cover"
+                  cachePolicy="memory-disk"
+                  transition={200}
+                />
                 {/* Layer 1: Inset shadow for recessed depth */}
                 <InsetShadowOverlay width={58} height={58} borderRadius={8} insetDepth={5} shadowIntensity={0.7} variant="dark" />
                 {/* Layer 2: Glass overlay */}
@@ -92,7 +103,7 @@ const SongCard = ({ song, onDelete, onEdit, onPress }: {
       </View>
     </Pressable>
   );
-};
+});
 
 
 // --- Main Screen ---
@@ -137,15 +148,15 @@ export default function SetListScreen() {
       } else {
         console.log('Fetched songs:', data?.length || 0);
         // Map Supabase data to Song type - real user data only
-        const dbSongs: Song[] = (data || []).map((row: any) => ({
+        const dbSongs: Song[] = (data || []).map((row: DbSong) => ({
           id: row.id,
           title: row.title,
           artist: row.artist,
-          duration: row.duration || '0:00',
-          lastPracticed: row.last_practiced || 'Never',
+          duration: '0:00', // Calculated field - not stored in DB
+          lastPracticed: 'Never', // Derived from practice_sessions - not stored in songs table
           instrument: row.instrument || 'Guitar',
-          genres: row.genres || [],
-          artwork: row.artwork_url,
+          genres: (row.techniques || []) as Song['genres'], // DB uses 'techniques', app uses 'genres'
+          artwork: row.artwork_url ?? undefined,
         }));
         setSongs(dbSongs);
       }
@@ -254,6 +265,22 @@ export default function SetListScreen() {
     router.push(`/add-song?songId=${songId}&edit=true`);
   }, [router, showInfo]);
 
+  // Memoized renderItem for FlatList performance
+  const renderSongCard = useCallback(({ item }: { item: Song }) => (
+    <SongCard
+      song={item}
+      onDelete={handleDeleteSong}
+      onEdit={handleEditSong}
+      onPress={() => handleSongPress(item)}
+    />
+  ), [handleDeleteSong, handleEditSong, handleSongPress]);
+
+  // getItemLayout for FlatList scroll performance (fixed height items)
+  const getItemLayout = useCallback((data: ArrayLike<Song> | null | undefined, index: number) => ({
+    length: SONG_CARD_HEIGHT + 16, // Card height + gap
+    offset: (SONG_CARD_HEIGHT + 16) * index,
+    index,
+  }), []);
 
   const filteredSongs = useMemo(() => {
     return songs.filter(song => {
@@ -323,16 +350,15 @@ export default function SetListScreen() {
           <FlatList
             data={filteredSongs}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <SongCard
-                song={item}
-                onDelete={handleDeleteSong}
-                onEdit={handleEditSong}
-                onPress={() => handleSongPress(item)}
-              />
-            )}
+            renderItem={renderSongCard}
+            getItemLayout={getItemLayout}
             contentContainerStyle={styles.songListContent}
             showsVerticalScrollIndicator={false}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            updateCellsBatchingPeriod={50}
+            initialNumToRender={8}
+            windowSize={5}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}

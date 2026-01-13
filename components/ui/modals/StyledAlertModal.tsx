@@ -6,6 +6,8 @@ import {
   Modal,
   TouchableOpacity,
   Animated,
+  AccessibilityInfo,
+  findNodeHandle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react-native';
@@ -84,9 +86,19 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
   const prefersReducedMotion = useReducedMotion();
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const contentRef = useRef<View>(null);
 
   useEffect(() => {
     if (visible) {
+      // Set accessibility focus to the modal content for screen readers
+      const timer = setTimeout(() => {
+        if (contentRef.current) {
+          const node = findNodeHandle(contentRef.current);
+          if (node) {
+            AccessibilityInfo.setAccessibilityFocus(node);
+          }
+        }
+      }, 100);
       // Trigger haptic feedback based on type
       if (type === 'error') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -117,6 +129,7 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
           }),
         ]).start();
       }
+      return () => clearTimeout(timer);
     } else {
       // Reset animations
       scaleAnim.setValue(0.9);
@@ -141,7 +154,7 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <View style={styles.overlay} accessibilityViewIsModal={true}>
         <Animated.View
           style={[
             styles.container,
@@ -152,7 +165,14 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
           ]}
         >
           {/* Content */}
-          <View style={styles.content}>
+          <View
+            ref={contentRef}
+            style={styles.content}
+            accessible={true}
+            accessibilityLabel={`${type} alert: ${title}. ${message}`}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="assertive"
+          >
             {/* Icon */}
             <View style={styles.iconContainer}>
               <View style={[styles.iconCircle, { backgroundColor: `${headerColor}15` }]}>

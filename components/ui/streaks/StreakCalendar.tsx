@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -36,13 +36,13 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
   const weeks = generateCalendarGrid(currentMonth);
   const isDark = variant === 'dark';
 
-  const handleNavigation = async (direction: 'prev' | 'next') => {
+  const handleNavigation = useCallback(async (direction: 'prev' | 'next') => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     direction === 'prev' ? onPreviousMonth() : onNextMonth();
-  };
+  }, [onPreviousMonth, onNextMonth]);
 
   // Get intensity level for a day (0-4)
-  const getDayIntensity = (log: DailyPracticeLog | undefined): number => {
+  const getDayIntensity = useCallback((log: DailyPracticeLog | undefined): number => {
     if (!log || log.total_minutes === 0) return 0;
     if (log.goal_met) return 4; // Full intensity when goal met
     const ratio = log.total_minutes / dailyGoalMinutes;
@@ -50,10 +50,10 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
     if (ratio >= 0.5) return 2;
     if (ratio >= 0.25) return 1;
     return 1;
-  };
+  }, [dailyGoalMinutes]);
 
   // Get color based on intensity
-  const getIntensityColor = (intensity: number, isFreezeDay: boolean): string => {
+  const getIntensityColor = useCallback((intensity: number, isFreezeDay: boolean): string => {
     if (isFreezeDay) return '#00D4FF40'; // Light cyan for freeze days
     switch (intensity) {
       case 0: return 'transparent';
@@ -63,7 +63,7 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
       case 4: return Colors.moss; // Green for goal met
       default: return 'transparent';
     }
-  };
+  }, []);
 
   return (
     <View style={[styles.container, isDark && styles.containerDark]}>

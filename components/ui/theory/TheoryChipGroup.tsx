@@ -14,8 +14,9 @@ interface TheoryChipGroupProps {
 /**
  * TheoryChipGroup - Labeled chip container for displaying arrays of items.
  * Used for chords, scales, and techniques in the Theory tab.
+ * Memoized to prevent unnecessary re-renders in parent components.
  */
-export const TheoryChipGroup: React.FC<TheoryChipGroupProps> = ({
+export const TheoryChipGroup: React.FC<TheoryChipGroupProps> = React.memo(({
   label,
   items,
   chipColor,
@@ -41,7 +42,7 @@ export const TheoryChipGroup: React.FC<TheoryChipGroupProps> = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

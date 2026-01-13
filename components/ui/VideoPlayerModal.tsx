@@ -49,7 +49,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
       presentationStyle="pageSheet"
       onRequestClose={handleClose}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} accessibilityViewIsModal={true}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleClose} style={styles.headerButton}>

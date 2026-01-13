@@ -15,8 +15,9 @@ interface BandCardProps {
 /**
  * Card component for displaying a band with its stats
  * When expanded, shows children (setlist list)
+ * Memoized to prevent unnecessary re-renders in lists
  */
-export const BandCard: React.FC<BandCardProps> = ({
+export const BandCard: React.FC<BandCardProps> = React.memo(({
   band,
   onPress,
   expanded = false,
@@ -76,7 +77,7 @@ export const BandCard: React.FC<BandCardProps> = ({
       )}
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

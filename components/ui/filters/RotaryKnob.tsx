@@ -5,9 +5,10 @@ import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from '
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight } from '@/constants/Animations';
+import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight, FadeIn, FadeOut } from '@/constants/Animations';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { RotaryKnobProps } from '@/types/filters';
 
 const KNOB_SIZE = 44; // Increased from 38px
@@ -26,6 +27,7 @@ export const RotaryKnob = <T extends string>({
   showGlassOverlay = false,
   variant = 'dark',
 }: RotaryKnobProps<T> & { showGlassOverlay?: boolean }) => {
+  const prefersReducedMotion = useReducedMotion();
   const [readoutWidth, setReadoutWidth] = useState(100);
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
 
@@ -58,13 +60,17 @@ export const RotaryKnob = <T extends string>({
 
   const animatedRotation = useSharedValue(rotation);
 
-  // Update animated rotation when value changes - snap animation
+  // Update animated rotation when value changes - snap animation (respect reduced motion)
   useEffect(() => {
-    animatedRotation.value = withTiming(rotation, {
-      duration: 100,
-      easing: Easing.out(Easing.quad)
-    });
-  }, [rotation, animatedRotation]);
+    if (prefersReducedMotion) {
+      animatedRotation.value = rotation;
+    } else {
+      animatedRotation.value = withTiming(rotation, {
+        duration: 100,
+        easing: Easing.out(Easing.quad)
+      });
+    }
+  }, [rotation, animatedRotation, prefersReducedMotion]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${animatedRotation.value}deg` }],
@@ -153,8 +159,8 @@ export const RotaryKnob = <T extends string>({
 
           <Animated.View
                 key={value} // Trigger animation on value change
-                entering={direction > 0 ? EnterFromRight : EnterFromLeft}
-                exiting={direction > 0 ? ExitToLeft : ExitToRight}
+                entering={prefersReducedMotion ? FadeIn : (direction > 0 ? EnterFromRight : EnterFromLeft)}
+                exiting={prefersReducedMotion ? FadeOut : (direction > 0 ? ExitToLeft : ExitToRight)}
                 style={styles.readoutTextWrapper}
             >
                 <Text style={[styles.readoutText, { color: textColor, textShadowColor }]} numberOfLines={1}>

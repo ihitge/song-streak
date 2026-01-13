@@ -116,6 +116,7 @@ export const JoinBandModal: React.FC<JoinBandModalProps> = ({
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.overlay}
+        accessibilityViewIsModal={true}
       >
         <TouchableOpacity
           style={styles.overlayTouch}

@@ -14,8 +14,9 @@ interface SetlistCardProps {
 /**
  * Card component for displaying a setlist
  * Can be shown in compact mode when nested under a BandCard
+ * Memoized to prevent unnecessary re-renders in lists
  */
-export const SetlistCard: React.FC<SetlistCardProps> = ({
+export const SetlistCard: React.FC<SetlistCardProps> = React.memo(({
   setlist,
   onPress,
   compact = false,
@@ -95,7 +96,7 @@ export const SetlistCard: React.FC<SetlistCardProps> = ({
       </View>
     </Pressable>
   );
-};
+});
 
 const styles = StyleSheet.create({
   // Full card styles

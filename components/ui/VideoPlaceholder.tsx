@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { Play } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
 import { getYouTubeThumbnailFromUrl } from '@/utils/youtube';
@@ -36,12 +37,14 @@ export const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({ videoUrl }) 
       {!showFallback ? (
         <>
           <Image
-            source={{ uri: thumbnailUrl }}
+            source={thumbnailUrl}
             style={styles.thumbnail}
             onLoadStart={handleLoadStart}
             onLoadEnd={handleLoadEnd}
             onError={handleError}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
+            transition={200}
           />
           {/* Loading overlay */}
           {isLoading && (

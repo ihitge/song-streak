@@ -30,8 +30,9 @@ interface StreakFlameProps {
 /**
  * Animated flame visualization based on streak length
  * Uses Skia for native rendering with glow effects
+ * Memoized to prevent unnecessary re-renders
  */
-export const StreakFlame: React.FC<StreakFlameProps> = ({
+export const StreakFlame: React.FC<StreakFlameProps> = React.memo(({
   streakDays,
   size = 80,
   animated = true,
@@ -184,7 +185,7 @@ export const StreakFlame: React.FC<StreakFlameProps> = ({
       </Canvas>
     </AnimatedView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

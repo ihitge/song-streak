@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
@@ -91,23 +91,27 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   showTimer = true,
   showTransport = true,
 }) => {
-  // Convert time signature options for FrequencyTuner
-  const timeSignatureOptions = TIME_SIGNATURE_OPTIONS.map((opt) => ({
-    value: opt.value,
-    label: opt.label,
-  }));
+  // Memoized option transforms to prevent unnecessary re-renders
+  const timeSignatureOptions = useMemo(() =>
+    TIME_SIGNATURE_OPTIONS.map((opt) => ({
+      value: opt.value,
+      label: opt.label,
+    })),
+  []);
 
-  // Convert sound options for FrequencyTuner
-  const soundOptions = METRONOME_SOUND_OPTIONS.map((opt) => ({
-    value: opt.value,
-    label: opt.label,
-  }));
+  const soundOptions = useMemo(() =>
+    METRONOME_SOUND_OPTIONS.map((opt) => ({
+      value: opt.value,
+      label: opt.label,
+    })),
+  []);
 
-  // Convert subdivision options for FrequencyTuner
-  const subdivisionOptions = SUBDIVISION_OPTIONS.map((opt) => ({
-    value: String(opt.value),
-    label: opt.label,
-  }));
+  const subdivisionOptions = useMemo(() =>
+    SUBDIVISION_OPTIONS.map((opt) => ({
+      value: String(opt.value),
+      label: opt.label,
+    })),
+  []);
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>

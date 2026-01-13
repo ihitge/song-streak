@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
 import { RefreshCw } from 'lucide-react-native';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { GangSwitchProps } from '@/types/filters';
 
 const BUTTON_HEIGHT = 56; // Increased to accommodate icon + label with padding
@@ -26,25 +27,31 @@ export const GangSwitch = <T extends string>({
   loadingStates,
   dataAvailable,
 }: GangSwitchProps<T>) => {
+  const prefersReducedMotion = useReducedMotion();
   const [wellWidth, setWellWidth] = useState(200);
   const spinValue = useSharedValue(0);
 
-  // Set up rotation animation for loading states
+  // Set up rotation animation for loading states (respect reduced motion)
   useEffect(() => {
     const hasAnyLoading = options.some(opt => loadingStates?.[opt.value]);
 
     if (hasAnyLoading) {
-      spinValue.value = withRepeat(
-        withTiming(1, {
-          duration: 1000,
-          easing: Easing.linear,
-        }),
-        -1
-      );
+      if (prefersReducedMotion) {
+        // Skip animation for reduced motion - just show static icon
+        spinValue.value = 0;
+      } else {
+        spinValue.value = withRepeat(
+          withTiming(1, {
+            duration: 1000,
+            easing: Easing.linear,
+          }),
+          -1
+        );
+      }
     } else {
       spinValue.value = 0;
     }
-  }, [loadingStates]);
+  }, [loadingStates, prefersReducedMotion]);
 
   const animatedRotate = useAnimatedStyle(() => {
     const rotation = interpolate(

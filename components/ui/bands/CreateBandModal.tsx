@@ -94,6 +94,7 @@ export const CreateBandModal: React.FC<CreateBandModalProps> = ({
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.overlay}
+        accessibilityViewIsModal={true}
       >
         <TouchableOpacity
           style={styles.overlayTouch}

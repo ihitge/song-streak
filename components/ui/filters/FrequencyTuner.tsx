@@ -6,9 +6,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Typography } from '@/constants/Styles';
-import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight } from '@/constants/Animations';
+import { EnterFromRight, ExitToLeft, EnterFromLeft, ExitToRight, FadeIn, FadeOut } from '@/constants/Animations';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/primitives';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { FrequencyTunerProps } from '@/types/filters';
 
 type TunerVariant = 'dark' | 'light';
@@ -29,6 +30,7 @@ export const FrequencyTuner = <T extends string>({
   labelColor,
   height: customHeight,
 }: FrequencyTunerProps<T> & { variant?: TunerVariant; showGlassOverlay?: boolean; labelColor?: string }) => {
+  const prefersReducedMotion = useReducedMotion();
   const [width, setWidth] = useState(200); // default fallback
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
   const selectedIndex = options.findIndex((opt) => opt.value === value);
@@ -137,8 +139,8 @@ export const FrequencyTuner = <T extends string>({
           <View style={styles.valueContainer}>
             <Animated.View
                 key={value} // Trigger animation on value change
-                entering={direction > 0 ? EnterFromRight : EnterFromLeft}
-                exiting={direction > 0 ? ExitToLeft : ExitToRight}
+                entering={prefersReducedMotion ? FadeIn : (direction > 0 ? EnterFromRight : EnterFromLeft)}
+                exiting={prefersReducedMotion ? FadeOut : (direction > 0 ? ExitToLeft : ExitToRight)}
                 style={styles.textWrapper}
             >
                 <Text style={[styles.valueText, { color: textColor, textShadowColor }]}>

@@ -15,8 +15,9 @@ interface PracticeTimerProps {
 /**
  * Practice timer with skeuomorphic tape counter display
  * Includes play/pause/reset controls following Industrial Play design
+ * Memoized to prevent unnecessary re-renders
  */
-export const PracticeTimer: React.FC<PracticeTimerProps> = ({
+export const PracticeTimer: React.FC<PracticeTimerProps> = React.memo(({
   songTitle,
   onComplete,
   compact = false,
@@ -134,7 +135,7 @@ export const PracticeTimer: React.FC<PracticeTimerProps> = ({
       </View>
     </View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

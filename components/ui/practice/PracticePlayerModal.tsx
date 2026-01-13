@@ -181,6 +181,7 @@ export const PracticePlayerModal: React.FC<PracticePlayerModalProps> = ({
       <KeyboardAvoidingView
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        accessibilityViewIsModal={true}
       >
         <Animated.View
           style={[

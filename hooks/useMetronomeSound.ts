@@ -1,18 +1,20 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Platform, Image } from 'react-native';
 import { MetronomeSoundType } from '@/types/metronome';
+import type {
+  AudioContextType,
+  AudioBufferType,
+  GainNodeType,
+  MetronomeAudioBuffers,
+} from '@/types/audio';
 
 // Conditional import for react-native-audio-api (native only)
 // On web, the .web.ts version of this file is used instead
-let AudioContext: any;
-let AudioBuffer: any;
-let GainNode: any;
+let AudioContext: new () => AudioContextType;
 
 if (Platform.OS !== 'web') {
   const audioApi = require('react-native-audio-api');
   AudioContext = audioApi.AudioContext;
-  AudioBuffer = audioApi.AudioBuffer;
-  GainNode = audioApi.GainNode;
 }
 
 // Audio asset imports for bundler
@@ -27,17 +29,8 @@ interface UseMetronomeSoundOptions {
   soundType?: MetronomeSoundType;
 }
 
-interface AudioBuffers {
-  clickAccent: any | null;
-  clickTick: any | null;
-  clickSubdiv: any | null;
-  snare: any | null;
-  kick: any | null;
-  hihat: any | null;
-}
-
 interface UseMetronomeSoundReturn {
-  audioContext: any | null;
+  audioContext: AudioContextType | null;
   isLoaded: boolean;
   scheduleSound: (
     type: 'accent' | 'tick' | 'subdivision',
@@ -55,7 +48,7 @@ interface UseMetronomeSoundReturn {
 /**
  * Get the asset URI for a sound file (Native version)
  */
-function getAssetUri(asset: any): string {
+function getAssetUri(asset: number): string {
   const resolved = Image.resolveAssetSource(asset);
   return resolved?.uri || '';
 }
@@ -64,9 +57,9 @@ function getAssetUri(asset: any): string {
  * Load an audio file into an AudioBuffer (Native version)
  */
 async function loadAudioBuffer(
-  audioContext: any,
-  asset: any
-): Promise<any | null> {
+  audioContext: AudioContextType,
+  asset: number
+): Promise<AudioBufferType | null> {
   try {
     const uri = getAssetUri(asset);
     if (!uri) {
@@ -98,9 +91,9 @@ export function useMetronomeSound(
 ): UseMetronomeSoundReturn {
   const { soundType = 'click' } = options;
 
-  const audioContextRef = useRef<any | null>(null);
-  const [audioContext, setAudioContext] = useState<any | null>(null);
-  const buffersRef = useRef<AudioBuffers>({
+  const audioContextRef = useRef<AudioContextType | null>(null);
+  const [audioContext, setAudioContext] = useState<AudioContextType | null>(null);
+  const buffersRef = useRef<MetronomeAudioBuffers>({
     clickAccent: null,
     clickTick: null,
     clickSubdiv: null,
@@ -110,7 +103,7 @@ export function useMetronomeSound(
   });
   const [isLoaded, setIsLoaded] = useState(false);
   const isLoadingRef = useRef(false);
-  const masterGainRef = useRef<any | null>(null);
+  const masterGainRef = useRef<GainNodeType | null>(null);
 
   /**
    * Initialize AudioContext and load all sound buffers
@@ -188,7 +181,7 @@ export function useMetronomeSound(
    * Get the appropriate buffer for a sound type and role
    */
   const getBuffer = useCallback(
-    (role: 'accent' | 'tick' | 'subdivision', type: MetronomeSoundType): any | null => {
+    (role: 'accent' | 'tick' | 'subdivision', type: MetronomeSoundType): AudioBufferType | null => {
       const buffers = buffersRef.current;
 
       // For drums mode, role determines which instrument

@@ -20,7 +20,7 @@ interface HighlightedTextProps {
   highlightStyle: object;
 }
 
-const HighlightedText: React.FC<HighlightedTextProps> = ({
+const HighlightedText: React.FC<HighlightedTextProps> = React.memo(({
   text,
   highlight,
   style,
@@ -49,7 +49,7 @@ const HighlightedText: React.FC<HighlightedTextProps> = ({
       {after}
     </Text>
   );
-};
+});
 
 // --- Empty State Component ---
 interface EmptyStateProps {

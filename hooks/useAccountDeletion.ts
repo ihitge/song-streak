@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/utils/supabase/client';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 import { useSignOut } from '@/hooks/useSignOut';
+import { getErrorMessage } from '@/types/database';
 
 /**
  * Hook for handling account deletion
@@ -45,11 +46,11 @@ export const useAccountDeletion = () => {
               handleSignOut();
             }
           );
-        } catch (error: any) {
+        } catch (error: unknown) {
           console.error('Account deletion error:', error);
           showError(
             'Deletion Failed',
-            error.message || 'Failed to delete account. Please try again or contact support.'
+            getErrorMessage(error) || 'Failed to delete account. Please try again or contact support.'
           );
         } finally {
           setIsDeleting(false);
