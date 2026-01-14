@@ -6,7 +6,7 @@ export const ProcessingSignal: React.FC = () => {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={Colors.vermilion} />
-      <Text style={styles.text}>Processing Signal...</Text>
+      <Text style={styles.text}>Extracting Song Details...</Text>
     </View>
   );
 };

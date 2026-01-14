@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
-import { FrequencyTuner, GangSwitch } from '@/components/ui/filters';
+import { GangSwitch } from '@/components/ui/filters';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { TheorySection, TheoryMetricsRow, TheoryChipGroup, TheoryChordSection, AddChordModal } from '@/components/ui/theory';
 import { Mic, BookOpen, Target, StickyNote, Search, Save, Music, Clock, Hash, ExternalLink, Guitar, Headphones } from 'lucide-react-native';
@@ -213,8 +213,7 @@ export default function AddSongScreen() {
       try {
         analysisResult = await analyzeVideoWithGemini(videoUrl);
         console.log('✅ Analysis successful:', analysisResult);
-        setDebugInfo('✅ SUCCESS: Real data from Gemini API');
-        setShowDebug(true);
+        showSuccess('Song Details Found', `"${analysisResult.title}" by ${analysisResult.artist}`);
       } catch (geminiError) {
         console.error('Gemini API Error:', geminiError);
 
@@ -741,15 +740,6 @@ export default function AddSongScreen() {
                   editable={!isEditMode || isEditing}
                 />
               </View>
-
-              <FrequencyTuner
-                label="INSTRUMENT"
-                value={currentInstrument}
-                onChange={handleInstrumentChange}
-                options={instrumentOptions}
-                disabled={isEditMode && !isEditing}
-                showGlassOverlay
-              />
             </ScrollView>
           ) : activeTab === 'Theory' ? (
             <ScrollView style={styles.theoryContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.theoryScrollContent}>

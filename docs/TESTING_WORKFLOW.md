@@ -20,7 +20,7 @@ You have successfully configured:
 3. **Paste a video URL** (e.g., a YouTube music video link)
 4. **Click "ANALYZE VIDEO" button**
 5. **Verify:**
-   - [ ] Loading indicator appears ("Processing Signal...")
+   - [ ] Loading indicator appears ("Extracting Song Details...")
    - [ ] Theory and Practice tab icons spin (RefreshCw spinner)
    - [ ] After 3-10 seconds, loading completes
    - [ ] Form fields auto-fill:

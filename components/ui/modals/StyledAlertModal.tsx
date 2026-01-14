@@ -8,6 +8,7 @@ import {
   Animated,
   AccessibilityInfo,
   findNodeHandle,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AlertCircle, CheckCircle, Info, AlertTriangle, X } from 'lucide-react-native';
@@ -90,9 +91,9 @@ export const StyledAlertModal: React.FC<StyledAlertModalProps> = ({
 
   useEffect(() => {
     if (visible) {
-      // Set accessibility focus to the modal content for screen readers
+      // Set accessibility focus to the modal content for screen readers (native only)
       const timer = setTimeout(() => {
-        if (contentRef.current) {
+        if (Platform.OS !== 'web' && contentRef.current) {
           const node = findNodeHandle(contentRef.current);
           if (node) {
             AccessibilityInfo.setAccessibilityFocus(node);
