@@ -8,6 +8,7 @@ export interface GeminiAnalysisResponse {
   title: string;
   artist: string;
   instrument: 'Guitar' | 'Bass';
+  summary: string;
   theoryData: {
     tuning: string;
     key: string;
@@ -63,6 +64,10 @@ const extractSongTheoryFunction = {
         enum: ['Guitar', 'Bass'],
         description: 'The primary instrument being taught in the tutorial (Guitar or Bass only)',
       },
+      summary: {
+        type: 'string',
+        description: 'A concise 2-3 sentence overview of the tutorial covering: the song structure/form (e.g., verse-chorus-bridge), the teaching approach (e.g., starts with main riff, breaks down solo section-by-section), and any helpful tips or shortcuts mentioned. This gives users a quick sense of what to expect before diving into theory details.',
+      },
       theoryData: {
         type: 'object',
         properties: {
@@ -116,7 +121,7 @@ const extractSongTheoryFunction = {
         required: ['difficulty', 'techniques'],
       },
     },
-    required: ['title', 'artist', 'instrument', 'theoryData', 'practiceData'],
+    required: ['title', 'artist', 'instrument', 'summary', 'theoryData', 'practiceData'],
   },
 };
 
@@ -300,6 +305,7 @@ Analyze the video title, description, audio content, and any visible chord diagr
           title: args.title || 'Unknown',
           artist: args.artist || 'Unknown',
           instrument: args.instrument || 'Guitar',
+          summary: args.summary || '',
           theoryData: {
             tuning: args.theoryData?.tuning || 'Standard',
             key: args.theoryData?.key || 'Unknown',
@@ -337,6 +343,7 @@ Analyze the video title, description, audio content, and any visible chord diagr
           title: parsed.title || 'Unknown',
           artist: parsed.artist || 'Unknown',
           instrument: parsed.instrument || 'Guitar',
+          summary: parsed.summary || '',
           theoryData: {
             tuning: parsed.theoryData?.tuning || parsed.tuning || 'Standard',
             key: parsed.theoryData?.key || parsed.key || 'Unknown',
@@ -375,6 +382,7 @@ export function getMockGeminiResponse(): GeminiAnalysisResponse {
     title: 'Sample Song',
     artist: 'Sample Artist',
     instrument: 'Guitar',
+    summary: 'This tutorial covers a classic rock song with a simple verse-chorus structure. The instructor breaks down the main riff first, then walks through the chord progression. Great for intermediate players looking to improve their barre chord transitions.',
     theoryData: {
       tuning: 'Standard',
       key: 'A Minor',

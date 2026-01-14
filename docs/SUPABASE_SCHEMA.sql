@@ -19,6 +19,9 @@ CREATE TABLE songs (
   video_url TEXT NOT NULL,
   artwork_url TEXT,
 
+  -- Tutorial Overview
+  summary TEXT, -- AI-generated tutorial overview: song structure, teaching approach, tips
+
   -- Theory Data
   key TEXT,
   tempo TEXT,

@@ -39,6 +39,7 @@ interface InstrumentAnalysisData {
   videoUrl: string;
   title: string;
   artist: string;
+  summary: string;
   theoryData: {
     tuning: string;
     key: string;
@@ -150,6 +151,7 @@ export default function AddSongScreen() {
         videoUrl: data.video_url,
         title: data.title,
         artist: data.artist,
+        summary: data.summary || '',
         theoryData: {
           tuning: data.tuning || 'Standard',
           key: data.key || 'Unknown',
@@ -276,6 +278,7 @@ export default function AddSongScreen() {
         videoUrl: videoUrl,
         title: analysisResult.title,
         artist: analysisResult.artist,
+        summary: analysisResult.summary,
         theoryData: analysisResult.theoryData,
         practiceData: analysisResult.practiceData,
         analyzed: true,
@@ -349,6 +352,7 @@ export default function AddSongScreen() {
         instrument: currentInstrument,
         video_url: currentData.videoUrl,
         artwork_url: artwork.artworkUrl || null,
+        summary: currentData.summary || null,
         tuning: currentData.theoryData.tuning,
         key: currentData.theoryData.key,
         tempo: currentData.theoryData.tempo,
@@ -413,6 +417,7 @@ export default function AddSongScreen() {
         artist: artist,
         instrument: currentInstrument,
         video_url: currentData?.videoUrl || videoUrl,
+        summary: currentData?.summary || null,
         tuning: currentData?.theoryData?.tuning,
         key: currentData?.theoryData?.key,
         tempo: currentData?.theoryData?.tempo,
@@ -740,6 +745,18 @@ export default function AddSongScreen() {
                   editable={!isEditMode || isEditing}
                 />
               </View>
+
+              {/* Tutorial Summary - displayed after analysis */}
+              {instrumentData[currentInstrument]?.summary && (
+                <View style={styles.summaryContainer}>
+                  <Text style={styles.summaryLabel}>TUTORIAL OVERVIEW</Text>
+                  <View style={styles.summaryBox}>
+                    <Text style={styles.summaryText}>
+                      {instrumentData[currentInstrument]?.summary}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </ScrollView>
           ) : activeTab === 'Theory' ? (
             <ScrollView style={styles.theoryContainer} showsVerticalScrollIndicator={false} contentContainerStyle={styles.theoryScrollContent}>
@@ -1077,6 +1094,36 @@ const styles = StyleSheet.create({
   textInputDisabled: {
     opacity: 0.7,
     backgroundColor: Colors.softWhite,
+  },
+  summaryContainer: {
+    marginTop: 8,
+  },
+  summaryLabel: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 11,
+    color: Colors.graphite,
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  },
+  summaryBox: {
+    backgroundColor: Colors.softWhite,
+    borderRadius: 8,
+    padding: 16,
+    // Recessed well effect
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderBottomWidth: 1,
+    borderRightWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.08)',
+    borderLeftColor: 'rgba(0,0,0,0.08)',
+    borderBottomColor: 'rgba(255,255,255,0.8)',
+    borderRightColor: 'rgba(255,255,255,0.8)',
+  },
+  summaryText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 14,
+    color: Colors.charcoal,
+    lineHeight: 22,
   },
   cancelButton: {
     paddingVertical: 12,
