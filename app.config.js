@@ -9,7 +9,7 @@ module.exports = {
   expo: {
     name: "SongStreak",
     slug: "song-streak",
-    version: "2.0.0",
+    version: "2.1.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "songstreak",
@@ -23,7 +23,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.songstreak.app",
-      buildNumber: "13",
+      buildNumber: "17",
       usesAppleSignIn: true,
       infoPlist: {
         UIBackgroundModes: ["audio"],
