@@ -23,7 +23,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.songstreak.app",
-      buildNumber: "17",
+      buildNumber: "18",
       usesAppleSignIn: true,
       infoPlist: {
         UIBackgroundModes: ["audio"],
