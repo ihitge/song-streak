@@ -228,6 +228,7 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     gap: 12,
+    width: '100%',
   },
   containerCompact: {
     gap: 8,
@@ -258,12 +259,12 @@ const styles = StyleSheet.create({
     color: Colors.moss,
   },
   meterFace: {
-    width: 310,  // Fixed width required for iOS - Skia Canvas doesn't render with percentage widths
+    width: '100%',
     height: 120,
     borderRadius: 12,
   },
   meterFaceCompact: {
-    width: 218,  // Fixed width for compact mode (matches MetronomePanel compact width)
+    width: '100%',
     height: 90,
     borderRadius: 8,
   },
