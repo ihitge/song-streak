@@ -4,18 +4,19 @@
  * Transport controls for the tuner:
  * - Signal strength indicator
  * - Circular Start/Stop button matching FAB design
- * - Permission state handling with settings redirect
+ * - Permission state handling via MicrophonePermissionPrompt
  *
  * Follows Industrial Play aesthetic.
  */
 
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, Linking, Platform, ActivityIndicator } from 'react-native';
-import { Mic, MicOff, Volume2, Settings, AlertTriangle } from 'lucide-react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { Mic, MicOff, Volume2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { ICON_SIZES } from '@/constants/Styles';
 import { FAB } from '@/components/ui/FAB';
+import { MicrophonePermissionPrompt } from '@/components/ui/MicrophonePermissionPrompt';
 import type { TunerStatus } from '@/types/tuner';
 
 interface TunerControlsProps {
@@ -48,7 +49,6 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
   const isInitializing = status === 'initializing';
 
   const handleToggle = useCallback(async () => {
-    if (permissionStatus === 'denied') return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     if (isActive) {
@@ -56,28 +56,52 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
     } else {
       onStart();
     }
-  }, [isActive, onStart, onStop, permissionStatus]);
-
-  const handleOpenSettings = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (Platform.OS === 'ios') {
-      Linking.openURL('app-settings:');
-    } else if (Platform.OS === 'android') {
-      Linking.openSettings();
-    } else {
-      // Web: try to start again - browser will re-prompt if user cleared the block
-      onStart();
-    }
-  }, [onStart]);
+  }, [isActive, onStart, onStop]);
 
   // Get button label based on state
   const getButtonLabel = () => {
     if (isInitializing) return 'STARTING...';
     if (isActive) return 'STOP';
-    if (permissionStatus === 'denied') return 'MIC DENIED';
-    if (permissionStatus === 'undetermined') return 'ENABLE MIC';
     return 'START';
   };
+
+  // Show permission prompt if not granted
+  if (permissionStatus !== 'granted') {
+    return (
+      <View style={[styles.container, compact && styles.containerCompact]}>
+        {/* Signal strength indicator (inactive) */}
+        <View style={styles.signalContainer}>
+          <Volume2 size={ICON_SIZES.sm} color={Colors.warmGray} />
+          <View style={styles.signalBarContainer}>
+            {[0.2, 0.4, 0.6, 0.8, 1.0].map((threshold, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.signalBar,
+                  {
+                    height: 6 + index * 2,
+                    backgroundColor: 'rgba(136, 136, 136, 0.3)',
+                  },
+                ]}
+              />
+            ))}
+          </View>
+          <Text style={styles.signalLabel}>SIGNAL</Text>
+        </View>
+
+        {/* Permission prompt - consistent with Idea Bank */}
+        <MicrophonePermissionPrompt
+          permissionStatus={permissionStatus}
+          onRequestPermission={async () => {
+            onStart(); // onStart handles permission request
+            return true;
+          }}
+          featureName="the tuner"
+          compact={compact}
+        />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
@@ -119,22 +143,18 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
           ) : (
             <Mic
               size={ICON_SIZES.hero}
-              color={permissionStatus === 'denied' ? Colors.graphite : Colors.softWhite}
+              color={Colors.softWhite}
               strokeWidth={2.5}
             />
           )
         }
         variant={isActive ? 'secondary' : 'primary'}
-        disabled={permissionStatus === 'denied' || isInitializing}
+        disabled={isInitializing}
         accessibilityLabel={getButtonLabel()}
         accessibilityHint={
-          permissionStatus === 'denied'
-            ? 'Microphone permission denied. Open settings to enable.'
-            : permissionStatus === 'undetermined'
-              ? 'Tap to request microphone permission'
-              : isActive
-                ? 'Tap to stop tuning'
-                : 'Tap to start tuning'
+          isActive
+            ? 'Tap to stop tuning'
+            : 'Tap to start tuning'
         }
       />
 
@@ -142,41 +162,6 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
       <Text style={[styles.buttonLabel, isActive && styles.buttonLabelActive]}>
         {getButtonLabel()}
       </Text>
-
-      {/* Permission denied - message with settings button */}
-      {permissionStatus === 'denied' && (
-        <View style={styles.permissionDeniedContainer}>
-          <View style={styles.permissionWarningRow}>
-            <AlertTriangle size={ICON_SIZES.sm} color={Colors.vermilion} />
-            <Text style={styles.permissionDeniedText}>
-              Microphone access required
-            </Text>
-          </View>
-          <Text style={styles.permissionHelpText}>
-            {Platform.OS === 'web'
-              ? 'Click the padlock icon in your address bar to allow mic access'
-              : 'Enable microphone in Settings to use the tuner'}
-          </Text>
-          <Pressable
-            style={({ pressed }) => [
-              styles.settingsButton,
-              pressed && styles.settingsButtonPressed,
-            ]}
-            onPress={handleOpenSettings}
-            accessibilityLabel={Platform.OS === 'web' ? 'Try again' : 'Open settings'}
-            accessibilityRole="button"
-            accessibilityHint={Platform.OS === 'web'
-              ? 'Request microphone permission again'
-              : 'Opens device settings to enable microphone'}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Settings size={ICON_SIZES.sm} color={Colors.softWhite} />
-            <Text style={styles.settingsButtonText}>
-              {Platform.OS === 'web' ? 'TRY AGAIN' : 'OPEN SETTINGS'}
-            </Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
 };
@@ -218,50 +203,5 @@ const styles = StyleSheet.create({
   },
   buttonLabelActive: {
     color: Colors.graphite,
-  },
-  permissionDeniedContainer: {
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-  },
-  permissionWarningRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  permissionDeniedText: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 11,
-    color: Colors.vermilion,
-    textAlign: 'center',
-  },
-  permissionHelpText: {
-    fontFamily: 'LexendDecaRegular',
-    fontSize: 10,
-    color: Colors.warmGray,
-    textAlign: 'center',
-    maxWidth: 260,
-    lineHeight: 14,
-  },
-  settingsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.charcoal,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    minHeight: 48,  // Comfortable touch target
-    borderRadius: 8,
-    gap: 8,
-    marginTop: 4,
-  },
-  settingsButtonPressed: {
-    transform: [{ scale: 0.96 }],
-    opacity: 0.9,
-  },
-  settingsButtonText: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 11,
-    color: Colors.softWhite,
-    letterSpacing: 1,
   },
 });
