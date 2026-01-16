@@ -199,17 +199,6 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
       compact && styles.housingCompact,
       fullWidth && styles.housingFullWidth,
     ]}>
-      {/* Permission prompt overlay - shows when mic access needed */}
-      {permissionStatus !== 'granted' && (
-        <MicrophonePermissionPrompt
-          permissionStatus={permissionStatus}
-          onRequestPermission={requestPermission}
-          featureName="the voice recorder"
-          compact={compact}
-          overlay
-        />
-      )}
-
       {/* Main content section - flex: 1 in fullWidth mode */}
       <View style={[styles.mainContent, fullWidth && styles.mainContentFullWidth]}>
         {/* Header with title and screws - only show when NOT fullWidth (DeviceCasing provides title) */}
@@ -242,19 +231,29 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
         />
       </View>
 
-      {/* Transport controls - pinned at bottom in fullWidth mode */}
+      {/* Transport controls OR permission prompt - pinned at bottom in fullWidth mode */}
       {showTransport && (
         <View style={[
           styles.transportContainer,
           compact && styles.transportContainerCompact,
           fullWidth && styles.transportContainerFullWidth,
         ]}>
-          <TransportControls
-            state={state}
-            hasRecording={hasRecording}
-            onPress={handleTransportPress}
-            compact={compact}
-          />
+          {permissionStatus !== 'granted' ? (
+            /* Permission prompt - shown inline like tuner, replacing transport controls */
+            <MicrophonePermissionPrompt
+              permissionStatus={permissionStatus}
+              onRequestPermission={requestPermission}
+              featureName="the voice recorder"
+              compact={compact}
+            />
+          ) : (
+            <TransportControls
+              state={state}
+              hasRecording={hasRecording}
+              onPress={handleTransportPress}
+              compact={compact}
+            />
+          )}
         </View>
       )}
 
