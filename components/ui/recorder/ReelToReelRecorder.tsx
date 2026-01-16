@@ -231,29 +231,35 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
         />
       </View>
 
-      {/* Transport controls OR permission prompt - pinned at bottom in fullWidth mode */}
-      {showTransport && (
+      {/* Transport controls - pinned at bottom in fullWidth mode */}
+      {showTransport && permissionStatus === 'granted' && (
         <View style={[
           styles.transportContainer,
           compact && styles.transportContainerCompact,
           fullWidth && styles.transportContainerFullWidth,
         ]}>
-          {permissionStatus !== 'granted' ? (
-            /* Permission prompt - shown inline like tuner, replacing transport controls */
-            <MicrophonePermissionPrompt
-              permissionStatus={permissionStatus}
-              onRequestPermission={requestPermission}
-              featureName="the voice recorder"
-              compact={compact}
-            />
-          ) : (
-            <TransportControls
-              state={state}
-              hasRecording={hasRecording}
-              onPress={handleTransportPress}
-              compact={compact}
-            />
-          )}
+          <TransportControls
+            state={state}
+            hasRecording={hasRecording}
+            onPress={handleTransportPress}
+            compact={compact}
+          />
+        </View>
+      )}
+
+      {/* Permission prompt - shown when mic access needed, replaces transport */}
+      {showTransport && permissionStatus !== 'granted' && (
+        <View style={[
+          styles.permissionContainer,
+          compact && styles.permissionContainerCompact,
+          fullWidth && styles.permissionContainerFullWidth,
+        ]}>
+          <MicrophonePermissionPrompt
+            permissionStatus={permissionStatus}
+            onRequestPermission={requestPermission}
+            featureName="the voice recorder"
+            compact={compact}
+          />
         </View>
       )}
 
@@ -344,8 +350,9 @@ const styles = StyleSheet.create({
   },
   mainContentFullWidth: {
     flex: 1,
-    justifyContent: 'center',
-    gap: 16,
+    justifyContent: 'flex-start',
+    paddingTop: 16,
+    gap: 20,
   },
   header: {
     flexDirection: 'row',
@@ -391,6 +398,18 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 24,
     marginBottom: 0,
+  },
+  permissionContainer: {
+    alignItems: 'center',
+    paddingVertical: 16,
+  },
+  permissionContainerCompact: {
+    paddingVertical: 12,
+  },
+  permissionContainerFullWidth: {
+    alignItems: 'center',
+    paddingTop: 16,
+    paddingBottom: 24,
   },
   actionButtons: {
     flexDirection: 'row',
