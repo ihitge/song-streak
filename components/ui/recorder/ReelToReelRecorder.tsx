@@ -21,6 +21,7 @@ import { TapeReel } from './TapeReel';
 import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { TransportControls } from './TransportControls';
 import { SaveRecordingPanel } from './SaveRecordingPanel';
+import { MicrophonePermissionPrompt } from '@/components/ui/MicrophonePermissionPrompt';
 
 interface ReelToReelRecorderProps {
   /** Called when a recording is completed and saved */
@@ -96,15 +97,8 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
     },
   });
 
-  // Show permission warning via styled alert
-  useEffect(() => {
-    if (permissionStatus === 'denied') {
-      showWarning(
-        'Microphone Access Required',
-        'Please enable microphone access in settings to use the voice recorder.'
-      );
-    }
-  }, [permissionStatus, showWarning]);
+  // Note: Permission UI is now handled inline by MicrophonePermissionPrompt component
+  // instead of showing an alert that feels like a dead-end
 
   // Handle transport button presses
   const handleTransportPress = useCallback((button: TransportButton) => {
@@ -205,6 +199,17 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
       compact && styles.housingCompact,
       fullWidth && styles.housingFullWidth,
     ]}>
+      {/* Permission prompt overlay - shows when mic access needed */}
+      {permissionStatus !== 'granted' && (
+        <MicrophonePermissionPrompt
+          permissionStatus={permissionStatus}
+          onRequestPermission={requestPermission}
+          featureName="the voice recorder"
+          compact={compact}
+          overlay
+        />
+      )}
+
       {/* Main content section - flex: 1 in fullWidth mode */}
       <View style={[styles.mainContent, fullWidth && styles.mainContentFullWidth]}>
         {/* Header with title and screws - only show when NOT fullWidth (DeviceCasing provides title) */}
@@ -341,6 +346,7 @@ const styles = StyleSheet.create({
   mainContentFullWidth: {
     flex: 1,
     justifyContent: 'center',
+    gap: 16,
   },
   header: {
     flexDirection: 'row',
@@ -371,10 +377,10 @@ const styles = StyleSheet.create({
   reelContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   reelContainerCompact: {
-    marginBottom: 14,
+    marginBottom: 16,
   },
   transportContainer: {
     marginBottom: 20,
@@ -383,7 +389,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   transportContainerFullWidth: {
-    paddingVertical: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
     marginBottom: 0,
   },
   actionButtons: {

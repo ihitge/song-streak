@@ -6,9 +6,10 @@
  * - Start/Stop button on Tuner page
  *
  * Features:
- * - Consistent 64x64 size with white border ring
+ * - 72x72 size with white border ring (+ 12px hitSlop for 96x96 touch target)
  * - Primary (vermilion) and secondary (graphite) variants
- * - Built-in haptic and audio feedback
+ * - Built-in haptic feedback with press animation
+ * - Accessibility labels and hints
  *
  * Follows Industrial Play aesthetic.
  */
@@ -52,10 +53,11 @@ export const FAB: React.FC<FABProps> = ({
 
   return (
     <Pressable
-      style={[
+      style={({ pressed }) => [
         styles.fab,
         variant === 'secondary' && styles.fabSecondary,
         disabled && styles.fabDisabled,
+        pressed && !disabled && styles.fabPressed,
         style,
       ]}
       onPress={handlePress}
@@ -64,6 +66,7 @@ export const FAB: React.FC<FABProps> = ({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
       accessibilityHint={accessibilityHint}
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
     >
       {icon}
     </Pressable>
@@ -72,9 +75,9 @@ export const FAB: React.FC<FABProps> = ({
 
 const styles = StyleSheet.create({
   fab: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: Colors.vermilion,
     justifyContent: 'center',
     alignItems: 'center',
@@ -85,7 +88,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 8,
     // White ring effect
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: Colors.rimHighlight,
   },
   fabSecondary: {
@@ -93,5 +96,9 @@ const styles = StyleSheet.create({
   },
   fabDisabled: {
     opacity: 0.5,
+  },
+  fabPressed: {
+    transform: [{ scale: 0.95 }],
+    opacity: 0.9,
   },
 });

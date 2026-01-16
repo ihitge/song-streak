@@ -11,8 +11,8 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { RotaryKnobProps } from '@/types/filters';
 
-const KNOB_SIZE = 44; // Increased from 38px
-const READOUT_HEIGHT = 44; // Increased from 38px
+const KNOB_SIZE = 52; // Matches TunerStringSelector button proportions
+const READOUT_HEIGHT = 60; // Matches TunerStringSelector well height
 
 
 export const RotaryKnob = <T extends string>({
@@ -236,10 +236,10 @@ const styles = StyleSheet.create({
     pointerEvents: 'none',
   },
   readoutText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
     color: '#e0e0e0',
     textAlign: 'center',
     textShadowColor: 'rgba(255,255,255,0.3)',
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     // Underline
     borderBottomWidth: 2,
     borderBottomColor: Colors.vermilion,
-    paddingBottom: 2, // Add a little space between text and underline
+    paddingBottom: 3, // Add a little space between text and underline
   },
   knobContainer: {
     position: 'relative',
@@ -273,10 +273,10 @@ const styles = StyleSheet.create({
   },
   indicatorDot: {
     position: 'absolute',
-    top: 6, // Adjusted from 4
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    top: 8, // Adjusted for larger knob size
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
     backgroundColor: Colors.vermilion,
   },
   readoutTextWrapper: {

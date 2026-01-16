@@ -418,7 +418,7 @@ export function getMilestoneProgress(
       break;
     case 'genre':
       const genre = milestone.threshold_meta?.genre;
-      current = genre ? (stats.genres_mastered[genre] || 0) : 0;
+      current = genre && stats.genres_mastered ? (stats.genres_mastered[genre] || 0) : 0;
       break;
     default:
       current = 0;

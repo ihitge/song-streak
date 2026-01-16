@@ -12,15 +12,13 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  ActivityIndicator,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Play, Pause, Share2, Trash2, Music, Users } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
-import { Typography } from '@/constants/Styles';
 import { VoiceMemoWithMeta, formatTime } from '@/types/voiceMemo';
 import { InsetWindow } from '@/components/ui/InsetWindow';
+import { MemoCardSkeletonList } from '@/components/ui/skeleton';
 
 interface VoiceMemosListProps {
   /** Memos to display */
@@ -187,11 +185,7 @@ export const VoiceMemosList: React.FC<VoiceMemosListProps> = ({
   const keyExtractor = useCallback((item: VoiceMemoWithMeta) => item.id, []);
 
   if (isLoading && memos.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.vermilion} />
-      </View>
-    );
+    return <MemoCardSkeletonList count={4} compact={compact} />;
   }
 
   return (
@@ -219,12 +213,6 @@ export const VoiceMemosList: React.FC<VoiceMemosListProps> = ({
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
   listContent: {
     padding: 16,
     gap: 12,

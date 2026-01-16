@@ -105,28 +105,24 @@ export const TunerVUMeter: React.FC<TunerVUMeterProps> = ({
 
   return (
     <View style={[styles.container, compact && styles.containerCompact]}>
-      {/* Note Display - large note name */}
-      <View style={styles.noteDisplay}>
-        {detectedString ? (
-          <>
-            <Text style={[styles.noteName, isInTune && styles.noteNameInTune]}>
-              {detectedString.note}
-            </Text>
-            <Text style={styles.stringSubLabel}>
-              {detectedString.stringNumber === 1
-                ? '1st'
-                : detectedString.stringNumber === 2
-                  ? '2nd'
-                  : detectedString.stringNumber === 3
-                    ? '3rd'
-                    : `${detectedString.stringNumber}th`}{' '}
-              String
-            </Text>
-          </>
-        ) : (
-          <Text style={styles.notePlaceholder}>--</Text>
-        )}
-      </View>
+      {/* Note Display - large note name (only shown when string detected) */}
+      {detectedString && (
+        <View style={styles.noteDisplay}>
+          <Text style={[styles.noteName, isInTune && styles.noteNameInTune]}>
+            {detectedString.note}
+          </Text>
+          <Text style={styles.stringSubLabel}>
+            {detectedString.stringNumber === 1
+              ? '1st'
+              : detectedString.stringNumber === 2
+                ? '2nd'
+                : detectedString.stringNumber === 3
+                  ? '3rd'
+                  : `${detectedString.stringNumber}th`}{' '}
+            String
+          </Text>
+        </View>
+      )}
 
       {/* Meter section with label */}
       <View style={styles.meterSection}>
@@ -165,23 +161,29 @@ export const TunerVUMeter: React.FC<TunerVUMeterProps> = ({
           })}
         </View>
 
-        {/* Direction labels */}
-        <View style={styles.directionLabels}>
-          <Text
-            style={[
-              styles.directionText,
-              direction === 'flat' && isActive && styles.directionActive,
-            ]}
-          >
-            FLAT
+        {/* Data displays in bottom corners */}
+        <View style={styles.cornerDataLeft}>
+          <Text style={styles.cornerDataLabel}>FREQUENCY</Text>
+          <Text style={styles.cornerDataValue}>
+            {detectedString && isActive
+              ? `${detectedString.frequency.toFixed(1)} Hz`
+              : '--- Hz'}
           </Text>
+        </View>
+
+        <View style={styles.cornerDataRight}>
+          <Text style={styles.cornerDataLabel}>DEVIATION</Text>
           <Text
             style={[
-              styles.directionText,
-              direction === 'sharp' && isActive && styles.directionActive,
+              styles.cornerDataValue,
+              cents !== null && {
+                color: getDeviationColor(cents, isInTune),
+              },
             ]}
           >
-            SHARP
+            {cents !== null
+              ? `${cents >= 0 ? '+' : ''}${cents.toFixed(0)} ¢`
+              : '--- ¢'}
           </Text>
         </View>
 
@@ -218,36 +220,6 @@ export const TunerVUMeter: React.FC<TunerVUMeterProps> = ({
         )}
         </InsetWindow>
       </View>
-
-      {/* Data display below meter */}
-      <View style={[styles.dataRow, compact && styles.dataRowCompact]}>
-        <View style={styles.dataItem}>
-          <Text style={styles.dataLabel}>FREQUENCY</Text>
-          <Text style={styles.dataValue}>
-            {detectedString && isActive
-              ? `${detectedString.frequency.toFixed(1)} Hz`
-              : '--- Hz'}
-          </Text>
-        </View>
-
-        <View style={styles.dataDivider} />
-
-        <View style={styles.dataItem}>
-          <Text style={styles.dataLabel}>DEVIATION</Text>
-          <Text
-            style={[
-              styles.dataValue,
-              cents !== null && {
-                color: getDeviationColor(cents, isInTune),
-              },
-            ]}
-          >
-            {cents !== null
-              ? `${cents >= 0 ? '+' : ''}${cents.toFixed(0)} ¢`
-              : '--- ¢'}
-          </Text>
-        </View>
-      </View>
     </View>
   );
 };
@@ -255,19 +227,20 @@ export const TunerVUMeter: React.FC<TunerVUMeterProps> = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   containerCompact: {
-    gap: 6,
+    gap: 8,
   },
   meterSection: {
     width: '100%',
-    gap: 6,
+    gap: 8,
   },
   sectionLabel: Typography.label,
   noteDisplay: {
     alignItems: 'center',
-    gap: 0,
+    gap: 2,
+    marginBottom: 4,
   },
   stringSubLabel: {
     fontFamily: 'LexendDecaRegular',
@@ -283,12 +256,6 @@ const styles = StyleSheet.create({
   },
   noteNameInTune: {
     color: Colors.moss,
-  },
-  notePlaceholder: {
-    fontFamily: 'LexendDecaBold',
-    fontSize: 40,
-    color: Colors.graphite,
-    letterSpacing: 2,
   },
   meterFace: {
     width: 310,  // Fixed width required for iOS - Skia Canvas doesn't render with percentage widths
@@ -321,23 +288,29 @@ const styles = StyleSheet.create({
   markerLabelCompact: {
     fontSize: 10,
   },
-  directionLabels: {
+  cornerDataLeft: {
     position: 'absolute',
-    bottom: 10,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    bottom: 8,
+    left: 12,
+    alignItems: 'flex-start',
   },
-  directionText: {
+  cornerDataRight: {
+    position: 'absolute',
+    bottom: 8,
+    right: 12,
+    alignItems: 'flex-end',
+  },
+  cornerDataLabel: {
     fontFamily: 'LexendDecaSemiBold',
-    fontSize: 9,
+    fontSize: 7,
     letterSpacing: 1,
-    color: 'rgba(255,255,255,0.3)',
+    color: Colors.warmGray,
+    marginBottom: 1,
   },
-  directionActive: {
-    color: Colors.vermilion,
+  cornerDataValue: {
+    fontFamily: 'LexendDecaBold',
+    fontSize: 11,
+    color: Colors.charcoal,
   },
   needlePivot: {
     position: 'absolute',
@@ -395,35 +368,5 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(65, 123, 90, 0.15)',
     borderRadius: 12,
-  },
-  dataRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 20,
-    marginTop: 0,
-  },
-  dataRowCompact: {
-    gap: 12,
-  },
-  dataItem: {
-    alignItems: 'center',
-  },
-  dataLabel: {
-    fontFamily: 'LexendDecaSemiBold',
-    fontSize: 8,
-    letterSpacing: 1.5,
-    color: Colors.warmGray,
-  },
-  dataValue: {
-    fontFamily: 'LexendDecaBold',
-    fontSize: 14,
-    color: Colors.softWhite,
-    marginTop: 2,
-  },
-  dataDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: 'rgba(255,255,255,0.2)',
   },
 });

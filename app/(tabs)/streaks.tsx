@@ -3,10 +3,13 @@ import { View, ScrollView, StyleSheet, RefreshControl } from 'react-native';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DeviceCasing } from '@/components/ui/DeviceCasing';
 import { Colors } from '@/constants/Colors';
-import { useStreakData } from '@/hooks/useStreakData';
+import { useStreakQuery } from '@/hooks/queries/useStreakQuery';
 import { useStreakCalendar } from '@/hooks/useStreakCalendar';
-import { useGlobalStats } from '@/hooks/useGlobalStats';
-import { useMilestones } from '@/hooks/useMilestones';
+import {
+  TodayProgressSkeleton,
+  StreakStatsSkeleton,
+  NextMilestoneSkeleton,
+} from '@/components/ui/skeleton';
 
 // New components
 import { TodayProgressHero } from '@/components/ui/streaks/TodayProgressHero';
@@ -19,7 +22,7 @@ import { DailyGoalSelector } from '@/components/ui/streaks/DailyGoalSelector';
 import { TrophyCase } from '@/components/ui/milestones/TrophyCase';
 
 import { DailyGoalMinutes } from '@/types/streak';
-import { LifetimeMilestone, ALL_MILESTONES } from '@/types/milestones';
+import { LifetimeMilestone } from '@/types/milestones';
 
 /**
  * Streaks Screen - Redesigned
@@ -33,19 +36,21 @@ import { LifetimeMilestone, ALL_MILESTONES } from '@/types/milestones';
 export default function StreaksScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
-  // Streak data
+  // Combined streak data with caching
   const {
     streakData,
     todayProgress,
-    isLoading: streakLoading,
     flameLevel,
     todayGoalMet,
     isActive,
+    stats,
+    unlockedIds,
+    isLoading,
     updateDailyGoal,
     refresh: refreshStreak,
-  } = useStreakData();
+  } = useStreakQuery();
 
-  // Calendar data
+  // Calendar data (kept separate - doesn't need caching)
   const {
     currentMonth,
     calendarData,
@@ -54,30 +59,12 @@ export default function StreaksScreen() {
     refresh: refreshCalendar,
   } = useStreakCalendar();
 
-  // Global stats
-  const {
-    stats,
-    isLoading: statsLoading,
-    refresh: refreshStats,
-  } = useGlobalStats();
-
-  // Milestones
-  const {
-    unlockedIds,
-    isLoading: milestonesLoading,
-    refresh: refreshMilestones,
-  } = useMilestones();
-
-  const isLoading = streakLoading || statsLoading || milestonesLoading;
-
   // Pull to refresh
   const handleRefresh = async () => {
     setRefreshing(true);
     await Promise.all([
       refreshStreak(),
       refreshCalendar(),
-      refreshStats(),
-      refreshMilestones(),
     ]);
     setRefreshing(false);
   };
@@ -99,8 +86,8 @@ export default function StreaksScreen() {
     unlockedIds
   );
 
-  // No blocking loading state - show content progressively as data arrives
-  // Each component handles its own loading/empty state
+  // Show skeletons only during initial load (no cached data)
+  // Once we have data, show it immediately even during background refresh
 
   return (
     <View style={styles.container}>
@@ -121,29 +108,41 @@ export default function StreaksScreen() {
           }
         >
           {/* 1. HERO: Today's Progress */}
-          <TodayProgressHero
-            currentMinutes={todayProgress?.total_minutes ?? 0}
-            goalMinutes={streakData?.daily_goal_minutes ?? 30}
-            goalMet={todayGoalMet}
-            streakDays={streakData?.current_streak ?? 0}
-            isActive={isActive}
-          />
+          {isLoading && !streakData ? (
+            <TodayProgressSkeleton variant="dark" />
+          ) : (
+            <TodayProgressHero
+              currentMinutes={todayProgress?.total_minutes ?? 0}
+              goalMinutes={streakData?.daily_goal_minutes ?? 30}
+              goalMet={todayGoalMet}
+              streakDays={streakData?.current_streak ?? 0}
+              isActive={isActive}
+            />
+          )}
 
           {/* 2. Quick Stats Row */}
-          <StreakQuickStats
-            currentStreak={streakData?.current_streak ?? 0}
-            longestStreak={streakData?.longest_streak ?? 0}
-            freezesAvailable={streakData?.streak_freezes_available ?? 0}
-            flameLevel={flameLevel}
-            isActive={isActive}
-          />
+          {isLoading && !streakData ? (
+            <StreakStatsSkeleton variant="dark" />
+          ) : (
+            <StreakQuickStats
+              currentStreak={streakData?.current_streak ?? 0}
+              longestStreak={streakData?.longest_streak ?? 0}
+              freezesAvailable={streakData?.streak_freezes_available ?? 0}
+              flameLevel={flameLevel}
+              isActive={isActive}
+            />
+          )}
 
           {/* 3. Next Milestone Card */}
-          <NextMilestoneCard
-            milestone={nextMilestone}
-            currentStreak={streakData?.current_streak ?? 0}
-            progress={milestoneProgress}
-          />
+          {isLoading && !streakData ? (
+            <NextMilestoneSkeleton variant="dark" />
+          ) : (
+            <NextMilestoneCard
+              milestone={nextMilestone}
+              currentStreak={streakData?.current_streak ?? 0}
+              progress={milestoneProgress}
+            />
+          )}
 
           {/* 4. Trophy Case (collapsible) */}
           {stats && (

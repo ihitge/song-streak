@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, FlatList, Pressable, ActivityIndicator, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
+import React, { useState, useMemo, useCallback } from 'react';
+import { StyleSheet, View, Text, FlatList, Pressable, TouchableOpacity, RefreshControl } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
@@ -14,15 +13,14 @@ import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay } from '@/components/skia/primitives/InsetShadowOverlay';
 import { SurfaceTextureOverlay } from '@/components/skia/primitives/SurfaceTextureOverlay';
+import { SongCardSkeletonList } from '@/components/ui/skeleton';
 import { instrumentOptions, genreOptions } from '@/config/filterOptions';
 import { useSearch } from '@/hooks/useSearch';
+import { useSongsQuery } from '@/hooks/queries/useSongsQuery';
 import { supabase } from '@/utils/supabase/client';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
-import type { Instrument, Fluency, Genre } from '@/types/filters';
+import type { Instrument, Genre } from '@/types/filters';
 import type { Song } from '@/types/song';
-import type { BandWithMemberCount } from '@/types/band';
-import type { DbSong } from '@/types/database';
-import { MOCK_SONGS, isMockSong } from '@/data/mockSongs';
 
 // Re-export types for backwards compatibility
 export type { Instrument, Fluency, Genre } from '@/types/filters';
@@ -110,79 +108,27 @@ const SongCard = React.memo(({ song, onDelete, onEdit, onPress }: {
 
 export default function SetListScreen() {
   const router = useRouter();
-  const { showInfo, showError, showSuccess, showConfirm } = useStyledAlert();
+  const { showInfo, showError, showConfirm } = useStyledAlert();
   const [instrument, setInstrument] = useState<Instrument>('Guitar');
   const [genre, setGenre] = useState<Genre>('All');
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch songs from Supabase
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-  const fetchSongs = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setFetchError(null);
-      const { data: { user } } = await supabase.auth.getUser();
-
-      if (!user) {
-        // Demo mode: show mock songs for logged-out users
-        console.log('No user logged in, showing demo songs');
-        setSongs(MOCK_SONGS);
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('Fetching songs for user:', user.id);
-      const { data, error } = await supabase
-        .from('songs')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching songs:', error);
-        setFetchError('Failed to load songs');
-        setSongs([]); // Show empty state on error
-      } else {
-        console.log('Fetched songs:', data?.length || 0);
-        // Map Supabase data to Song type - real user data only
-        const dbSongs: Song[] = (data || []).map((row: DbSong) => ({
-          id: row.id,
-          title: row.title,
-          artist: row.artist,
-          duration: '0:00', // Calculated field - not stored in DB
-          lastPracticed: 'Never', // Derived from practice_sessions - not stored in songs table
-          instrument: row.instrument || 'Guitar',
-          genres: (row.techniques || []) as Song['genres'], // DB uses 'techniques', app uses 'genres'
-          artwork: row.artwork_url ?? undefined,
-        }));
-        setSongs(dbSongs);
-      }
-    } catch (err) {
-      console.error('Fetch songs error:', err);
-      setFetchError('Failed to load songs');
-      setSongs([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // Fetch songs when screen comes into focus (e.g., after adding a new song)
-  useFocusEffect(
-    useCallback(() => {
-      fetchSongs();
-    }, [fetchSongs])
-  );
+  // Use React Query for songs data with caching
+  const {
+    songs,
+    isLoading,
+    error: fetchError,
+    refetch,
+    invalidate,
+  } = useSongsQuery();
 
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await fetchSongs();
+    await refetch();
     setIsRefreshing(false);
-  }, [fetchSongs]);
+  }, [refetch]);
 
   // Use the search hook for debounced search with relevance scoring
   const {
@@ -233,8 +179,8 @@ export default function SetListScreen() {
           }
 
           console.log('Song deleted:', songId);
-          // Refresh the list
-          fetchSongs();
+          // Invalidate cache to trigger refetch
+          invalidate();
         } catch (err) {
           console.error('Delete error:', err);
           showError('Error', 'Failed to delete song');
@@ -244,7 +190,7 @@ export default function SetListScreen() {
       'Cancel',
       'error'
     );
-  }, [fetchSongs, showInfo, showConfirm, showError]);
+  }, [invalidate, showInfo, showConfirm, showError]);
 
   // Handle song card press - navigate to view song
   const handleSongPress = useCallback(async (song: Song) => {
@@ -331,17 +277,14 @@ export default function SetListScreen() {
           darkMode
         />
         {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.vermilion} />
-            <Text style={styles.loadingText}>Loading songs...</Text>
-          </View>
+          <SongCardSkeletonList count={6} />
         ) : fetchError ? (
           <View style={styles.errorContainer}>
             <Music size={48} color={Colors.vermilion} />
             <Text style={styles.errorText}>{fetchError}</Text>
             <Pressable
               style={styles.retryButton}
-              onPress={fetchSongs}
+              onPress={refetch}
             >
               <Text style={styles.retryButtonText}>TRY AGAIN</Text>
             </Pressable>
@@ -381,7 +324,9 @@ export default function SetListScreen() {
         <View style={styles.fabContainer}>
           <FAB
             onPress={() => router.push('/add-song')}
-            icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
+            icon={<Plus size={36} color={Colors.softWhite} strokeWidth={3} />}
+            accessibilityLabel="Add new song"
+            accessibilityHint="Opens the add song screen"
           />
         </View>
       </DeviceCasing>
@@ -514,22 +459,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: 'center',
-    pointerEvents: 'box-none',
+    zIndex: 100,
   },
 
-  // --- Loading & Empty States ---
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  loadingText: {
-    fontFamily: 'LexendDecaRegular',
-    fontSize: 14,
-    color: Colors.warmGray,
-    marginTop: 12,
-  },
+  // --- Empty State ---
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',

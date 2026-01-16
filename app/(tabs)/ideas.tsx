@@ -20,6 +20,7 @@ import { ShareToBandModal } from '@/components/ui/modals';
 import { Colors } from '@/constants/Colors';
 import { DeviceCasing } from '@/components/ui/DeviceCasing';
 import { useVoiceMemos } from '@/hooks/useVoiceMemos';
+import { useVoiceMemosQuery } from '@/hooks/queries/useVoiceMemosQuery';
 import { useBands } from '@/hooks/useBands';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 import { VoiceMemoWithMeta } from '@/types/voiceMemo';
@@ -42,10 +43,17 @@ export default function IdeasScreen() {
 
   const { showError, showSuccess, showConfirm } = useStyledAlert();
   const { bands } = useBands();
+
+  // Use React Query for cached memo data (prevents tab flicker)
   const {
     memos,
     isLoading: memosLoading,
-    refresh: refreshMemos,
+    refetch: refetchMemos,
+    invalidate: invalidateMemos,
+  } = useVoiceMemosQuery({ includeShared: true });
+
+  // Use original hook for mutations (upload, delete, share)
+  const {
     uploadMemo,
     deleteMemo,
     shareToBand,
@@ -77,9 +85,11 @@ export default function IdeasScreen() {
       if (bandId) {
         await shareToBand(memo.id, bandId);
       }
+      // Invalidate cache to show new memo
+      invalidateMemos();
       showSuccess('Saved', 'Your song idea has been saved!');
     }
-  }, [uploadMemo, shareToBand, showSuccess]);
+  }, [uploadMemo, shareToBand, invalidateMemos, showSuccess]);
 
   // Handle memo playback
   const handlePlay = useCallback(async (memo: VoiceMemoWithMeta) => {
@@ -138,18 +148,20 @@ export default function IdeasScreen() {
     if (!selectedMemoForShare) return;
     const success = await shareToBand(selectedMemoForShare.id, bandId);
     if (success) {
+      invalidateMemos();
       showSuccess('Shared', `Recording shared with band!`);
     }
-  }, [selectedMemoForShare, shareToBand, showSuccess]);
+  }, [selectedMemoForShare, shareToBand, invalidateMemos, showSuccess]);
 
   // Handle unshare from modal
   const handleUnshare = useCallback(async () => {
     if (!selectedMemoForShare) return;
     const success = await unshareMemo(selectedMemoForShare.id);
     if (success) {
+      invalidateMemos();
       showSuccess('Unshared', 'Recording is now personal only.');
     }
-  }, [selectedMemoForShare, unshareMemo, showSuccess]);
+  }, [selectedMemoForShare, unshareMemo, invalidateMemos, showSuccess]);
 
   // Handle memo delete
   const handleDelete = useCallback((memo: VoiceMemoWithMeta) => {
@@ -159,6 +171,7 @@ export default function IdeasScreen() {
       async () => {
         const success = await deleteMemo(memo.id);
         if (success) {
+          invalidateMemos();
           showSuccess('Deleted', 'Recording has been deleted.');
           // Stop playback if this memo was playing
           if (playingMemoId === memo.id) {
@@ -174,7 +187,7 @@ export default function IdeasScreen() {
       'Cancel',
       'error'
     );
-  }, [deleteMemo, playingMemoId, showConfirm, showSuccess]);
+  }, [deleteMemo, invalidateMemos, playingMemoId, showConfirm, showSuccess]);
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -220,7 +233,7 @@ export default function IdeasScreen() {
           <VoiceMemosList
             memos={memos}
             isLoading={memosLoading}
-            onRefresh={refreshMemos}
+            onRefresh={refetchMemos}
             onPlay={handlePlay}
             onShare={handleShare}
             onDelete={handleDelete}
@@ -254,7 +267,8 @@ const styles = StyleSheet.create({
   },
   toggleContainer: {
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
   libraryContainer: {
     flex: 1,

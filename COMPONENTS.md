@@ -35,7 +35,8 @@
 | `TransportControls` | Play/pause/reset/log buttons for metronome | `components/ui/metronome/TransportControls.tsx` |
 | `TunerMeter` | Visual meter showing pitch deviation (-50 to +50 cents) | `components/ui/tuner/TunerMeter.tsx` |
 | `TunerNoteDisplay` | Note display with frequency, deviation, and guidance | `components/ui/tuner/TunerNoteDisplay.tsx` |
-| `TunerStringSelector` | Row of 6 guitar string buttons with LED indicators | `components/ui/tuner/TunerStringSelector.tsx` |
+| `TunerStringSelector` | Row of guitar/bass string buttons with LED indicators | `components/ui/tuner/TunerStringSelector.tsx` |
+| `TunerPanel` | **Composite: Instrument/Tuning selectors + VU meter + strings + controls** | `components/ui/tuner/TunerPanel.tsx` |
 | `TunerControls` | Start/Stop button and signal strength meter | `components/ui/tuner/TunerControls.tsx` |
 | `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
 | `PracticePlayerModal` | **Audio playback with speed/pitch control** | `components/ui/practice/PracticePlayerModal.tsx` |
@@ -88,6 +89,13 @@
 | `VoiceMemosList` | List of voice memos with play/share/delete | `components/ui/recorder/VoiceMemosList.tsx` |
 | `VoiceMemoModal` | **Modal containing recorder + library** | `components/ui/modals/VoiceMemoModal.tsx` |
 | `ShareToBandModal` | **Modal for sharing memos to bands** | `components/ui/modals/ShareToBandModal.tsx` |
+| `MicrophonePermissionPrompt` | **Reusable mic permission UI (request + settings redirect)** | `components/ui/MicrophonePermissionPrompt.tsx` |
+| `SkeletonBase` | **Base shimmer animation for loading states** | `components/ui/skeleton/SkeletonBase.tsx` |
+| `SkeletonText` | **Text placeholder with configurable width/size** | `components/ui/skeleton/SkeletonText.tsx` |
+| `SkeletonBox` | **Rectangular/circular placeholder** | `components/ui/skeleton/SkeletonBox.tsx` |
+| `SongCardSkeleton` | **Song card loading placeholder** | `components/ui/skeleton/SongCardSkeleton.tsx` |
+| `MemoCardSkeleton` | **Voice memo card loading placeholder** | `components/ui/skeleton/MemoCardSkeleton.tsx` |
+| `StreakStatsSkeleton` | **Streak stats loading placeholder** | `components/ui/skeleton/StreakStatsSkeleton.tsx` |
 
 ### Hooks
 
@@ -115,6 +123,9 @@
 | `useGlobalStats` | **Lifetime stats aggregation** | `hooks/useGlobalStats.ts` |
 | `useMilestones` | **Lifetime milestone tracking** | `hooks/useMilestones.ts` |
 | `useVoiceMemos` | Voice memo recording, storage, and sharing | `hooks/useVoiceMemos.ts` |
+| `useSongsQuery` | **Cached song library fetch (React Query)** | `hooks/queries/useSongsQuery.ts` |
+| `useStreakQuery` | **Cached streak/stats/milestones fetch (React Query)** | `hooks/queries/useStreakQuery.ts` |
+| `useVoiceMemosQuery` | **Cached voice memos fetch (React Query)** | `hooks/queries/useVoiceMemosQuery.ts` |
 
 ### Utilities
 
@@ -1913,7 +1924,7 @@ interface TunerNoteDisplayProps {
 
 ### TunerStringSelector
 
-**Purpose**: Row of 6 buttons for guitar strings with auto-detection.
+**Purpose**: Row of buttons for guitar/bass strings with auto-detection. Supports multiple tunings.
 
 **Location**: `components/ui/tuner/TunerStringSelector.tsx`
 
@@ -1924,15 +1935,29 @@ interface TunerStringSelectorProps {
   isInTune: boolean;
   onStringSelect?: (string: GuitarString) => void;
   isActive: boolean;
+  strings?: GuitarString[];  // Defaults to standard guitar tuning
 }
 ```
 
 **Visual Behavior**:
-- 6 tactile buttons (strings 6-1: E2, A2, D3, G3, B3, E4)
+- Dynamically renders 4-6 buttons based on instrument (Guitar: 6, Bass: 4)
 - Auto-highlights detected string (charcoal background)
 - LED indicator appears on detected string
 - LED turns green when in tune
-- Audio + haptic feedback on press
+- Haptic feedback on press
+
+### TunerPanel
+
+**Purpose**: Composite component combining all tuner elements with instrument/tuning selection.
+
+**Location**: `components/ui/tuner/TunerPanel.tsx`
+
+**Features**:
+- **Instrument selector** (RotaryKnob): Guitar / Bass
+- **Tuning selector** (FrequencyTuner): Standard, Drop D, Open G, Open D, DADGAD (Guitar) or Standard (Bass)
+- VU-style swing meter with note display
+- Dynamic string selector (updates based on tuning)
+- Transport controls (Start/Stop)
 
 ### TunerControls
 
@@ -2035,19 +2060,32 @@ function TunerScreen() {
 | `VOLUME_THRESHOLD` | Noise gating thresholds for signal detection |
 | `TUNING_CONFIG` | In-tune tolerance (±5 cents), stability timing |
 
-### Guitar String Definitions
+### Instrument & Tuning Definitions
 
 **Location**: `types/tuner.ts`
 
+**Instruments**: `'Guitar' | 'Bass'`
+
+**Guitar Tunings**:
+| Tuning | Strings (6→1) |
+|--------|---------------|
+| Standard | E2, A2, D3, G3, B3, E4 |
+| Drop D | D2, A2, D3, G3, B3, E4 |
+| Open G | D2, G2, D3, G3, B3, D4 |
+| Open D | D2, A2, D3, F#3, A3, D4 |
+| DADGAD | D2, A2, D3, G3, A3, D4 |
+
+**Bass Tuning**:
+| Tuning | Strings (4→1) |
+|--------|---------------|
+| Standard | E1, A1, D2, G2 |
+
 ```typescript
-export const GUITAR_STRINGS = {
-  E2: { name: 'E', note: 'E2', frequency: 82.41, stringNumber: 6, fullName: 'Low E' },
-  A2: { name: 'A', note: 'A2', frequency: 110.0, stringNumber: 5, fullName: 'A' },
-  D3: { name: 'D', note: 'D3', frequency: 146.83, stringNumber: 4, fullName: 'D' },
-  G3: { name: 'G', note: 'G3', frequency: 196.0, stringNumber: 3, fullName: 'G' },
-  B3: { name: 'B', note: 'B3', frequency: 246.94, stringNumber: 2, fullName: 'B' },
-  E4: { name: 'E', note: 'E4', frequency: 329.63, stringNumber: 1, fullName: 'High E' },
-} as const;
+// Get strings for any instrument/tuning combination
+import { getStringsForInstrumentTuning } from '@/types/tuner';
+
+const strings = getStringsForInstrumentTuning('Guitar', 'dropD');
+// Returns: [D2, A2, D3, G3, B3, E4] array
 ```
 
 ### Licensing

@@ -11,7 +11,7 @@
 
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, Linking, Platform, ActivityIndicator } from 'react-native';
-import { Mic, MicOff, Volume2, Settings } from 'lucide-react-native';
+import { Mic, MicOff, Volume2, Settings, AlertTriangle } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { ICON_SIZES } from '@/constants/Styles';
@@ -62,10 +62,13 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (Platform.OS === 'ios') {
       Linking.openURL('app-settings:');
-    } else {
+    } else if (Platform.OS === 'android') {
       Linking.openSettings();
+    } else {
+      // Web: try to start again - browser will re-prompt if user cleared the block
+      onStart();
     }
-  }, []);
+  }, [onStart]);
 
   // Get button label based on state
   const getButtonLabel = () => {
@@ -112,10 +115,10 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
           isInitializing ? (
             <ActivityIndicator size="small" color={Colors.softWhite} />
           ) : isActive ? (
-            <MicOff size={ICON_SIZES.xl} color={Colors.softWhite} strokeWidth={2.5} />
+            <MicOff size={ICON_SIZES.hero} color={Colors.softWhite} strokeWidth={2.5} />
           ) : (
             <Mic
-              size={ICON_SIZES.xl}
+              size={ICON_SIZES.hero}
               color={permissionStatus === 'denied' ? Colors.graphite : Colors.softWhite}
               strokeWidth={2.5}
             />
@@ -140,28 +143,37 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
         {getButtonLabel()}
       </Text>
 
-      {/* Permission undetermined - prompt */}
-      {permissionStatus === 'undetermined' && !isActive && (
-        <Text style={styles.permissionPromptText}>
-          Tap to enable microphone
-        </Text>
-      )}
-
       {/* Permission denied - message with settings button */}
       {permissionStatus === 'denied' && (
         <View style={styles.permissionDeniedContainer}>
-          <Text style={styles.permissionDeniedText}>
-            Microphone access required
+          <View style={styles.permissionWarningRow}>
+            <AlertTriangle size={ICON_SIZES.sm} color={Colors.vermilion} />
+            <Text style={styles.permissionDeniedText}>
+              Microphone access required
+            </Text>
+          </View>
+          <Text style={styles.permissionHelpText}>
+            {Platform.OS === 'web'
+              ? 'Click the padlock icon in your address bar to allow mic access'
+              : 'Enable microphone in Settings to use the tuner'}
           </Text>
           <Pressable
-            style={styles.settingsButton}
+            style={({ pressed }) => [
+              styles.settingsButton,
+              pressed && styles.settingsButtonPressed,
+            ]}
             onPress={handleOpenSettings}
-            accessibilityLabel="Open settings"
+            accessibilityLabel={Platform.OS === 'web' ? 'Try again' : 'Open settings'}
             accessibilityRole="button"
-            accessibilityHint="Opens device settings to enable microphone"
+            accessibilityHint={Platform.OS === 'web'
+              ? 'Request microphone permission again'
+              : 'Opens device settings to enable microphone'}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Settings size={ICON_SIZES.sm} color={Colors.softWhite} />
-            <Text style={styles.settingsButtonText}>OPEN SETTINGS</Text>
+            <Text style={styles.settingsButtonText}>
+              {Platform.OS === 'web' ? 'TRY AGAIN' : 'OPEN SETTINGS'}
+            </Text>
           </Pressable>
         </View>
       )}
@@ -207,35 +219,48 @@ const styles = StyleSheet.create({
   buttonLabelActive: {
     color: Colors.graphite,
   },
-  permissionPromptText: {
-    fontFamily: 'LexendDecaRegular',
-    fontSize: 10,
-    color: Colors.moss,
-    textAlign: 'center',
-  },
   permissionDeniedContainer: {
     alignItems: 'center',
     gap: 8,
+    paddingHorizontal: 16,
+  },
+  permissionWarningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   permissionDeniedText: {
-    fontFamily: 'LexendDecaRegular',
-    fontSize: 10,
+    fontFamily: 'LexendDecaSemiBold',
+    fontSize: 11,
     color: Colors.vermilion,
     textAlign: 'center',
+  },
+  permissionHelpText: {
+    fontFamily: 'LexendDecaRegular',
+    fontSize: 10,
+    color: Colors.warmGray,
+    textAlign: 'center',
+    maxWidth: 260,
+    lineHeight: 14,
   },
   settingsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.charcoal,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 44,  // Minimum touch target (Apple HIG / Android accessibility)
-    borderRadius: 6,
-    gap: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    minHeight: 48,  // Comfortable touch target
+    borderRadius: 8,
+    gap: 8,
+    marginTop: 4,
+  },
+  settingsButtonPressed: {
+    transform: [{ scale: 0.96 }],
+    opacity: 0.9,
   },
   settingsButtonText: {
     fontFamily: 'LexendDecaSemiBold',
-    fontSize: 10,
+    fontSize: 11,
     color: Colors.softWhite,
     letterSpacing: 1,
   },

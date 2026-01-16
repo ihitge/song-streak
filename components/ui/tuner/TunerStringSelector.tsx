@@ -25,6 +25,8 @@ interface TunerStringSelectorProps {
   onStringSelect?: (string: GuitarString) => void;
   /** Whether tuner is active */
   isActive: boolean;
+  /** Strings to display (defaults to standard tuning) */
+  strings?: GuitarString[];
 }
 
 const BUTTON_HEIGHT = 48;
@@ -36,6 +38,7 @@ export const TunerStringSelector: React.FC<TunerStringSelectorProps> = ({
   isInTune,
   onStringSelect,
   isActive,
+  strings = GUITAR_STRINGS_ARRAY,
 }) => {
 
   const handlePress = async (guitarString: GuitarString) => {
@@ -50,7 +53,7 @@ export const TunerStringSelector: React.FC<TunerStringSelectorProps> = ({
       <View style={styles.wellContainer}>
         {/* String Buttons Row */}
         <View style={styles.buttonsRow}>
-          {GUITAR_STRINGS_ARRAY.map((guitarString) => {
+          {strings.map((guitarString) => {
             const isDetected =
               detectedString?.stringNumber === guitarString.stringNumber;
             const isInTuneForString = isDetected && isInTune;

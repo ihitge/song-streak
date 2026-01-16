@@ -14,7 +14,7 @@ import type { FrequencyTunerProps } from '@/types/filters';
 
 type TunerVariant = 'dark' | 'light';
 
-const TUNER_HEIGHT = 44; // Increased from 38px
+const TUNER_HEIGHT = 60; // Matches TunerStringSelector well height
 
 
 export const FrequencyTuner = <T extends string>({
@@ -35,7 +35,7 @@ export const FrequencyTuner = <T extends string>({
   const [direction, setDirection] = useState(1); // 1 = Next (Slide Left), -1 = Prev (Slide Right)
   const selectedIndex = options.findIndex((opt) => opt.value === value);
   const currentOption = options[selectedIndex];
-  const height = customHeight ?? (size === 'compact' ? 40 : TUNER_HEIGHT);
+  const height = customHeight ?? (size === 'compact' ? 48 : TUNER_HEIGHT);
 
   // Variant-specific colors
   const isDark = variant === 'dark';
@@ -132,7 +132,7 @@ export const FrequencyTuner = <T extends string>({
             accessibilityRole="button"
             accessibilityHint={`Select previous option for ${label.toLowerCase()}`}
           >
-            <ChevronLeft size={14} color={chevronColor} accessibilityElementsHidden={true} />
+            <ChevronLeft size={18} color={chevronColor} accessibilityElementsHidden={true} />
           </Pressable>
 
           {/* Value display */}
@@ -158,7 +158,7 @@ export const FrequencyTuner = <T extends string>({
             accessibilityRole="button"
             accessibilityHint={`Select next option for ${label.toLowerCase()}`}
           >
-            <ChevronRight size={14} color={chevronColor} accessibilityElementsHidden={true} />
+            <ChevronRight size={18} color={chevronColor} accessibilityElementsHidden={true} />
           </Pressable>
         </View>
 
@@ -232,8 +232,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   chevronButton: {
-    padding: 4,
-    opacity: 0.6,
+    padding: 8,
+    opacity: 0.7,
   },
   valueContainer: {
     flex: 1,
@@ -241,10 +241,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   valueText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.5,
     color: '#e0e0e0',
     textShadowColor: 'rgba(255,255,255,0.3)',
     textShadowOffset: { width: 0, height: 0 },

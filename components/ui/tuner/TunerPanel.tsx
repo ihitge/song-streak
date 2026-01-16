@@ -14,17 +14,31 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
+import { RotaryKnob } from '@/components/ui/filters/RotaryKnob';
 import { TunerVUMeter } from './TunerVUMeter';
 import { TunerStringSelector } from './TunerStringSelector';
 import { TunerControls } from './TunerControls';
-import type { GuitarString, TunerStatus, TuningDirection } from '@/types/tuner';
+import type { GuitarString, TunerStatus, TuningDirection, TuningType, BassTuningType, TunerInstrument } from '@/types/tuner';
+import { getStringsForInstrumentTuning } from '@/types/tuner';
 
-// Tuning mode options
-const TUNING_OPTIONS = [
-  { value: 'standard', label: 'STANDARD' },
-  { value: 'dropD', label: 'DROP D' },
-  { value: 'halfDown', label: 'HALF DOWN' },
-  { value: 'openG', label: 'OPEN G' },
+// Instrument options
+const INSTRUMENT_OPTIONS = [
+  { value: 'Guitar' as TunerInstrument, label: 'GUITAR' },
+  { value: 'Bass' as TunerInstrument, label: 'BASS' },
+];
+
+// Guitar tuning options
+const GUITAR_TUNING_OPTIONS = [
+  { value: 'standard' as TuningType, label: 'STANDARD' },
+  { value: 'dropD' as TuningType, label: 'DROP D' },
+  { value: 'openG' as TuningType, label: 'OPEN G' },
+  { value: 'openD' as TuningType, label: 'OPEN D' },
+  { value: 'dadgad' as TuningType, label: 'DADGAD' },
+];
+
+// Bass tuning options (only standard for now)
+const BASS_TUNING_OPTIONS = [
+  { value: 'standard' as BassTuningType, label: 'STANDARD' },
 ];
 
 interface TunerPanelProps {
@@ -69,23 +83,52 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
 }) => {
   const isActive = status !== 'idle';
 
-  // Tuning mode state (future feature - currently just visual)
-  const [tuningMode, setTuningMode] = React.useState('standard');
+  // Instrument and tuning state
+  const [instrument, setInstrument] = React.useState<TunerInstrument>('Guitar');
+  const [tuningMode, setTuningMode] = React.useState<TuningType | BassTuningType>('standard');
+
+  // Get tuning options based on instrument
+  const tuningOptions = instrument === 'Bass' ? BASS_TUNING_OPTIONS : GUITAR_TUNING_OPTIONS;
+
+  // Reset tuning to standard when switching instruments
+  const handleInstrumentChange = (newInstrument: TunerInstrument) => {
+    setInstrument(newInstrument);
+    setTuningMode('standard'); // Reset to standard tuning
+  };
+
+  // Get strings for current instrument and tuning
+  const tuningStrings = getStringsForInstrumentTuning(instrument, tuningMode);
 
   return (
     <View style={[styles.housing, compact && styles.housingCompact, fullWidth && styles.housingFullWidth]}>
-      {/* Header: Tuning mode selector - inside housing like metronome */}
+      {/* Header: Instrument and Tuning selectors - two column layout */}
       <View style={[styles.headerContainer, compact && styles.headerContainerCompact]}>
-        <FrequencyTuner
-          label="TUNING"
-          value={tuningMode}
-          options={TUNING_OPTIONS}
-          onChange={setTuningMode}
-          size="compact"
-          variant="light"
-          showGlassOverlay
-          labelColor={Colors.vermilion}
-        />
+        <View style={styles.selectorRow}>
+          {/* Instrument selector - Rotary Knob style */}
+          <View style={styles.selectorColumn}>
+            <RotaryKnob
+              label="INSTRUMENT"
+              value={instrument}
+              options={INSTRUMENT_OPTIONS}
+              onChange={handleInstrumentChange}
+              variant="light"
+              showGlassOverlay
+            />
+          </View>
+          {/* Tuning selector */}
+          <View style={styles.selectorColumn}>
+            <FrequencyTuner
+              label="TUNING"
+              value={tuningMode}
+              options={tuningOptions}
+              onChange={setTuningMode}
+              size="compact"
+              variant="light"
+              showGlassOverlay
+              labelColor={Colors.vermilion}
+            />
+          </View>
+        </View>
       </View>
 
       {/* VU Meter with note display */}
@@ -105,6 +148,7 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
           isInTune={isInTune}
           onStringSelect={onStringSelect}
           isActive={isActive}
+          strings={tuningStrings}
         />
       </View>
 
@@ -125,10 +169,14 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
   );
 };
 
+// Match VU meter widths for consistent layout
+const METER_WIDTH = 310;
+const METER_WIDTH_COMPACT = 218;
+
 const styles = StyleSheet.create({
   housing: {
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
     paddingHorizontal: 24,
     alignItems: 'center',
     width: '100%',
@@ -142,16 +190,25 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     width: '100%',
-    marginBottom: 8,
+    alignItems: 'center',
+    marginBottom: 40,
   },
   headerContainerCompact: {
-    marginBottom: 6,
+    marginBottom: 20,
+  },
+  selectorRow: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 16,
+  },
+  selectorColumn: {
+    flex: 1,
   },
   stringSection: {
     width: '100%',
-    marginTop: 12,
+    marginTop: 40,
   },
   controlsSection: {
-    marginTop: 16,
+    marginTop: 20,
   },
 });
