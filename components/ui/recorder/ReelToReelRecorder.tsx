@@ -11,6 +11,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Share2, Trash2 } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
+import { SHADOWS, BEVELS } from '@/constants/Styles';
 import { useVoiceRecorder } from '@/hooks/useVoiceRecorder';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 import { TransportButton } from '@/types/voiceMemo';
@@ -316,16 +317,9 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     // Outer bevel
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.15)',
-    borderBottomWidth: 3,
-    borderBottomColor: 'rgba(0,0,0,0.4)',
+    ...BEVELS.housing,
     // Shadow
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 10,
+    ...SHADOWS.housing,
   },
   housingCompact: {
     borderRadius: 12,
@@ -430,16 +424,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     backgroundColor: Colors.alloy,
     // Bevel effect matching metronome
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.5)',
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    ...BEVELS.raised,
     // Shadow
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    ...SHADOWS.button,
   },
   secondaryButtonCompact: {
     paddingVertical: 10,

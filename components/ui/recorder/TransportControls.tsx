@@ -11,6 +11,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Rewind, Circle, Square, Play, FastForward, RotateCcw, Pause } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
+import { SHADOWS, BEVELS } from '@/constants/Styles';
 import { TransportButton, RecorderState } from '@/types/voiceMemo';
 
 interface TransportControlsProps {
@@ -194,11 +195,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
     // Shadow (matches FAB)
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
+    ...SHADOWS.fab,
   },
   primaryButtonCompact: {
     width: 52,
@@ -207,11 +204,7 @@ const styles = StyleSheet.create({
   },
   // Secondary buttons (beveled style)
   secondaryButton: {
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    ...SHADOWS.button,
   },
   secondaryButtonInner: {
     width: 48,
@@ -220,10 +213,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.alloy,
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.5)',
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    ...BEVELS.raised,
   },
   secondaryButtonInnerCompact: {
     width: 40,

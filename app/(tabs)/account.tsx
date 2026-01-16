@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
     minHeight: 300,
   },
 });

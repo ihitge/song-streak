@@ -14,6 +14,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, LayoutChangeEvent, Platform } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { TUNING_CONFIG } from '@/constants/TunerConfig';
+import { getDeviationColor } from '@/utils/tuning/getDeviationColor';
 import type { TuningDirection } from '@/types/tuner';
 
 interface TunerMeterProps {
@@ -31,26 +32,7 @@ const METER_HEIGHT = 80;
 const NEEDLE_WIDTH = 4;
 const TICK_COUNT = 21; // -50 to +50 in steps of 5
 
-/**
- * Get color based on cents deviation
- */
-function getDeviationColor(cents: number | null): string {
-  if (cents === null) return Colors.graphite;
-
-  const absCents = Math.abs(cents);
-
-  if (absCents <= TUNING_CONFIG.inTuneEnter) {
-    return Colors.moss; // Green - in tune
-  } else if (absCents <= 15) {
-    return '#a3be8c'; // Light green - almost there
-  } else if (absCents <= 25) {
-    return '#ebcb8b'; // Yellow - getting close
-  } else if (absCents <= 35) {
-    return '#d08770'; // Orange - needs work
-  } else {
-    return Colors.vermilion; // Red - way off
-  }
-}
+// Note: getDeviationColor is now imported from @/utils/tuning/getDeviationColor
 
 export const TunerMeter: React.FC<TunerMeterProps> = ({
   cents,

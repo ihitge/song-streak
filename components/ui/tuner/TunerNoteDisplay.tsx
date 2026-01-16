@@ -15,6 +15,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { getTuningGuidance } from '@/utils/tuner/noteDetection';
+import { getDeviationColor } from '@/utils/tuning/getDeviationColor';
 import type { GuitarString, TunerStatus, TuningDirection } from '@/types/tuner';
 
 interface TunerNoteDisplayProps {
@@ -137,12 +138,7 @@ export const TunerNoteDisplay: React.FC<TunerNoteDisplayProps> = ({
               style={[
                 styles.dataValue,
                 cents !== null && {
-                  color:
-                    Math.abs(cents) <= 5
-                      ? Colors.moss
-                      : Math.abs(cents) <= 15
-                        ? '#ebcb8b'
-                        : Colors.vermilion,
+                  color: getDeviationColor(cents),
                 },
               ]}
             >

@@ -4,11 +4,14 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { SHADOWS, BEVELS } from '@/constants/Styles';
 import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DeviceCasing } from '@/components/ui/DeviceCasing';
 import { FAB } from '@/components/ui/FAB';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay } from '@/components/skia/primitives/InsetShadowOverlay';
@@ -279,16 +282,11 @@ export default function SetListScreen() {
         {isLoading ? (
           <SongCardSkeletonList count={6} />
         ) : fetchError ? (
-          <View style={styles.errorContainer}>
-            <Music size={48} color={Colors.vermilion} />
-            <Text style={styles.errorText}>{fetchError}</Text>
-            <Pressable
-              style={styles.retryButton}
-              onPress={refetch}
-            >
-              <Text style={styles.retryButtonText}>TRY AGAIN</Text>
-            </Pressable>
-          </View>
+          <ErrorState
+            icon={Music}
+            message={fetchError}
+            onRetry={refetch}
+          />
         ) : (
           <FlatList
             data={filteredSongs}
@@ -311,11 +309,11 @@ export default function SetListScreen() {
               />
             }
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Music size={48} color={Colors.warmGray} />
-                <Text style={styles.emptyText}>No songs yet</Text>
-                <Text style={styles.emptySubtext}>Tap + to add your first song</Text>
-              </View>
+              <EmptyState
+                icon={Music}
+                title="No songs yet"
+                subtitle="Tap + to add your first song"
+              />
             }
           />
         )}
@@ -352,13 +350,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.softWhite,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
     // Raised Shadow
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 2, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 0, // Hard shadow for retro feel
-    elevation: 4,
+    ...SHADOWS.card,
     overflow: 'hidden',
   },
   cardBody: {
@@ -371,8 +365,6 @@ const styles = StyleSheet.create({
     height: 58, // Increased from 50 by 15%
     backgroundColor: Colors.alloy, // Etched look - changed to match GangSwitch well
     borderRadius: 8,
-    // border: 1, // original
-    // borderColor: '#c0c0c0', // original
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -381,10 +373,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderBottomWidth: 1,
     borderRightWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.5)', // Lighter (highlight)
-    borderLeftColor: 'rgba(255,255,255,0.5)', // Lighter (highlight)
-    borderBottomColor: 'rgba(0,0,0,0.15)', // Darker (shadow)
-    borderRightColor: 'rgba(0,0,0,0.15)', // Darker (shadow)
+    borderTopColor: Colors.highlights.md, // Lighter (highlight)
+    borderLeftColor: Colors.highlights.md, // Lighter (highlight)
+    borderBottomColor: Colors.shadows.md, // Darker (shadow)
+    borderRightColor: Colors.shadows.md, // Darker (shadow)
     overflow: 'hidden', // Ensure image stays within border radius
   },
   thumbnailImage: {
@@ -433,7 +425,7 @@ const styles = StyleSheet.create({
   gripLine: {
       width: 3,
       height: 24,
-      backgroundColor: '#d0d0d0',
+      backgroundColor: Colors.alloy,
       borderRadius: 1.5,
   },
   cardActions: {
@@ -444,12 +436,12 @@ const styles = StyleSheet.create({
   editButton: {
       padding: 8,
       borderRadius: 6,
-      backgroundColor: 'rgba(51, 51, 51, 0.08)', // Charcoal with low opacity
+      backgroundColor: Colors.shadows.xs, // Charcoal with low opacity
   },
   deleteButton: {
       padding: 8,
       borderRadius: 6,
-      backgroundColor: 'rgba(238, 108, 77, 0.1)', // Vermilion with low opacity
+      backgroundColor: Colors.shadows.sm, // Subtle background for delete action
   },
 
   // --- FAB Position ---

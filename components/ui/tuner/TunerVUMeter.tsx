@@ -15,9 +15,11 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
-import { Typography } from '@/constants/Styles';
+import { Typography, SHADOWS, BEVELS } from '@/constants/Styles';
 import { InsetWindow } from '@/components/ui/InsetWindow';
 import { LEDIndicator } from '@/components/skia/primitives/LEDIndicator';
+import { getDeviationColor } from '@/utils/tuning/getDeviationColor';
+import { PivotScrew } from '@/components/ui/PivotScrew';
 import type { TuningDirection, GuitarString } from '@/types/tuner';
 
 interface TunerVUMeterProps {
@@ -44,20 +46,7 @@ const SCALE_MARKERS = [
   { label: '+50', cents: 50, position: 1 },
 ];
 
-/**
- * Get color based on cents deviation
- */
-function getDeviationColor(cents: number | null, isInTune: boolean): string {
-  if (isInTune) return Colors.moss;
-  if (cents === null) return Colors.graphite;
-
-  const absCents = Math.abs(cents);
-  if (absCents <= 5) return Colors.moss;
-  if (absCents <= 15) return '#a3be8c';
-  if (absCents <= 25) return '#ebcb8b';
-  if (absCents <= 35) return '#d08770';
-  return Colors.vermilion;
-}
+// Note: getDeviationColor is now imported from @/utils/tuning/getDeviationColor
 
 export const TunerVUMeter: React.FC<TunerVUMeterProps> = ({
   cents,
@@ -211,7 +200,7 @@ export const TunerVUMeter: React.FC<TunerVUMeterProps> = ({
             />
           </Animated.View>
           {/* Pivot screw */}
-          <View style={[styles.pivotScrew, compact && styles.pivotScrewCompact]} />
+          <PivotScrew compact={compact} />
         </View>
 
         {/* In-tune glow overlay */}

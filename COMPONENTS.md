@@ -96,6 +96,9 @@
 | `SongCardSkeleton` | **Song card loading placeholder** | `components/ui/skeleton/SongCardSkeleton.tsx` |
 | `MemoCardSkeleton` | **Voice memo card loading placeholder** | `components/ui/skeleton/MemoCardSkeleton.tsx` |
 | `StreakStatsSkeleton` | **Streak stats loading placeholder** | `components/ui/skeleton/StreakStatsSkeleton.tsx` |
+| `EmptyState` | **Reusable empty state display (icon + title + subtitle)** | `components/ui/EmptyState.tsx` |
+| `ErrorState` | **Reusable error state display with retry button** | `components/ui/ErrorState.tsx` |
+| `PivotScrew` | **Decorative pivot screw for VU meters** | `components/ui/PivotScrew.tsx` |
 
 ### Hooks
 
@@ -134,6 +137,9 @@
 | `logger` | Development-only logging (silent in production) | `utils/logger.ts` |
 | `feedback` | Haptic + sound feedback utilities | `utils/feedback.ts` |
 | `auth` | Supabase authentication helpers | `utils/auth.ts` |
+| `getDeviationColor` | **Color mapping for tuning deviation in cents** | `utils/tuning/getDeviationColor.ts` |
+| `formatError` | **Safe error message extraction from catch blocks** | `utils/errors/formatError.ts` |
+| `requireAuth` | **Auth check utilities (getCurrentUser, requireAuth)** | `utils/supabase/requireAuth.ts` |
 
 ### Constants
 
@@ -143,6 +149,10 @@
 | `ICON_SIZES` | Standardized icon sizes (xs/sm/md/lg/xl/hero) | `constants/Styles.ts` |
 | `TOUCH_TARGETS` | Minimum touch target sizes for accessibility | `constants/Styles.ts` |
 | `SPACING` | Spacing scale (4px grid) | `constants/Styles.ts` |
+| `SHADOWS` | **Pre-defined shadow styles (button, housing, fab, card)** | `constants/Styles.ts` |
+| `BEVELS` | **Pre-defined bevel styles (raised, housing, subtle)** | `constants/Styles.ts` |
+| `BORDER_RADIUS` | **Border radius scale (xs/sm/md/lg/xl/full)** | `constants/Styles.ts` |
+| `FONT_SIZES` | **Font size scale (xs/sm/base/lg/xl/2xl)** | `constants/Styles.ts` |
 | `ANIMATION_DURATIONS` | Animation timing tokens | `constants/Animations.ts` |
 | `Animations` | Shared animation keyframes (glitch effects) | `constants/Animations.ts` |
 | `UI_VOLUMES` | Sound volume levels per component | `constants/Audio.ts` |

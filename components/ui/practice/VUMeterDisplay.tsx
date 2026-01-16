@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/constants/Colors';
-import { Typography } from '@/constants/Styles';
+import { Typography, SHADOWS, BEVELS } from '@/constants/Styles';
 import { ACHIEVEMENTS, formatPracticeTime, calculateProgress } from '@/types/practice';
 import { InsetWindow } from '@/components/ui/InsetWindow';
 import { LEDIndicator } from '@/components/skia/primitives/LEDIndicator';
+import { PivotScrew } from '@/components/ui/PivotScrew';
 
 /**
  * VU Meter mode
@@ -345,7 +346,7 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
             />
           </Animated.View>
           {/* Pivot screw */}
-          <View style={[styles.pivotScrew, compact && styles.pivotScrewCompact]} />
+          <PivotScrew compact={compact} />
         </View>
       </InsetWindow>
 
@@ -380,16 +381,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: 'center',
     // Outer bevel
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.15)',
-    borderBottomWidth: 3,
-    borderBottomColor: 'rgba(0,0,0,0.4)',
+    ...BEVELS.housing,
     // Shadow
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    elevation: 10,
+    ...SHADOWS.housing,
   },
   housingCompact: {
     width: 218,

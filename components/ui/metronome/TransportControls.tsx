@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Play, Pause, RotateCcw, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { SHADOWS, BEVELS } from '@/constants/Styles';
 import { FAB } from '@/components/ui/FAB';
 
 interface TransportControlsProps {
@@ -121,11 +122,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   secondaryButton: {
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    ...SHADOWS.button,
   },
   secondaryButtonInner: {
     width: 56,
@@ -134,10 +131,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.alloy,
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.5)',
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    ...BEVELS.raised,
   },
   secondaryButtonInnerCompact: {
     width: 40,

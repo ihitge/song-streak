@@ -18,6 +18,7 @@ import React from 'react';
 import { Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { SHADOWS } from '@/constants/Styles';
 
 interface FABProps {
   /** Press handler */
@@ -82,11 +83,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     // Elevation/Shadow
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
+    ...SHADOWS.fab,
     // White ring effect
     borderWidth: 3,
     borderColor: Colors.rimHighlight,
