@@ -82,9 +82,9 @@ export const RamsTapeCounterDisplay: React.FC<RamsTapeCounterDisplayProps> = ({
  * Individual digit wheel with 3D mechanical appearance
  */
 const DigitWheel: React.FC<{ digit: string; compact?: boolean }> = ({ digit, compact = false }) => {
-  // Dimensions based on compact mode
-  const width = compact ? 22 : 34;
-  const height = compact ? 31 : 45;
+  // Dimensions based on compact mode - wider and shallower for better proportions
+  const width = compact ? 26 : 40;
+  const height = compact ? 28 : 36;
   const borderRadius = compact ? 2 : 3;
 
   return (
@@ -135,8 +135,9 @@ const styles = StyleSheet.create({
   housing: {
     width: 310,  // Match VU meter housing width
     backgroundColor: Colors.ink,
-    borderRadius: 8,  // Reduced from 12
-    padding: 11,  // Reduced from 16
+    borderRadius: 8,
+    paddingVertical: 8,  // Reduced vertical padding
+    paddingHorizontal: 12,
     alignItems: 'center',
     // Outer bevel
     borderTopWidth: 1,
@@ -145,18 +146,19 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.3)',
     // Shadow
     shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 4 },  // Reduced from 6
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
-    shadowRadius: 6,  // Reduced from 8
-    elevation: 6,  // Reduced from 8
+    shadowRadius: 4,
+    elevation: 4,
   },
   housingCompact: {
-    width: 218,  // Match VU meter compact width (200 + 9*2 padding)
-    borderRadius: 6,  // Reduced from 8
-    padding: 7,  // Reduced from 10
-    shadowOffset: { width: 0, height: 2 },  // Reduced from 3
-    shadowRadius: 3,  // Reduced from 4
-    elevation: 3,  // Reduced from 4
+    width: 218,  // Match VU meter compact width
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 3,
+    elevation: 3,
   },
   housingFullWidth: {
     width: '100%',
@@ -168,8 +170,9 @@ const styles = StyleSheet.create({
   },
   recessedWell: {
     backgroundColor: '#1a1a1a',
-    borderRadius: 6,  // Reduced from 8
-    padding: 8,  // Reduced from 12
+    borderRadius: 6,
+    paddingVertical: 6,  // Reduced vertical padding
+    paddingHorizontal: 10,
     // Inset effect
     borderTopWidth: 2,
     borderTopColor: 'rgba(0,0,0,0.5)',
@@ -182,8 +185,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   recessedWellCompact: {
-    borderRadius: 4,  // Reduced from 6
-    padding: 6,  // Reduced from 8
+    borderRadius: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
   },
   digitsContainer: {
     flexDirection: 'row',
@@ -196,12 +200,12 @@ const styles = StyleSheet.create({
     borderRadius: 3,  // Reduced from 4
   },
   digitWheel: {
-    width: 34,  // Reduced from 48
-    height: 45,  // Reduced from 64
+    width: 40,  // Wider for better proportions
+    height: 36,  // Shallower to save vertical space
     backgroundColor: Colors.softWhite,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 3,  // Reduced from 4
+    borderRadius: 3,
     // Subtle emboss
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.8)',
@@ -209,34 +213,34 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.15)',
   },
   digitWheelCompact: {
-    width: 22,  // Reduced from 32
-    height: 31,  // Reduced from 44
-    borderRadius: 2,  // Reduced from 3
+    width: 26,  // Wider
+    height: 28,  // Shallower
+    borderRadius: 2,
   },
   digitText: {
     fontFamily: 'LexendDecaBold',
-    fontSize: 25,  // Reduced from 36
+    fontSize: 22,  // Adjusted for shallower digit wheels
     color: Colors.charcoal,
     letterSpacing: -1,
   },
   digitTextCompact: {
-    fontSize: 17,  // Reduced from 24
+    fontSize: 16,
   },
   digitInnerShadow: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 3,  // Reduced from 4
   },
   spacer: {
-    width: 11,  // Reduced from 16
-    height: 45,  // Reduced from 64
+    width: 14,  // Wider spacing
+    height: 36,  // Match digit wheel height
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,  // Reduced from 8
+    gap: 5,
   },
   spacerCompact: {
-    width: 8,  // Reduced from 12
-    height: 31,  // Reduced from 44
-    gap: 4,  // Reduced from 6
+    width: 10,
+    height: 28,  // Match compact digit wheel height
+    gap: 4,
   },
   spacerDot: {
     width: 4,  // Reduced from 6
@@ -261,12 +265,12 @@ const styles = StyleSheet.create({
   label: {
     ...Typography.label,
     color: Colors.warmGray,
-    marginTop: 8,
+    marginTop: 6,
   },
   labelCompact: {
     ...Typography.label,
     fontSize: 8,
     color: Colors.warmGray,
-    marginTop: 6,
+    marginTop: 4,
   },
 });

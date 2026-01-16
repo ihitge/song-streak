@@ -139,11 +139,13 @@ export default function TimingScreen() {
         </View>
 
         {/* Session Timer - above transport controls */}
-        <RamsTapeCounterDisplay
-          seconds={sessionSeconds}
-          fullWidth={true}
-          label="PRACTICE TIME"
-        />
+        <View style={styles.timerSection}>
+          <RamsTapeCounterDisplay
+            seconds={sessionSeconds}
+            fullWidth={true}
+            label="PRACTICE TIME"
+          />
+        </View>
 
         {/* FAB section - pinned at bottom, centered */}
         <View style={styles.fabSection}>
@@ -169,8 +171,12 @@ const styles = StyleSheet.create({
   metronomeSection: {
     flex: 1,
   },
+  timerSection: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
   fabSection: {
-    paddingVertical: 24,
+    paddingVertical: 16,
     alignItems: 'center',
   },
 });
