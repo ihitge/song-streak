@@ -139,22 +139,34 @@ export const TapeReel: React.FC<TapeReelProps> = ({
     };
   }, [size]);
 
-  // Animation effect - slow continuous spin
+  // Animation effect - continuous spin while recording/playing
+  // Key fix: Always start from 0 and use withRepeat for infinite looping
   useEffect(() => {
     if (isSpinning) {
       const duration = 3000; // 3 seconds per rotation
 
+      // Cancel any existing animation first
+      cancelAnimation(rotation);
+
+      // Reset to 0 before starting new infinite loop
+      // This ensures clean rotation without value accumulation
+      rotation.value = 0;
+
+      // Use withRepeat with -1 for infinite repetition
+      // Starting fresh from 0 each time prevents the animation from stopping
       rotation.value = withRepeat(
         withTiming(360, {
           duration,
           easing: Easing.linear,
         }),
-        -1,
-        false
+        -1, // Infinite repetitions
+        false // Don't reverse
       );
     } else {
       cancelAnimation(rotation);
-      rotation.value = withTiming(rotation.value % 360, {
+      // Smoothly stop at current position (normalized to 0-360)
+      const currentAngle = rotation.value % 360;
+      rotation.value = withTiming(currentAngle, {
         duration: 500,
         easing: Easing.out(Easing.quad),
       });
@@ -163,7 +175,7 @@ export const TapeReel: React.FC<TapeReelProps> = ({
     return () => {
       cancelAnimation(rotation);
     };
-  }, [isSpinning, rotation]);
+  }, [isSpinning]);
 
   // Animated style for rotation
   const animatedStyle = useAnimatedStyle(() => ({
