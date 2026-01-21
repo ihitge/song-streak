@@ -83,9 +83,6 @@ export const MicrophonePermissionPrompt: React.FC<MicrophonePermissionPromptProp
             ENABLE MIC
           </Text>
         </Pressable>
-        <Text style={[styles.promptText, compact && styles.promptTextCompact]}>
-          Tap to enable microphone access
-        </Text>
       </View>
     );
   }
@@ -186,15 +183,6 @@ const styles = StyleSheet.create({
   enableButtonTextCompact: {
     fontSize: 12,
     letterSpacing: 1,
-  },
-  promptText: {
-    fontFamily: 'LexendDecaRegular',
-    fontSize: 12,
-    color: Colors.moss,
-    textAlign: 'center',
-  },
-  promptTextCompact: {
-    fontSize: 10,
   },
   // Warning state (denied)
   warningContainer: {
