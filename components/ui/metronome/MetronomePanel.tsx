@@ -56,15 +56,15 @@ interface MetronomePanelProps {
 }
 
 /**
- * MetronomePanel - Composite component combining:
- * 1. Time Signature + VU Meter + BPM Display + Transport Controls (inside unified housing)
- * 2. Session Timer (tape counter style, separate)
+ * MetronomePanel - Composite component combining all metronome elements
+ * in a unified "device" housing.
  *
- * Layout (top to bottom inside housing):
- * - Time Signature (FrequencyTuner)
- * - VU meter pendulum
- * - BPM controls
- * - Transport controls
+ * Layout (top to bottom inside single device):
+ * - Time Signature, Sound, Subdivision (FrequencyTuners)
+ * - VU meter pendulum with beat counter
+ * - BPM controls (tap tempo, +/- buttons)
+ * - Session Timer (tape counter style)
+ * - Transport controls (play/pause, reset, complete)
  */
 export const MetronomePanel: React.FC<MetronomePanelProps> = ({
   beatPosition,
@@ -172,6 +172,17 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
           compact={compact}
         />
 
+        {/* Session Timer - tape counter style (inside same device flow) */}
+        {showTimer && (
+          <View style={styles.timerSection}>
+            <RamsTapeCounterDisplay
+              seconds={sessionSeconds}
+              compact={compact}
+              label="PRACTICE TIME"
+            />
+          </View>
+        )}
+
         {/* Transport Controls - play/pause, reset, complete */}
         {showTransport && (
           <View style={styles.transportSection}>
@@ -187,17 +198,6 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
           </View>
         )}
       </VUMeterDisplay>
-
-      {/* Session Timer - tape counter style (separate from metronome) */}
-      {showTimer && (
-        <View style={styles.timerSection}>
-          <RamsTapeCounterDisplay
-            seconds={sessionSeconds}
-            compact={compact}
-            label="SESSION TIME"
-          />
-        </View>
-      )}
     </View>
   );
 };
@@ -220,10 +220,11 @@ const styles = StyleSheet.create({
   tunerWrapper: {
     flex: 1,
   },
-  transportSection: {
-    marginTop: 28,
-  },
   timerSection: {
     alignItems: 'center',
+    marginTop: 20,
+  },
+  transportSection: {
+    marginTop: 20,
   },
 });
