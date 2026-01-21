@@ -119,13 +119,15 @@
 | `usePracticePlayer` | **Audio playback with speed control (pitch preserved)** | `hooks/usePracticePlayer.ts` |
 | `useTunerMachine` | **Guitar tuner state machine with pitch detection** | `hooks/tuner/useTunerMachine.ts` |
 | `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | `hooks/tuner/usePitchDetection.ts` |
-| `useAudioSession` | Web Audio API microphone streaming | `hooks/tuner/useAudioSession.ts` |
+| `useAudioSession` | Web Audio API microphone streaming (uses shared permission) | `hooks/tuner/useAudioSession.ts` |
+| `useMicrophonePermission` | **Shared microphone permission context (grant once, use everywhere)** | `contexts/MicrophonePermissionContext.tsx` |
 | `useStreakData` | **Daily streak management & goal tracking** | `hooks/useStreakData.ts` |
 | `useStreakCalendar` | Calendar data with month navigation | `hooks/useStreakCalendar.ts` |
 | `useSongMastery` | **Per-song skill tree progress** | `hooks/useSongMastery.ts` |
 | `useGlobalStats` | **Lifetime stats aggregation** | `hooks/useGlobalStats.ts` |
 | `useMilestones` | **Lifetime milestone tracking** | `hooks/useMilestones.ts` |
 | `useVoiceMemos` | Voice memo recording, storage, and sharing | `hooks/useVoiceMemos.ts` |
+| `useVoiceRecorder` | **Voice recorder state machine (uses shared permission)** | `hooks/useVoiceRecorder.ts` |
 | `useSongsQuery` | **Cached song library fetch (React Query)** | `hooks/queries/useSongsQuery.ts` |
 | `useStreakQuery` | **Cached streak/stats/milestones fetch (React Query)** | `hooks/queries/useStreakQuery.ts` |
 | `useVoiceMemosQuery` | **Cached voice memos fetch (React Query)** | `hooks/queries/useVoiceMemosQuery.ts` |

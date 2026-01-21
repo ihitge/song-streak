@@ -7,11 +7,15 @@
  *
  * Currently implements web-first approach since SongStreak
  * runs on web via Expo.
+ *
+ * Uses shared MicrophonePermissionContext so permission granted in one
+ * feature (Tuner, Voice Recorder) immediately reflects in others.
  */
 
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { AUDIO_CONFIG, VOLUME_THRESHOLD } from '@/constants/TunerConfig';
+import { useMicrophonePermission } from '@/contexts/MicrophonePermissionContext';
 
 export interface AudioSessionCallbacks {
   onAudioData: (float32Array: Float32Array, volumeDb: number) => void;
@@ -42,13 +46,19 @@ function calculateVolumeDb(samples: Float32Array): number {
 /**
  * Hook for managing microphone audio streaming
  * Currently web-only using Web Audio API
+ *
+ * Uses shared MicrophonePermissionContext for permission state,
+ * so granting mic access in Tuner immediately enables Voice Recorder and vice versa.
  */
 export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessionReturn {
   const [isRecording, setIsRecording] = useState(false);
-  const [hasPermission, setHasPermission] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState<
-    'undetermined' | 'granted' | 'denied'
-  >('undetermined');
+
+  // Use shared permission context (iOS best practice: grant once, use everywhere)
+  const {
+    hasPermission,
+    permissionStatus,
+    requestPermission: contextRequestPermission,
+  } = useMicrophonePermission();
 
   // Web Audio API refs
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -94,47 +104,10 @@ export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessi
     }
   }, []);
 
-  // Request microphone permission
+  // Request microphone permission (delegates to shared context)
   const requestPermission = useCallback(async (): Promise<boolean> => {
-    if (Platform.OS !== 'web') {
-      // TODO: Implement native permission request
-      console.warn('[AudioSession] Native audio not yet implemented');
-      setPermissionStatus('denied');
-      return false;
-    }
-
-    try {
-      // Check if getUserMedia is available
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.error('[AudioSession] getUserMedia not supported');
-        setPermissionStatus('denied');
-        return false;
-      }
-
-      // Request microphone permission
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-          sampleRate: AUDIO_CONFIG.sampleRate,
-        },
-        video: false,
-      });
-
-      // Stop the stream immediately - we just needed permission
-      stream.getTracks().forEach((track) => track.stop());
-
-      setHasPermission(true);
-      setPermissionStatus('granted');
-      return true;
-    } catch (err) {
-      console.error('[AudioSession] Permission denied:', err);
-      setHasPermission(false);
-      setPermissionStatus('denied');
-      return false;
-    }
-  }, []);
+    return contextRequestPermission();
+  }, [contextRequestPermission]);
 
   // Start audio capture
   const start = useCallback(async () => {
@@ -155,8 +128,7 @@ export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessi
         video: false,
       });
 
-      setHasPermission(true);
-      setPermissionStatus('granted');
+      // Permission is managed by shared context - just store the stream
       streamRef.current = stream;
 
       // Create audio context
@@ -216,7 +188,7 @@ export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessi
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error('[AudioSession] Failed to start:', error);
-      setPermissionStatus('denied');
+      // Permission errors are handled by shared context
       callbacks.onError?.(error);
       cleanup();
     }

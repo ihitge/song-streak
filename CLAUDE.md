@@ -102,6 +102,7 @@ console.log(token);
 | Pitch detection (pitchy) | `usePitchDetection` |
 | Microphone audio streaming | `useAudioSession` |
 | Voice memo management | `useVoiceMemos` |
+| **Shared microphone permission (iOS best practice)** | `useMicrophonePermission` |
 
 ### Design Tokens
 

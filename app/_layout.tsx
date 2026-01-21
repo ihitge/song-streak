@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from '@/ctx/AuthContext';
 import { SettingsProvider } from '@/ctx/SettingsContext';
 import { StyledAlertProvider } from '@/hooks/useStyledAlert';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { MicrophonePermissionProvider } from '@/contexts/MicrophonePermissionContext';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -62,9 +63,11 @@ export default function RootLayout() {
       <QueryProvider>
         <SettingsProvider>
           <AuthProvider>
-            <StyledAlertProvider>
-              <RootLayoutNav />
-            </StyledAlertProvider>
+            <MicrophonePermissionProvider>
+              <StyledAlertProvider>
+                <RootLayoutNav />
+              </StyledAlertProvider>
+            </MicrophonePermissionProvider>
           </AuthProvider>
         </SettingsProvider>
       </QueryProvider>

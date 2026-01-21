@@ -4,10 +4,14 @@
  * State machine for the Reel-to-Reel voice recorder.
  * Handles recording, playback, and audio level monitoring.
  * Web-first implementation using MediaRecorder API.
+ *
+ * Uses shared MicrophonePermissionContext so permission granted in one
+ * feature (Tuner, Voice Recorder) immediately reflects in others.
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Platform } from 'react-native';
+import { useMicrophonePermission } from '@/contexts/MicrophonePermissionContext';
 import {
   RecorderState,
   PlaybackSpeed,
@@ -80,16 +84,24 @@ function calculateAudioLevel(dataArray: Uint8Array): number {
 
 /**
  * Hook for voice recording and playback
+ *
+ * Uses shared MicrophonePermissionContext for permission state,
+ * so granting mic access in Voice Recorder immediately enables Tuner and vice versa.
  */
 export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoiceRecorderReturn {
   const { onRecordingComplete, onError, onStateChange, onAudioLevel } = options;
 
   // State
   const [state, setState] = useState<RecorderState>('idle');
-  const [hasPermission, setHasPermission] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState<'undetermined' | 'granted' | 'denied'>('undetermined');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+
+  // Use shared permission context (iOS best practice: grant once, use everywhere)
+  const {
+    hasPermission,
+    permissionStatus,
+    requestPermission: contextRequestPermission,
+  } = useMicrophonePermission();
 
   // Recording state
   const [recording, setRecording] = useState<RecordingSession>({
@@ -128,45 +140,11 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
   }, [state, onStateChange]);
 
   /**
-   * Request microphone permission
+   * Request microphone permission (delegates to shared context)
    */
   const requestPermission = useCallback(async (): Promise<boolean> => {
-    if (Platform.OS !== 'web') {
-      console.warn('[VoiceRecorder] Native audio not yet implemented');
-      setPermissionStatus('denied');
-      return false;
-    }
-
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        console.error('[VoiceRecorder] getUserMedia not supported');
-        setPermissionStatus('denied');
-        return false;
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: true,
-          sampleRate: AUDIO_CONFIG.sampleRate,
-        },
-        video: false,
-      });
-
-      // Stop immediately - just checking permission
-      stream.getTracks().forEach((track) => track.stop());
-
-      setHasPermission(true);
-      setPermissionStatus('granted');
-      return true;
-    } catch (err) {
-      console.error('[VoiceRecorder] Permission denied:', err);
-      setHasPermission(false);
-      setPermissionStatus('denied');
-      return false;
-    }
-  }, []);
+    return contextRequestPermission();
+  }, [contextRequestPermission]);
 
   /**
    * Start audio level monitoring
@@ -231,8 +209,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
         video: false,
       });
 
-      setHasPermission(true);
-      setPermissionStatus('granted');
+      // Permission is managed by shared context - just store the stream
       streamRef.current = stream;
 
       // Create audio context for level monitoring
@@ -331,7 +308,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       console.error('[VoiceRecorder] Failed to start:', err);
       const error = err instanceof Error ? err : new Error(String(err));
       onError?.(error);
-      setPermissionStatus('denied');
+      // Permission errors are handled by shared context
       setState('error');
     }
   }, [onRecordingComplete, onError, startLevelMonitoring, recording.elapsedSeconds]);
