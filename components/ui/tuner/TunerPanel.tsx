@@ -121,10 +121,8 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
               value={tuningMode}
               options={tuningOptions}
               onChange={setTuningMode}
-              size="compact"
               variant="light"
               showGlassOverlay
-              labelColor={Colors.vermilion}
             />
           </View>
         </View>
