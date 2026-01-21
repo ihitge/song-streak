@@ -440,12 +440,12 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 8,
   },
-  // Deeper meter face for metronome mode to accommodate visual separation
+  // Meter face for metronome mode
   meterFaceMetronome: {
-    height: 140, // Increased from 112 to separate beat counter from pendulum
+    height: 112, // Reduced by 20% from 140
   },
   meterFaceMetronomeCompact: {
-    height: 100, // Increased from 80
+    height: 80, // Reduced by 20% from 100
   },
   // Scale markings at top inside meter (matches TunerVUMeter)
   scaleMarkings: {
@@ -483,14 +483,14 @@ const styles = StyleSheet.create({
   // Visual separator between beat counter and pendulum area
   pendulumSeparator: {
     position: 'absolute',
-    top: 56,  // Below beat counter LEDs
+    top: 52,  // Below beat counter LEDs (adjusted for reduced height)
     left: 20,
     right: 20,
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.08)',
   },
   pendulumSeparatorCompact: {
-    top: 44,
+    top: 40,
     left: 16,
     right: 16,
   },
