@@ -14,7 +14,6 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { FrequencyTuner } from '@/components/ui/filters/FrequencyTuner';
-import { RotaryKnob } from '@/components/ui/filters/RotaryKnob';
 import { TunerVUMeter } from './TunerVUMeter';
 import { TunerStringSelector } from './TunerStringSelector';
 import { TunerControls } from './TunerControls';
@@ -104,9 +103,9 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
       {/* Header: Instrument and Tuning selectors - two column layout */}
       <View style={[styles.headerContainer, compact && styles.headerContainerCompact]}>
         <View style={styles.selectorRow}>
-          {/* Instrument selector - Rotary Knob style */}
+          {/* Instrument selector */}
           <View style={styles.selectorColumn}>
-            <RotaryKnob
+            <FrequencyTuner
               label="INSTRUMENT"
               value={instrument}
               options={INSTRUMENT_OPTIONS}

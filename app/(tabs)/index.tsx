@@ -12,7 +12,7 @@ import { DeviceCasing } from '@/components/ui/DeviceCasing';
 import { FAB } from '@/components/ui/FAB';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ErrorState } from '@/components/ui/ErrorState';
-import { FrequencyTuner, RotaryKnob } from '@/components/ui/filters';
+import { FrequencyTuner } from '@/components/ui/filters';
 import { GlassOverlay } from '@/components/ui/GlassOverlay';
 import { InsetShadowOverlay } from '@/components/skia/primitives/InsetShadowOverlay';
 import { SurfaceTextureOverlay } from '@/components/skia/primitives/SurfaceTextureOverlay';
@@ -258,7 +258,7 @@ export default function SetListScreen() {
           isLoading={isSearchLoading}
           recentSuggestions={recentSuggestions}
           instrumentFilter={
-            <RotaryKnob
+            <FrequencyTuner
               label="INSTRUMENT"
               value={instrument}
               onChange={setInstrument}
