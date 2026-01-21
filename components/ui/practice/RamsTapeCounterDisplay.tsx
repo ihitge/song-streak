@@ -264,13 +264,11 @@ const styles = StyleSheet.create({
   },
   label: {
     ...Typography.label,
-    color: Colors.warmGray,
     marginTop: 6,
   },
   labelCompact: {
     ...Typography.label,
     fontSize: 8,
-    color: Colors.warmGray,
     marginTop: 4,
   },
 });
