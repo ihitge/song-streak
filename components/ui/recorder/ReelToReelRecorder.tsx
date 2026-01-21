@@ -54,6 +54,7 @@ interface ReelToReelRecorderProps {
 // Layout constants
 const REEL_SIZE = 140;
 const REEL_SIZE_COMPACT = 100;
+const REEL_SIZE_FULLWIDTH = 120;
 
 export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
   onRecordingComplete,
@@ -191,7 +192,7 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
     setShowSavePanel(false);
   }, [reset]);
 
-  const reelSize = compact ? REEL_SIZE_COMPACT : REEL_SIZE;
+  const reelSize = compact ? REEL_SIZE_COMPACT : fullWidth ? REEL_SIZE_FULLWIDTH : REEL_SIZE;
   const isSpinning = state === 'recording' || state === 'playing';
 
   return (
@@ -212,7 +213,11 @@ export const ReelToReelRecorder: React.FC<ReelToReelRecorderProps> = ({
         )}
 
         {/* Single centered reel */}
-        <View style={[styles.reelContainer, compact && styles.reelContainerCompact]}>
+        <View style={[
+          styles.reelContainer,
+          compact && styles.reelContainerCompact,
+          fullWidth && styles.reelContainerFullWidth,
+        ]}>
           <TapeReel
             size={reelSize}
             isSpinning={isSpinning}
@@ -329,24 +334,21 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   housingFullWidth: {
-    flex: 1,
     borderRadius: 0,
     borderTopWidth: 0,
     borderBottomWidth: 0,
     backgroundColor: 'transparent',
     shadowOpacity: 0,
     elevation: 0,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
   },
   mainContent: {
     alignItems: 'center',
   },
   mainContentFullWidth: {
-    flex: 1,
     justifyContent: 'flex-start',
-    paddingTop: 16,
-    gap: 20,
+    paddingTop: 0,
   },
   header: {
     flexDirection: 'row',
@@ -382,6 +384,10 @@ const styles = StyleSheet.create({
   reelContainerCompact: {
     marginBottom: 16,
   },
+  reelContainerFullWidth: {
+    marginTop: 8,
+    marginBottom: 20,
+  },
   transportContainer: {
     marginBottom: 20,
   },
@@ -402,8 +408,8 @@ const styles = StyleSheet.create({
   },
   permissionContainerFullWidth: {
     alignItems: 'center',
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingTop: 12,
+    paddingBottom: 16,
   },
   actionButtons: {
     flexDirection: 'row',

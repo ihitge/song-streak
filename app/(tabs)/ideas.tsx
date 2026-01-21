@@ -203,44 +203,66 @@ export default function IdeasScreen() {
     <View style={styles.container}>
       <PageHeader />
 
-      {/* View Toggle */}
-      <View style={styles.toggleContainer}>
-        <GangSwitch
-          label="VIEW"
-          value={viewMode}
-          options={VIEW_OPTIONS}
-          onChange={(value) => setViewMode(value ?? 'record')}
-          showIcons
-          allowDeselect={false}
-        />
-      </View>
-
       {/* Content based on view mode */}
       {viewMode === 'record' ? (
         <DeviceCasing title="SOUND RECORDER">
-          <ReelToReelRecorder
-            fullWidth
-            title=""
-            enableSaveFlow
-            bands={bands}
-            onSave={handleSave}
-            isUploading={isUploading}
-            uploadProgress={uploadProgress}
-          />
+          {/* Content wrapper with padding matching other pages */}
+          <View style={styles.contentWrapper}>
+            {/* View Toggle */}
+            <View style={styles.toggleContainer}>
+              <GangSwitch
+                value={viewMode}
+                options={VIEW_OPTIONS}
+                onChange={(value) => setViewMode(value ?? 'record')}
+                showIcons
+                allowDeselect={false}
+              />
+            </View>
+
+            {/* Recorder content */}
+            <View style={styles.recorderContent}>
+              <ReelToReelRecorder
+                fullWidth
+                title=""
+                enableSaveFlow
+                bands={bands}
+                onSave={handleSave}
+                isUploading={isUploading}
+                uploadProgress={uploadProgress}
+              />
+            </View>
+          </View>
         </DeviceCasing>
       ) : (
-        <View style={styles.libraryContainer}>
-          <VoiceMemosList
-            memos={memos}
-            isLoading={memosLoading}
-            onRefresh={refetchMemos}
-            onPlay={handlePlay}
-            onShare={handleShare}
-            onDelete={handleDelete}
-            playingMemoId={playingMemoId}
-            emptyMessage="No voice memos yet.\nRecord your first song idea!"
-          />
-        </View>
+        <DeviceCasing title="IDEA LIBRARY">
+          {/* Content wrapper with padding matching other pages */}
+          <View style={styles.contentWrapper}>
+            {/* View Toggle */}
+            <View style={styles.toggleContainer}>
+              <GangSwitch
+                value={viewMode}
+                options={VIEW_OPTIONS}
+                onChange={(value) => setViewMode(value ?? 'record')}
+                showIcons
+                allowDeselect={false}
+              />
+            </View>
+
+            {/* Library list */}
+            <View style={styles.libraryContent}>
+              <VoiceMemosList
+                memos={memos}
+                isLoading={memosLoading}
+                onRefresh={refetchMemos}
+                onPlay={handlePlay}
+                onShare={handleShare}
+                onDelete={handleDelete}
+                playingMemoId={playingMemoId}
+                emptyMessage="No voice memos yet.\nRecord your first song idea!"
+              />
+            </View>
+          </View>
+        </DeviceCasing>
       )}
 
       {/* Share to Band Modal */}
@@ -265,16 +287,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.ink,
   },
-  toggleContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 20,
-  },
-  libraryContainer: {
+  contentWrapper: {
     flex: 1,
-    backgroundColor: Colors.charcoal,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    overflow: 'hidden',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+  toggleContainer: {
+    marginBottom: 16,
+  },
+  recorderContent: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  libraryContent: {
+    flex: 1,
   },
 });

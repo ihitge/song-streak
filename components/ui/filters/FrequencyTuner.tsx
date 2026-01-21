@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   chevronButton: {
-    padding: 8,
+    padding: 14,
     opacity: 0.7,
   },
   valueContainer: {

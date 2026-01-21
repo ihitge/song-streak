@@ -199,11 +199,10 @@ export function useMetronomeSound(
       // For other modes, use the selected sound type
       switch (type) {
         case 'click':
-          return role === 'accent'
-            ? buffers.clickAccent
-            : role === 'tick'
-              ? buffers.clickTick
-              : buffers.clickSubdiv;
+          // Use same tick sound for all beats (no accent on beat 1)
+          return role === 'subdivision'
+            ? buffers.clickSubdiv
+            : buffers.clickTick;
         case 'snare':
           return buffers.snare;
         case 'bass':

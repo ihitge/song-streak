@@ -130,7 +130,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
         headerContent={
           /* Time Signature, Sound, and Subdivision selectors at top of metronome */
           <View style={styles.headerRow}>
-            <View style={styles.tunerWrapper}>
+            <View style={styles.tunerWrapperNarrow}>
               <FrequencyTuner
                 label="TIME"
                 value={timeSignature}
@@ -140,7 +140,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 showGlassOverlay
               />
             </View>
-            <View style={styles.tunerWrapper}>
+            <View style={styles.tunerWrapperWide}>
               <FrequencyTuner
                 label="SOUND"
                 value={soundType}
@@ -150,7 +150,7 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 showGlassOverlay
               />
             </View>
-            <View style={styles.tunerWrapper}>
+            <View style={styles.tunerWrapperNarrow}>
               <FrequencyTuner
                 label="SUBDIVISION"
                 value={String(subdivision)}
@@ -217,8 +217,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     gap: 11,
   },
-  tunerWrapper: {
-    flex: 1,
+  tunerWrapperNarrow: {
+    flex: 0.8,
+  },
+  tunerWrapperWide: {
+    flex: 1.2,
   },
   timerSection: {
     alignItems: 'center',

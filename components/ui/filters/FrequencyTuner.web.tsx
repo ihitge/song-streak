@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   chevronButton: {
-    padding: 4,
+    padding: 14,
     opacity: 0.6,
   },
   valueContainer: {
