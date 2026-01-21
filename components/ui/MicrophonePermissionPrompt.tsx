@@ -155,15 +155,20 @@ const styles = StyleSheet.create({
     minHeight: TOUCH_TARGETS.comfortable,
     borderRadius: 32,
     gap: 10,
-    // Bevel effect
-    borderWidth: 3,
-    borderColor: Colors.rimHighlight,
+    // Bevel effect - use subtle border that doesn't wash out the button on iOS
+    borderWidth: 2,
+    borderTopColor: 'rgba(255,255,255,0.4)',
+    borderLeftColor: 'rgba(255,255,255,0.3)',
+    borderRightColor: 'rgba(0,0,0,0.1)',
+    borderBottomColor: 'rgba(0,0,0,0.2)',
     // Shadow
     shadowColor: Colors.charcoal,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 8,
+    // Ensure solid background on iOS
+    overflow: 'hidden',
   },
   enableButtonCompact: {
     paddingHorizontal: 20,
@@ -171,7 +176,6 @@ const styles = StyleSheet.create({
     minHeight: TOUCH_TARGETS.minimum,
     borderRadius: 24,
     gap: 8,
-    borderWidth: 2,
   },
   enableButtonText: {
     fontFamily: 'LexendDecaBold',
