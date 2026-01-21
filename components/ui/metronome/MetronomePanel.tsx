@@ -136,10 +136,8 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 value={timeSignature}
                 options={timeSignatureOptions}
                 onChange={onTimeSignatureChange}
-                size="compact"
                 variant="light"
                 showGlassOverlay
-                labelColor={Colors.vermilion}
               />
             </View>
             <View style={styles.tunerWrapper}>
@@ -148,10 +146,8 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 value={soundType}
                 options={soundOptions}
                 onChange={(val) => onSoundTypeChange(val as MetronomeSoundType)}
-                size="compact"
                 variant="light"
                 showGlassOverlay
-                labelColor={Colors.vermilion}
               />
             </View>
             <View style={styles.tunerWrapper}>
@@ -160,10 +156,8 @@ export const MetronomePanel: React.FC<MetronomePanelProps> = ({
                 value={String(subdivision)}
                 options={subdivisionOptions}
                 onChange={(val) => onSubdivisionChange(Number(val) as Subdivision)}
-                size="compact"
                 variant="light"
                 showGlassOverlay
-                labelColor={Colors.vermilion}
               />
             </View>
           </View>

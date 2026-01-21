@@ -41,7 +41,8 @@ export const MetronomeControls: React.FC<MetronomeControlsProps> = ({
         options={subdivisionOptions}
         onChange={(val) => onSubdivisionChange(Number(val) as Subdivision)}
         disabled={readonly}
-        size="compact"
+        variant="light"
+        showGlassOverlay
       />
     </View>
   );
