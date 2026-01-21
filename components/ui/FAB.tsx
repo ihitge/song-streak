@@ -84,9 +84,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     // Elevation/Shadow
     ...SHADOWS.fab,
-    // White ring effect
-    borderWidth: 3,
-    borderColor: Colors.rimHighlight,
+    // Subtle bevel effect (iOS-compatible - no solid white border)
+    borderWidth: 2,
+    borderTopColor: 'rgba(255,255,255,0.4)',
+    borderLeftColor: 'rgba(255,255,255,0.3)',
+    borderRightColor: 'rgba(0,0,0,0.15)',
+    borderBottomColor: 'rgba(0,0,0,0.25)',
+    // Ensure solid background renders on iOS
+    overflow: 'hidden',
   },
   fabSecondary: {
     backgroundColor: Colors.graphite,
