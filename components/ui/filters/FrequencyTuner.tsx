@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec, Line, Fill } from '@shopify/react-native-skia';
 import Animated from 'react-native-reanimated';
@@ -17,7 +17,8 @@ type TunerVariant = 'dark' | 'light';
 const TUNER_HEIGHT = 60; // Matches TunerStringSelector well height
 
 
-export const FrequencyTuner = <T extends string>({
+// Memoized to prevent unnecessary re-renders when parent state changes
+const FrequencyTunerInner = <T extends string>({
   label,
   value,
   options,
@@ -200,6 +201,9 @@ export const FrequencyTuner = <T extends string>({
     </View>
   );
 };
+
+// Generic memo wrapper that preserves type parameters
+export const FrequencyTuner = memo(FrequencyTunerInner) as typeof FrequencyTunerInner;
 
 const styles = StyleSheet.create({
   container: {

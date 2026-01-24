@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import {
   Canvas,
@@ -17,20 +17,24 @@ interface LEDIndicatorProps {
   color?: string;
 }
 
-export const LEDIndicator: React.FC<LEDIndicatorProps> = ({
+// Memoized LED indicator for Skia Canvas performance
+export const LEDIndicator: React.FC<LEDIndicatorProps> = memo(({
   size = 16,
   isActive,
   color = Colors.vermilion,
 }) => {
-  // Visual configuration
-  // The canvas needs to be larger than the size to accommodate the bloom/glow
-  const padding = 12; 
-  const canvasSize = size + padding * 2;
-  const center = canvasSize / 2;
-  const radius = size / 2;
-  
-  const bezelWidth = size * 0.15; // 15% bezel
-  const lensRadius = radius - bezelWidth;
+  // Memoize computed visual dimensions to avoid recalculation
+  const dimensions = useMemo(() => {
+    const padding = 12;
+    const canvasSize = size + padding * 2;
+    const center = canvasSize / 2;
+    const radius = size / 2;
+    const bezelWidth = size * 0.15; // 15% bezel
+    const lensRadius = radius - bezelWidth;
+    return { padding, canvasSize, center, radius, bezelWidth, lensRadius };
+  }, [size]);
+
+  const { padding, canvasSize, center, radius, lensRadius } = dimensions;
 
   // Off-state colors (Dark, muted lens)
   const offColorCenter = Colors.charcoal;
@@ -115,4 +119,4 @@ export const LEDIndicator: React.FC<LEDIndicatorProps> = ({
       </Canvas>
     </View>
   );
-};
+});

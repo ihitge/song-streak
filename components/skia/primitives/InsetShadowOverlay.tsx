@@ -58,7 +58,11 @@ export const InsetShadowOverlay = React.memo<InsetShadowOverlayProps>(({
     };
   }, [shadowIntensity, isDark]);
 
-  const clipRect = rrect(rect(0, 0, width, height), borderRadius, borderRadius);
+  // Memoize clipRect to avoid recreating Skia path on every render
+  const clipRect = useMemo(
+    () => rrect(rect(0, 0, width, height), borderRadius, borderRadius),
+    [width, height, borderRadius]
+  );
 
   return (
     <Canvas

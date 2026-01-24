@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, memo } from 'react';
 import { View, Text, Pressable, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { Canvas, Box, BoxShadow, rrect, rect, LinearGradient, vec } from '@shopify/react-native-skia';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
@@ -15,7 +15,8 @@ const KNOB_SIZE = 52; // Matches TunerStringSelector button proportions
 const READOUT_HEIGHT = 60; // Matches TunerStringSelector well height
 
 
-export const RotaryKnob = <T extends string>({
+// Memoized to prevent unnecessary re-renders when parent state changes
+const RotaryKnobInner = <T extends string>({
   label,
   value,
   options,
@@ -205,6 +206,9 @@ export const RotaryKnob = <T extends string>({
     </View>
   );
 };
+
+// Generic memo wrapper that preserves type parameters
+export const RotaryKnob = memo(RotaryKnobInner) as typeof RotaryKnobInner;
 
 const styles = StyleSheet.create({
   container: {
