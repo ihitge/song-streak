@@ -8,6 +8,7 @@ import {
   BPM_MIN,
   BPM_MAX,
 } from '@/types/metronome';
+import type { AudioContextType } from '@/types/audio';
 import { useMetronomeSound } from './useMetronomeSound';
 
 /**
@@ -126,7 +127,7 @@ export function useMetronome(options: UseMetronomeOptions = {}): UseMetronomeRet
    * Schedule a single note and trigger callbacks
    */
   const scheduleNote = useCallback(
-    (note: ScheduledNote, ctx: AudioContext) => {
+    (note: ScheduledNote, ctx: AudioContextType) => {
       const type = soundTypeRef.current;
 
       // Schedule audio at precise time

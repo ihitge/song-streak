@@ -86,3 +86,22 @@ export const EASING_PRESETS = {
   // Bouncy, playful
   bouncy: { duration: 400 },
 } as const;
+
+// --- Simple Fade Animations ---
+// Used for basic fade in/out transitions
+
+/**
+ * FadeIn - Simple opacity fade in
+ */
+export const FadeIn = new Keyframe({
+  0: { opacity: 0 },
+  100: { opacity: 1 },
+}).duration(ANIMATION_DURATIONS.fade);
+
+/**
+ * FadeOut - Simple opacity fade out
+ */
+export const FadeOut = new Keyframe({
+  0: { opacity: 1 },
+  100: { opacity: 0 },
+}).duration(ANIMATION_DURATIONS.fade);

@@ -192,12 +192,14 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Animated.View
-        style={[styles.svgContainer, { width: size, height: size }, animatedStyle]}
-        // @ts-ignore - Web pointer events
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        style={[styles.svgContainer, { width: size, height: size }, webStyles.svgContainer as object, animatedStyle]}
+        {...{
+          // Web-only pointer events (type-ignored for RN compatibility)
+          onPointerDown: handlePointerDown,
+          onPointerMove: handlePointerMove,
+          onPointerUp: handlePointerUp,
+          onPointerLeave: handlePointerUp,
+        } as object}
       >
         <svg
           width={size}
@@ -367,6 +369,13 @@ export const CircleOfFifths: React.FC<CircleOfFifthsProps> = ({
   );
 };
 
+// Web-only styles that aren't part of React Native's type system
+const webStyles = {
+  svgContainer: {
+    cursor: 'grab' as const,
+  },
+};
+
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
@@ -375,7 +384,6 @@ const styles = StyleSheet.create({
   svgContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    cursor: 'grab',
   },
   ledIndicator: {
     position: 'absolute',

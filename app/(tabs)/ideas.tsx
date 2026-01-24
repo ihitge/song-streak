@@ -211,6 +211,7 @@ export default function IdeasScreen() {
             {/* View Toggle */}
             <View style={styles.toggleContainer}>
               <GangSwitch
+                label="View Mode"
                 value={viewMode}
                 options={VIEW_OPTIONS}
                 onChange={(value) => setViewMode(value ?? 'record')}
@@ -240,6 +241,7 @@ export default function IdeasScreen() {
             {/* View Toggle */}
             <View style={styles.toggleContainer}>
               <GangSwitch
+                label="View Mode"
                 value={viewMode}
                 options={VIEW_OPTIONS}
                 onChange={(value) => setViewMode(value ?? 'record')}
