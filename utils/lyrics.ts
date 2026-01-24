@@ -9,6 +9,23 @@
 const LYRICS_OVH_BASE = 'https://api.lyrics.ovh/v1';
 const LRCLIB_BASE = 'https://lrclib.net/api';
 
+// Timeout for iOS network reliability - external APIs should fail fast
+const FETCH_TIMEOUT_MS = 10000;
+
+/**
+ * Fetch with timeout for iOS network edge cases
+ */
+async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 interface LrclibResult {
   id: number;
   trackName: string;
@@ -58,7 +75,7 @@ async function tryLyricsOvh(title: string, artist: string): Promise<string | nul
     const url = `${LYRICS_OVH_BASE}/${encodedArtist}/${encodedTitle}`;
     console.log(`📡 Trying Lyrics.ovh: ${url}`);
 
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -97,7 +114,7 @@ async function tryLrclib(title: string, artist: string): Promise<string | null> 
     const url = `${LRCLIB_BASE}/search?${params.toString()}`;
     console.log(`📡 Trying LRCLIB: ${url}`);
 
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
