@@ -41,7 +41,13 @@ const SongCard = React.memo(({ song, onDelete, onEdit, onPress }: {
   onPress?: () => void;
 }) => {
   return (
-    <Pressable onPress={onPress} style={styles.cardChassis}>
+    <Pressable
+      onPress={onPress}
+      style={styles.cardChassis}
+      accessibilityLabel={`${song.title} by ${song.artist}`}
+      accessibilityRole="button"
+      accessibilityHint="Opens song details"
+    >
       <View style={styles.cardBody}>
         {/* Recessed Thumbnail */}
         <View style={styles.thumbnailContainer}>
@@ -68,13 +74,13 @@ const SongCard = React.memo(({ song, onDelete, onEdit, onPress }: {
 
         {/* Card Content */}
         <View style={styles.cardContent}>
-          <Text style={styles.songTitle}>{song.title}</Text>
-          <Text style={styles.songArtist}>{song.artist}</Text>
+          <Text style={styles.songTitle} maxFontSizeMultiplier={1.3}>{song.title}</Text>
+          <Text style={styles.songArtist} maxFontSizeMultiplier={1.3}>{song.artist}</Text>
 
           <View style={styles.cardMetaRow}>
             <View style={styles.metaItem}>
               <Clock size={12} color={Colors.graphite} />
-              <Text style={styles.metaText}>{song.duration}</Text>
+              <Text style={styles.metaText} maxFontSizeMultiplier={1.2}>{song.duration}</Text>
             </View>
           </View>
         </View>
@@ -86,6 +92,9 @@ const SongCard = React.memo(({ song, onDelete, onEdit, onPress }: {
               style={styles.editButton}
               onPress={() => onEdit(song.id)}
               activeOpacity={0.7}
+              accessibilityLabel="Edit song"
+              accessibilityHint="Opens song editor"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Edit2 size={14} color={Colors.charcoal} />
             </TouchableOpacity>
@@ -95,6 +104,9 @@ const SongCard = React.memo(({ song, onDelete, onEdit, onPress }: {
               style={styles.deleteButton}
               onPress={() => onDelete(song.id)}
               activeOpacity={0.7}
+              accessibilityLabel="Delete song"
+              accessibilityHint="Removes this song from library"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Trash2 size={14} color={Colors.vermilion} />
             </TouchableOpacity>
@@ -334,7 +346,7 @@ export default function SetListScreen() {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Plus size={ICON_SIZES.lg} color={Colors.softWhite} strokeWidth={2.5} />
-            <Text style={styles.addSongButtonText}>ADD SONG</Text>
+            <Text style={styles.addSongButtonText} maxFontSizeMultiplier={1.2}>ADD SONG</Text>
           </Pressable>
         </View>
       </DeviceCasing>

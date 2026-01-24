@@ -4,6 +4,7 @@ import { SvgXml } from 'react-native-svg';
 import { LogOut } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter, usePathname } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/Colors';
 import { useSignOut } from '@/hooks/useSignOut';
 import { useAuth } from '@/ctx/AuthContext';
@@ -39,6 +40,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
 
   const initials = getInitials(user?.email);
   const isOnAccountPage = pathname === '/account';
@@ -57,7 +59,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   };
 
   return (
-    <View style={styles.chassis}>
+    <View style={[styles.chassis, { paddingTop: insets.top }]}>
       {/* Top Bar (Branding & User) */}
       <View style={styles.topBar}>
         {/* Left - Logo */}
@@ -75,7 +77,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             accessibilityRole="button"
             accessibilityHint="Opens your account settings"
           >
-            <Text style={styles.avatarText} accessibilityElementsHidden={true}>{initials}</Text>
+            <Text style={styles.avatarText} accessibilityElementsHidden={true} maxFontSizeMultiplier={1.2}>{initials}</Text>
           </Pressable>
           {/* Logout */}
           <Pressable
