@@ -114,6 +114,8 @@ export function MicrophonePermissionProvider({ children }: MicrophonePermissionP
     checkPermission();
 
     // Listen for permission changes (user might change in browser settings)
+    let cleanupFn: (() => void) | null = null;
+
     if (Platform.OS === 'web' && navigator.permissions?.query) {
       let permissionState: PermissionStatus | null = null;
 
@@ -134,8 +136,8 @@ export function MicrophonePermissionProvider({ children }: MicrophonePermissionP
 
           result.addEventListener('change', handleChange);
 
-          // Return cleanup function
-          return () => {
+          // Store cleanup function for effect cleanup
+          cleanupFn = () => {
             result.removeEventListener('change', handleChange);
           };
         })
@@ -143,6 +145,13 @@ export function MicrophonePermissionProvider({ children }: MicrophonePermissionP
           // Permissions API not fully supported
         });
     }
+
+    // Proper cleanup on unmount
+    return () => {
+      if (cleanupFn) {
+        cleanupFn();
+      }
+    };
   }, [checkPermission]);
 
   const value: MicrophonePermissionContextValue = {
