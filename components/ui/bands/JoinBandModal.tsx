@@ -88,11 +88,11 @@ export const JoinBandModal: React.FC<JoinBandModalProps> = ({
       if (success) {
         onClose();
       } else {
-        setError('Invalid code or already a member');
+        setError('Code not found. Check the code or ask your band for a new one.');
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       }
     } catch (err) {
-      setError('Failed to join band');
+      setError('Could not connect. Check your internet and try again.');
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setIsSubmitting(false);

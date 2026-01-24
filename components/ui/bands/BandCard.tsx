@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Users, ListMusic, ChevronRight, Crown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { SHADOWS, BORDER_RADIUS } from '@/constants/Styles';
 import { BandWithMemberCount, formatJoinCode } from '@/types/band';
 
 interface BandCardProps {
@@ -85,14 +86,10 @@ const styles = StyleSheet.create({
   },
   cardChassis: {
     backgroundColor: Colors.softWhite,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
-    borderColor: '#ccc',
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 2, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 0,
-    elevation: 4,
+    borderColor: Colors.border,
+    ...SHADOWS.card,
     overflow: 'hidden',
   },
   cardBody: {
@@ -104,7 +101,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     backgroundColor: Colors.alloy,
-    borderRadius: 8,
+    borderRadius: BORDER_RADIUS.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -112,10 +109,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderBottomWidth: 1,
     borderRightWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.5)',
-    borderLeftColor: 'rgba(255,255,255,0.5)',
-    borderBottomColor: 'rgba(0,0,0,0.15)',
-    borderRightColor: 'rgba(0,0,0,0.15)',
+    borderTopColor: Colors.highlights.md,
+    borderLeftColor: Colors.highlights.md,
+    borderBottomColor: Colors.shadows.md,
+    borderRightColor: Colors.shadows.md,
     position: 'relative',
   },
   adminBadge: {
@@ -129,7 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
   },
   cardContent: {
     flex: 1,
@@ -169,10 +166,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginTop: -1,
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    borderBottomLeftRadius: BORDER_RADIUS.lg,
+    borderBottomRightRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
     borderTopWidth: 0,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
   },
 });

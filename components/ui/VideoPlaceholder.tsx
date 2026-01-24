@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Play } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
+import { SHADOWS, BORDER_RADIUS } from '@/constants/Styles';
 import { getYouTubeThumbnailFromUrl } from '@/utils/youtube';
 
 interface VideoPlaceholderProps {
@@ -82,13 +83,13 @@ export const VideoPlaceholder: React.FC<VideoPlaceholderProps> = ({ videoUrl }) 
 const styles = StyleSheet.create({
   videoWell: {
     backgroundColor: Colors.alloy,
-    borderRadius: 12,
+    borderRadius: BORDER_RADIUS.lg,
     aspectRatio: 16 / 9,
     justifyContent: 'center',
     alignItems: 'center',
     borderTopWidth: 2,
     borderLeftWidth: 2,
-    borderColor: '#d0d0d0',
+    borderColor: Colors.border,
     borderBottomWidth: 0,
     borderRightWidth: 0,
     position: 'relative',
@@ -117,11 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(238, 108, 77, 0.9)', // vermilion with opacity
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 5,
+    ...SHADOWS.button,
   },
   playIcon: {
     marginLeft: 4, // Optical centering for play triangle

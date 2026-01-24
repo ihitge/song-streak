@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { ListMusic, MapPin, Calendar, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
+import { BORDER_RADIUS } from '@/constants/Styles';
 import { SetlistWithSongs } from '@/types/band';
 
 interface SetlistCardProps {
@@ -102,9 +103,9 @@ const styles = StyleSheet.create({
   // Full card styles
   cardChassis: {
     backgroundColor: Colors.softWhite,
-    borderRadius: 10,
+    borderRadius: BORDER_RADIUS.lg,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: Colors.border,
     shadowColor: Colors.charcoal,
     shadowOffset: { width: 1, height: 2 },
     shadowOpacity: 0.1,
@@ -121,8 +122,8 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 40,
     height: 40,
-    backgroundColor: 'rgba(238, 108, 77, 0.1)',
-    borderRadius: 8,
+    backgroundColor: `${Colors.vermilion}1A`, // vermilion with 10% opacity
+    borderRadius: BORDER_RADIUS.md,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -175,8 +176,8 @@ const styles = StyleSheet.create({
   compactIcon: {
     width: 28,
     height: 28,
-    backgroundColor: 'rgba(238, 108, 77, 0.1)',
-    borderRadius: 6,
+    backgroundColor: `${Colors.vermilion}1A`, // vermilion with 10% opacity
+    borderRadius: BORDER_RADIUS.sm,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,

@@ -322,8 +322,8 @@ export default function SetListScreen() {
             ListEmptyComponent={
               <EmptyState
                 icon={Music}
-                title="No songs yet"
-                subtitle="Tap ADD SONG to add your first song"
+                title="Your library is empty"
+                subtitle="Add your first song to start tracking your progress"
               />
             }
           />

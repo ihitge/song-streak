@@ -201,7 +201,7 @@ export default function AddSongScreen() {
 
   const handleAnalyze = async () => {
     if (!videoUrl.trim()) {
-      showError('Error', 'Please enter a video URL');
+      showError('Video URL Required', 'Paste a YouTube or lesson video link to analyze.');
       return;
     }
 
@@ -317,13 +317,13 @@ export default function AddSongScreen() {
   const handleSave = async () => {
     // Validation (double-check)
     if (!songTitle.trim() || !artist.trim()) {
-      showError('Validation Error', 'Please enter both song title and artist');
+      showError('Missing Details', 'Enter both song title and artist name to save.');
       return;
     }
 
     const currentData = instrumentData[currentInstrument];
     if (!currentData?.analyzed) {
-      showError('Validation Error', 'Please analyze the video first');
+      showError('Analysis Required', 'Tap ANALYZE to extract song details from the video first.');
       return;
     }
 
@@ -402,7 +402,7 @@ export default function AddSongScreen() {
 
   const handleUpdate = async () => {
     if (!songTitle.trim() || !artist.trim()) {
-      showError('Validation Error', 'Please enter both song title and artist');
+      showError('Missing Details', 'Enter both song title and artist name to save.');
       return;
     }
 

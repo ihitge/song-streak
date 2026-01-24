@@ -78,7 +78,7 @@ export default function AuthScreen() {
 
   async function signUpWithEmail() {
     if (password !== confirmPassword) {
-      showError('Error', 'Passwords do not match');
+      showError('Passwords Mismatch', 'Your passwords do not match. Please try again.');
       return;
     }
 

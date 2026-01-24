@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
+import { BORDER_RADIUS, SPACING } from '@/constants/Styles';
 
 interface TheorySectionProps {
   label: string;
@@ -33,12 +34,12 @@ const styles = StyleSheet.create({
   },
   sectionContent: {
     backgroundColor: Colors.alloy,
-    borderRadius: 8,
-    padding: 16,
-    gap: 16,
-    shadowColor: 'rgba(0,0,0,0.1)',
+    borderRadius: BORDER_RADIUS.md,
+    padding: SPACING.lg,
+    gap: SPACING.lg,
+    shadowColor: Colors.ink,
     shadowOffset: { width: 1, height: 2 },
-    shadowOpacity: 1,
+    shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },

@@ -25,17 +25,17 @@ export default function ResetPasswordScreen() {
 
   async function updatePassword() {
     if (!newPassword.trim()) {
-      showError('Error', 'Please enter a new password');
+      showError('Password Required', 'Enter your new password to continue.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showError('Error', 'Passwords do not match');
+      showError('Passwords Mismatch', 'Your passwords do not match. Please try again.');
       return;
     }
 
     if (newPassword.length < 6) {
-      showError('Error', 'Password must be at least 6 characters');
+      showError('Password Too Short', 'Use at least 6 characters for a secure password.');
       return;
     }
 
