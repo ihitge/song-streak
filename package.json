@@ -1,7 +1,27 @@
 {
   "name": "song-streak",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "2.2.0",
+  "description": "Track your music practice streaks, manage setlists, and build consistent practice habits with guitar tuner, metronome, and band collaboration tools.",
+  "keywords": [
+    "music",
+    "practice",
+    "guitar",
+    "tuner",
+    "metronome",
+    "setlist",
+    "bands",
+    "practice-tracker",
+    "streak",
+    "expo",
+    "react-native"
+  ],
+  "author": "SongStreak",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/songstreak/song-streak.git"
+  },
   "scripts": {
     "start": "expo start",
     "start:local": "expo start --localhost",
