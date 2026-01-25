@@ -31,7 +31,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.songstreak.app",
-      buildNumber: "21",
+      buildNumber: "25",
       usesAppleSignIn: true,
       /**
        * Privacy Manifest (iOS 17+ requirement)
@@ -92,6 +92,12 @@ module.exports = {
       bundler: "metro",
       output: "static",
       favicon: "./assets/images/favicon.png"
+    },
+    updates: {
+      url: "https://u.expo.dev/b230cef4-db91-4c02-b031-8d7183f8693a"
+    },
+    runtimeVersion: {
+      policy: "appVersion"
     },
     plugins: [
       "expo-router",
