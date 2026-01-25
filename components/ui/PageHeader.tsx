@@ -4,7 +4,7 @@ import { SvgXml } from 'react-native-svg';
 import { LogOut } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter, usePathname } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+// Note: Safe area insets are handled by parent SafeAreaView in _layout.tsx
 import { Colors } from '@/constants/Colors';
 import { useSignOut } from '@/hooks/useSignOut';
 import { useAuth } from '@/ctx/AuthContext';
@@ -40,7 +40,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const insets = useSafeAreaInsets();
 
   const initials = getInitials(user?.email);
   const isOnAccountPage = pathname === '/account';
@@ -59,7 +58,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   };
 
   return (
-    <View style={[styles.chassis, { paddingTop: insets.top }]}>
+    <View style={styles.chassis}>
       {/* Top Bar (Branding & User) */}
       <View style={styles.topBar}>
         {/* Left - Logo */}

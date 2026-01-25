@@ -144,8 +144,12 @@ const FrequencyTunerInner = <T extends string>({
                 exiting={prefersReducedMotion ? FadeOut : (direction > 0 ? ExitToLeft : ExitToRight)}
                 style={styles.textWrapper}
             >
-                <Text style={[styles.valueText, { color: textColor, textShadowColor }]}>
-                {currentOption?.label || value}
+                <Text
+                  style={[styles.valueText, { color: textColor, textShadowColor }]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  {currentOption?.label || value}
                 </Text>
             </Animated.View>
           </View>
@@ -245,10 +249,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   valueText: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: 'LexendDecaBold',
     textTransform: 'uppercase',
-    letterSpacing: 1.5,
+    letterSpacing: 1,
     color: '#e0e0e0',
     textShadowColor: 'rgba(255,255,255,0.3)',
     textShadowOffset: { width: 0, height: 0 },

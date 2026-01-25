@@ -9,7 +9,8 @@
 | Component | Purpose | Location |
 |-----------|---------|----------|
 | `PageHeader` | **Reusable page header with logo and user controls** | `components/ui/PageHeader.tsx` |
-| `FAB` | **Floating Action Button (shared: Add Song, Start Tuner)** | `components/ui/FAB.tsx` |
+| `PrimaryButton` | **Universal primary action button (Add Song, Start, Record, Enable Mic)** | `components/ui/PrimaryButton.tsx` |
+| `FAB` | ~~Floating Action Button~~ **DEPRECATED - Use PrimaryButton instead** | `components/ui/FAB.tsx` |
 | `NavButton` | Tactile navigation button with LED indicator + audio/haptic feedback | `components/ui/NavButton.tsx` |
 | `GangSwitch` | Horizontal/vertical switch with LED indicators | `components/ui/filters/GangSwitch.tsx` |
 | `FrequencyTuner` | Horizontal tuner with glass overlay | `components/ui/filters/FrequencyTuner.tsx` |
@@ -287,52 +288,96 @@ interface PageHeaderProps {
 
 ---
 
-### FAB (Floating Action Button)
+### PrimaryButton (Universal Action Button)
 
-**Purpose**: Shared circular action button used throughout the app for primary actions. Ensures consistent sizing, styling, and feedback across all FAB instances.
+**Purpose**: Universal primary action button for all main CTAs throughout the app. Built with basic React Native components for maximum cross-platform compatibility (especially iOS native builds).
 
-**Location**: `components/ui/FAB.tsx`
+**Location**: `components/ui/PrimaryButton.tsx`
 
 **Props**:
 ```typescript
-interface FABProps {
-  onPress: () => void;           // Press handler
-  icon: React.ReactNode;         // Icon to display inside the button
-  disabled?: boolean;            // Whether the button is disabled
-  variant?: 'primary' | 'secondary'; // primary = vermilion, secondary = graphite
-  style?: ViewStyle;             // Additional styles (e.g., positioning)
+interface PrimaryButtonProps {
+  onPress: () => void;              // Press handler
+  label?: string;                   // Button label text
+  icon?: React.ReactNode;           // Icon to display (renders before label)
+  variant?: 'primary' | 'secondary' | 'success'; // vermilion | graphite | moss
+  size?: 'standard' | 'compact' | 'circle';      // Button size
+  disabled?: boolean;               // Disabled state
+  loading?: boolean;                // Loading state - shows spinner
+  accessibilityLabel: string;       // Required for screen readers
+  accessibilityHint?: string;       // Accessibility hint
 }
 ```
 
 **Usage**:
 ```typescript
-// Add Song button (Songs page)
-<FAB
+// Add Song button (Songs page) - standard pill
+<PrimaryButton
   onPress={() => router.push('/add-song')}
-  icon={<Plus size={32} color={Colors.softWhite} strokeWidth={3} />}
-  style={styles.fabPosition}
+  icon={<Plus size={24} color="#FFFFFF" strokeWidth={2.5} />}
+  label="ADD SONG"
+  variant="primary"
+  size="standard"
+  accessibilityLabel="Add new song"
 />
 
-// Start/Stop Tuner button (Tuner page)
-<FAB
+// Start/Stop Tuner button (Tuner page) - circular
+<PrimaryButton
   onPress={handleToggle}
   icon={isActive
-    ? <MicOff size={28} color={Colors.softWhite} strokeWidth={2.5} />
-    : <Mic size={28} color={Colors.softWhite} strokeWidth={2.5} />
+    ? <MicOff size={32} color="#FFFFFF" strokeWidth={2.5} />
+    : <Mic size={32} color="#FFFFFF" strokeWidth={2.5} />
   }
   variant={isActive ? 'secondary' : 'primary'}
-  disabled={permissionStatus === 'denied'}
+  size="circle"
+  accessibilityLabel={isActive ? 'Stop tuner' : 'Start tuner'}
+/>
+
+// Record button (Idea Bank) - circular with state
+<PrimaryButton
+  onPress={handleRecord}
+  icon={<Circle size={28} color="#FFFFFF" fill="#FFFFFF" />}
+  variant="primary"
+  size="circle"
+  accessibilityLabel="Record"
+/>
+
+// Enable Mic button - standard with icon
+<PrimaryButton
+  onPress={requestPermission}
+  icon={<Mic size={24} color="#FFFFFF" />}
+  label="ENABLE MIC"
+  variant="primary"
+  accessibilityLabel="Enable microphone"
 />
 ```
 
 **Visual Behavior**:
-- 64x64px circular button with white border ring
-- Primary variant: vermilion background
-- Secondary variant: graphite background
-- Drop shadow for depth
-- Disabled state: 50% opacity
+- `standard`: Pill button with padding (24px horizontal, 16px vertical), 32px border radius
+- `compact`: Smaller pill (16px horizontal, 12px vertical), 24px border radius
+- `circle`: 72x72px circular button, 36px border radius
+- Variants: `primary` (vermilion), `secondary` (graphite), `success` (moss)
+- Disabled/loading state: 50% opacity
+- Built-in haptic feedback (Medium impact)
 
-**Audio Feedback**: Haptic + sound feedback on press (`useFABSound` hook)
+**Why PrimaryButton over FAB**: FAB used complex styling (shadows, borders, transforms) that rendered incorrectly on iOS native builds. PrimaryButton uses basic TouchableOpacity with solid colors for reliable cross-platform rendering.
+
+---
+
+### FAB (Floating Action Button) - DEPRECATED
+
+> ⚠️ **DEPRECATED**: Use `PrimaryButton` instead. FAB has rendering issues on iOS native builds.
+
+**Location**: `components/ui/FAB.tsx`
+
+**Migration**:
+```typescript
+// OLD (don't use)
+<FAB onPress={...} icon={...} variant="primary" />
+
+// NEW (use this)
+<PrimaryButton onPress={...} icon={...} variant="primary" size="circle" accessibilityLabel="..." />
+```
 
 ---
 

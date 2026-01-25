@@ -143,10 +143,17 @@ export const SpeedSelector: React.FC<SpeedSelectorProps> = ({
               exiting={direction > 0 ? ExitToLeft : ExitToRight}
               style={styles.textWrapper}
             >
-              <Text style={[styles.valueText, compact && styles.valueTextCompact]}>
+              <Text
+                style={[styles.valueText, compact && styles.valueTextCompact]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
                 {currentOption.label}
               </Text>
-              <Text style={[styles.multiplierText, compact && styles.multiplierTextCompact]}>
+              <Text
+                style={[styles.multiplierText, compact && styles.multiplierTextCompact]}
+                numberOfLines={1}
+              >
                 {currentOption.multiplier}
               </Text>
             </Animated.View>

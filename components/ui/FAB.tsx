@@ -18,7 +18,6 @@ import React from 'react';
 import { Pressable, StyleSheet, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { SHADOWS } from '@/constants/Styles';
 
 interface FABProps {
   /** Press handler */
@@ -82,16 +81,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.vermilion,
     justifyContent: 'center',
     alignItems: 'center',
-    // Elevation/Shadow
-    ...SHADOWS.fab,
-    // Subtle bevel effect (iOS-compatible - no solid white border)
-    borderWidth: 2,
-    borderTopColor: 'rgba(255,255,255,0.4)',
-    borderLeftColor: 'rgba(255,255,255,0.3)',
-    borderRightColor: 'rgba(0,0,0,0.15)',
-    borderBottomColor: 'rgba(0,0,0,0.25)',
-    // Ensure solid background renders on iOS
     overflow: 'hidden',
+    // Simple shadow only - no directional borders for iOS compatibility
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
   },
   fabSecondary: {
     backgroundColor: Colors.graphite,

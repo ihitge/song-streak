@@ -12,10 +12,9 @@
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Mic, MicOff, Volume2 } from 'lucide-react-native';
-import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { ICON_SIZES } from '@/constants/Styles';
-import { FAB } from '@/components/ui/FAB';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MicrophonePermissionPrompt } from '@/components/ui/MicrophonePermissionPrompt';
 import type { TunerStatus } from '@/types/tuner';
 
@@ -48,9 +47,7 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
   const isActive = status !== 'idle';
   const isInitializing = status === 'initializing';
 
-  const handleToggle = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
+  const handleToggle = useCallback(() => {
     if (isActive) {
       onStop();
     } else {
@@ -132,30 +129,23 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
         <Text style={styles.signalLabel}>SIGNAL</Text>
       </View>
 
-      {/* Primary Start/Stop Button - FAB style */}
-      <FAB
+      {/* Primary Start/Stop Button */}
+      <PrimaryButton
         onPress={handleToggle}
         icon={
           isInitializing ? (
-            <ActivityIndicator size="small" color={Colors.softWhite} />
+            <ActivityIndicator size="small" color="#FFFFFF" />
           ) : isActive ? (
-            <MicOff size={ICON_SIZES.hero} color={Colors.softWhite} strokeWidth={2.5} />
+            <MicOff size={ICON_SIZES.hero} color="#FFFFFF" strokeWidth={2.5} />
           ) : (
-            <Mic
-              size={ICON_SIZES.hero}
-              color={Colors.softWhite}
-              strokeWidth={2.5}
-            />
+            <Mic size={ICON_SIZES.hero} color="#FFFFFF" strokeWidth={2.5} />
           )
         }
         variant={isActive ? 'secondary' : 'primary'}
+        size="circle"
         disabled={isInitializing}
         accessibilityLabel={getButtonLabel()}
-        accessibilityHint={
-          isActive
-            ? 'Tap to stop tuning'
-            : 'Tap to start tuning'
-        }
+        accessibilityHint={isActive ? 'Tap to stop tuning' : 'Tap to start tuning'}
       />
 
       {/* Button label */}

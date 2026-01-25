@@ -11,6 +11,10 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Platform } from 'react-native';
+import {
+  requestRecordingPermissionsAsync,
+  getRecordingPermissionsAsync,
+} from 'expo-audio';
 
 type PermissionStatus = 'undetermined' | 'granted' | 'denied';
 
@@ -36,16 +40,35 @@ export function MicrophonePermissionProvider({ children }: MicrophonePermissionP
 
   /**
    * Check current permission status without prompting
-   * Uses the Permissions API where available
+   * Uses expo-audio for native, Permissions API for web
    */
   const checkPermission = useCallback(async (): Promise<PermissionStatus> => {
+    // Native iOS/Android - use expo-audio
     if (Platform.OS !== 'web') {
-      // TODO: Implement native permission check using expo-av or similar
-      return 'undetermined';
+      try {
+        const { status, granted, canAskAgain } = await getRecordingPermissionsAsync();
+        console.log('[MicrophonePermission] Native check:', { status, granted, canAskAgain });
+
+        if (granted) {
+          setPermissionStatus('granted');
+          return 'granted';
+        } else if (!canAskAgain) {
+          // User denied and selected "Don't ask again"
+          setPermissionStatus('denied');
+          return 'denied';
+        } else {
+          // Permission not yet requested
+          setPermissionStatus('undetermined');
+          return 'undetermined';
+        }
+      } catch (err) {
+        console.error('[MicrophonePermission] Native check failed:', err);
+        return 'undetermined';
+      }
     }
 
+    // Web - use Permissions API
     try {
-      // Use Permissions API to check without prompting
       if (navigator.permissions && navigator.permissions.query) {
         const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
 
@@ -73,13 +96,31 @@ export function MicrophonePermissionProvider({ children }: MicrophonePermissionP
    * This will prompt the user if they haven't decided yet
    */
   const requestPermission = useCallback(async (): Promise<boolean> => {
+    // Native iOS/Android - use expo-audio
     if (Platform.OS !== 'web') {
-      // TODO: Implement native permission request
-      console.warn('[MicrophonePermission] Native not yet implemented');
-      setPermissionStatus('denied');
-      return false;
+      try {
+        console.log('[MicrophonePermission] Requesting native permission...');
+        const { status, granted, canAskAgain } = await requestRecordingPermissionsAsync();
+        console.log('[MicrophonePermission] Native request result:', { status, granted, canAskAgain });
+
+        if (granted) {
+          setPermissionStatus('granted');
+          console.log('[MicrophonePermission] Native permission granted');
+          return true;
+        } else {
+          // User denied - set denied status
+          setPermissionStatus('denied');
+          console.log('[MicrophonePermission] Native permission denied');
+          return false;
+        }
+      } catch (err) {
+        console.error('[MicrophonePermission] Native request failed:', err);
+        setPermissionStatus('denied');
+        return false;
+      }
     }
 
+    // Web - use getUserMedia
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
         console.error('[MicrophonePermission] getUserMedia not supported');

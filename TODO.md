@@ -327,6 +327,42 @@ The `/ralph-loop` skill is available for iterative, self-referential development
 
 ---
 
+## EAS Update (OTA) Now Configured ✅
+
+**Added**: January 25, 2026
+
+**CRITICAL**: Use `eas update` (FREE) instead of `eas build` (EXPENSIVE) for JS-only changes!
+
+| Change Type | Command | Cost |
+|-------------|---------|------|
+| JS/TS code, styling, assets | `eas update --channel preview --message "..."` | **FREE** |
+| Native changes only | `eas build --platform ios --profile preview` | Uses credits |
+
+**Skill Available**: `/eas-deploy` - Analyzes changes and chooses optimal deployment method.
+
+**Documentation**: `~/.claude/skills/eas-deploy/SKILL.md`
+
+---
+
+## PrimaryButton Component Added ✅
+
+**Added**: January 25, 2026
+
+Replaced FAB component with new `PrimaryButton` for reliable cross-platform rendering (especially iOS native builds).
+
+**Location**: `components/ui/PrimaryButton.tsx`
+
+**Usage**:
+- ADD SONG button (Songs page)
+- START/STOP button (Tuner page)
+- RECORD button (Idea Bank)
+- ENABLE MIC button (Permission prompts)
+- Play/Pause button (Metronome)
+
+**Note**: FAB component is now deprecated. Use PrimaryButton with `size="circle"` for circular buttons.
+
+---
+
 ## Browser Testing Now Available ✅
 
 **Updated**: December 18, 2025

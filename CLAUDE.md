@@ -321,7 +321,54 @@ Claude can now perform **full automated browser testing** for this project. This
 
 ---
 
-## EAS Builds & Environment Variables
+## EAS Deployment (CRITICAL - Read Before Deploying)
+
+### ⚠️ STOP! Use `/eas-deploy` Skill
+
+**Before running ANY deployment command, use the `/eas-deploy` skill** which guides you through the optimal deployment method.
+
+### Build vs Update - Cost Comparison
+
+| Method | Command | Cost | Time | Use For |
+|--------|---------|------|------|---------|
+| **EAS Update** | `eas update` | **FREE** | ~30 sec | JS/TS code, styling, assets |
+| **EAS Build** | `eas build` | **EXPENSIVE** (uses credits) | 5-10 min | Native changes only |
+
+### When to Use Each
+
+**✅ Use `eas update` (FREE) for:**
+- Bug fixes in JS/TS code
+- UI/styling changes
+- Component updates
+- New features written in JS
+- Asset changes (images already bundled)
+
+**⚠️ Use `eas build` (EXPENSIVE) only for:**
+- Adding/removing native packages
+- Changing `app.json` iOS/Android config (permissions, bundleId, etc.)
+- Updating Expo SDK version
+- Adding new Expo plugins
+- First build after `expo-updates` configuration
+
+### Quick Commands
+
+```bash
+# For JS-only changes (FREE - use this 90% of the time)
+eas update --channel preview --message "Fix button styling"
+
+# For production OTA update (FREE)
+eas update --channel production --message "Bug fix release"
+
+# For native changes ONLY (EXPENSIVE - confirm first!)
+eas build --platform ios --profile preview
+```
+
+### How OTA Updates Work
+
+1. You push an update with `eas update`
+2. Users' devices download the update in the background
+3. Update applies on next app restart
+4. No App Store review needed!
 
 ### Environment Variable Architecture
 
@@ -336,7 +383,7 @@ Claude can now perform **full automated browser testing** for this project. This
 - **`utils/supabase/client.ts`** - Reads config with fallback pattern
 - **`eas.json`** - Build profiles (development, preview, production)
 
-### EAS Commands
+### EAS Environment Commands
 
 ```bash
 # List environment variables
@@ -347,12 +394,6 @@ eas env:create --environment preview --name VAR_NAME --value "value" --visibilit
 
 # Delete variable
 eas env:delete --variable-name VAR_NAME
-
-# Build for preview (ad-hoc distribution)
-eas build --platform ios --profile preview
-
-# Build for production (App Store)
-eas build --platform ios --profile production
 ```
 
 ### Required EAS Variables (preview environment)
@@ -364,8 +405,14 @@ eas build --platform ios --profile production
 - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`
 - `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
 
-### Testing EAS Builds
+### Testing Deployments
 
+**For OTA Updates:**
+1. Push update: `eas update --channel preview --message "Description"`
+2. Force close and reopen app on device
+3. Changes should appear immediately
+
+**For Native Builds:**
 1. Build: `eas build --platform ios --profile preview`
 2. Install on registered device (Developer Mode required on iOS 16+)
 3. Check logs for `[Supabase] Config source:` to verify env vars loaded
@@ -377,10 +424,26 @@ eas build --platform ios --profile production
 - Every interaction should feel tactile: visual + haptic feedback.
 - **NEVER use native Alert.alert() - always use useStyledAlert hook.**
 - **Browser testing with Playwright MCP is now available** - use it to verify UI changes with confidence
+- **ALWAYS use `eas update` for JS changes, NOT `eas build`** - save build credits!
 
 ---
 
 ## Available Skills
+
+### `/eas-deploy` - Smart Expo Deployment (CRITICAL)
+
+**Use this skill before ANY deployment.** It analyzes your changes and chooses the optimal method to save build credits.
+
+```bash
+/eas-deploy
+```
+
+**What it does:**
+1. Detects if changes are JS-only → uses `eas update` (FREE)
+2. Detects native changes → uses `eas build` (warns about cost)
+3. Handles channel selection and versioning
+
+**Full documentation:** `~/.claude/skills/eas-deploy/SKILL.md`
 
 ### `/ralph-loop` - Iterative Development Loop
 

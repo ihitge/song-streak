@@ -4,7 +4,7 @@ import { Play, Pause, RotateCcw, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { SHADOWS, BEVELS } from '@/constants/Styles';
-import { FAB } from '@/components/ui/FAB';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 
 interface TransportControlsProps {
   isPlaying: boolean;
@@ -35,8 +35,7 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   /**
    * Handle play/pause button press
    */
-  const handlePlayPause = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const handlePlayPause = useCallback(() => {
     onPlayPause();
   }, [onPlayPause]);
 
@@ -73,13 +72,15 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Play/Pause button (FAB) */}
-      <FAB
+      {/* Play/Pause button */}
+      <PrimaryButton
         onPress={handlePlayPause}
         icon={isPlaying
-          ? <Pause size={32} color={Colors.softWhite} />
-          : <Play size={32} color={Colors.softWhite} style={{ marginLeft: 4 }} />
+          ? <Pause size={32} color="#FFFFFF" />
+          : <Play size={32} color="#FFFFFF" style={{ marginLeft: 4 }} />
         }
+        variant={isPlaying ? 'secondary' : 'primary'}
+        size="circle"
         accessibilityLabel={isPlaying ? 'Pause metronome' : 'Play metronome'}
         accessibilityHint={isPlaying ? 'Stops the metronome' : 'Starts the metronome'}
       />

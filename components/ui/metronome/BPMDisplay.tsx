@@ -2,7 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, PanResponder, Animated } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { Typography } from '@/constants/Styles';
+import { Typography, SHADOWS } from '@/constants/Styles';
 import { BPM_MIN, BPM_MAX } from '@/types/metronome';
 
 interface BPMDisplayProps {
@@ -200,16 +200,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.alloy,
     justifyContent: 'center',
     alignItems: 'center',
-    // Bevel effect
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.5)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.15)',
-    shadowColor: Colors.ink,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    overflow: 'hidden',  // Required for iOS circular border rendering
+    // Simple shadow - no directional borders
+    ...SHADOWS.button,
   },
   adjustButtonCompact: {
     width: 44,  // Keep minimum touch target even in compact mode

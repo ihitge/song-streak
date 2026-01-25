@@ -6,6 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
 import { SHADOWS, BEVELS, ICON_SIZES, TOUCH_TARGETS } from '@/constants/Styles';
 import { Plus, Music, Clock, Trash2, Edit2 } from 'lucide-react-native';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { LibraryHeader } from '@/components/ui/LibraryHeader';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DeviceCasing } from '@/components/ui/DeviceCasing';
@@ -331,23 +332,15 @@ export default function SetListScreen() {
 
         {/* Hero Action Button - centered at bottom */}
         <View style={styles.fabContainer}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.addSongButton,
-              pressed && styles.addSongButtonPressed,
-            ]}
-            onPress={async () => {
-              await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push('/add-song');
-            }}
+          <PrimaryButton
+            onPress={() => router.push('/add-song')}
+            icon={<Plus size={ICON_SIZES.lg} color="#FFFFFF" strokeWidth={2.5} />}
+            label="ADD SONG"
+            variant="primary"
+            size="standard"
             accessibilityLabel="Add new song"
-            accessibilityRole="button"
             accessibilityHint="Opens the add song screen"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Plus size={ICON_SIZES.lg} color={Colors.softWhite} strokeWidth={2.5} />
-            <Text style={styles.addSongButtonText} maxFontSizeMultiplier={1.2}>ADD SONG</Text>
-          </Pressable>
+          />
         </View>
       </DeviceCasing>
     </View>
@@ -474,41 +467,6 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     zIndex: 100,
-  },
-  addSongButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.vermilion,
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    minHeight: TOUCH_TARGETS.comfortable,
-    borderRadius: 32,
-    gap: 10,
-    // Bevel effect - use subtle border that doesn't wash out on iOS
-    borderWidth: 2,
-    borderTopColor: 'rgba(255,255,255,0.4)',
-    borderLeftColor: 'rgba(255,255,255,0.3)',
-    borderRightColor: 'rgba(0,0,0,0.1)',
-    borderBottomColor: 'rgba(0,0,0,0.2)',
-    // Shadow
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
-    // Ensure solid background on iOS
-    overflow: 'hidden',
-  },
-  addSongButtonPressed: {
-    transform: [{ scale: 0.96 }],
-    opacity: 0.9,
-  },
-  addSongButtonText: {
-    fontFamily: 'LexendDecaBold',
-    fontSize: 14,
-    letterSpacing: 2,
-    color: Colors.softWhite,
   },
 
   // --- Empty State ---
