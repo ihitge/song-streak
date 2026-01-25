@@ -31,7 +31,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.songstreak.app",
-      buildNumber: "25",
+      buildNumber: "26",
       usesAppleSignIn: true,
       /**
        * Privacy Manifest (iOS 17+ requirement)
