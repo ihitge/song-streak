@@ -22,6 +22,10 @@ interface MetronomeBPMDisplayProps {
   bpm: number;
   /** Callback when BPM changes */
   onBpmChange: (bpm: number) => void;
+  /** Callback when tap tempo is triggered */
+  onTap: () => void;
+  /** Current tap count during tap tempo session */
+  tapCount: number;
   /** Whether the control is disabled */
   disabled?: boolean;
 }
@@ -29,6 +33,8 @@ interface MetronomeBPMDisplayProps {
 export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
   bpm,
   onBpmChange,
+  onTap,
+  tapCount,
   disabled = false,
 }: MetronomeBPMDisplayProps) {
   const prefersReducedMotion = useReducedMotion();
@@ -41,6 +47,19 @@ export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
       Math.min(METRONOME_CONFIG.bpmMax, bpm + delta)
     );
     onBpmChange(newBpm);
+  };
+
+  const handleTap = async () => {
+    if (disabled) return;
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onTap();
+  };
+
+  // Get hint text based on tap count
+  const getHintText = () => {
+    if (tapCount === 0) return 'Tap to set tempo';
+    if (tapCount === 1) return '1 tap';
+    return `${tapCount} taps`;
   };
 
   return (
@@ -66,8 +85,15 @@ export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
           <Minus size={16} color={Colors.softWhite} strokeWidth={2.5} />
         </Pressable>
 
-        {/* BPM Display - CSS version */}
-        <View style={styles.displayContainer}>
+        {/* BPM Display - CSS version - Tappable for tap tempo */}
+        <Pressable
+          style={styles.displayContainer}
+          onPress={handleTap}
+          disabled={disabled}
+          accessibilityLabel="Tap to set tempo"
+          accessibilityRole="button"
+          accessibilityHint={`Current tempo is ${bpm} BPM. Tap multiple times to set a new tempo.`}
+        >
           {/* Glass overlay gradient */}
           <View style={styles.glassOverlay} />
 
@@ -83,7 +109,7 @@ export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
             </Animated.Text>
             <Text style={styles.bpmUnit}>BPM</Text>
           </View>
-        </View>
+        </Pressable>
 
         {/* Increment Button */}
         <Pressable
@@ -102,6 +128,11 @@ export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
           <Plus size={16} color={Colors.softWhite} strokeWidth={2.5} />
         </Pressable>
       </View>
+
+      {/* Tap hint text */}
+      <Text style={[styles.tapHint, tapCount > 0 && styles.tapHintActive]}>
+        {getHintText()}
+      </Text>
     </View>
   );
 });
@@ -177,6 +208,17 @@ const styles = StyleSheet.create({
     color: Colors.graphite,
     letterSpacing: 2,
     marginTop: -2,
+  },
+  tapHint: {
+    fontSize: 10,
+    fontFamily: 'LexendDecaRegular',
+    color: Colors.graphite,
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  tapHintActive: {
+    color: Colors.vermilion,
+    fontFamily: 'LexendDecaSemiBold',
   },
 });
 
