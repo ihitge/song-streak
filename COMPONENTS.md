@@ -83,9 +83,8 @@
 | `ShareToBandModal` | **Modal for sharing memos to bands** | `components/ui/modals/ShareToBandModal.tsx` |
 | `MicrophonePermissionPrompt` | **Reusable mic permission UI (request + settings redirect)** | `components/ui/MicrophonePermissionPrompt.tsx` |
 | `MetronomePendulum` | **Animated pendulum with beat indicators** | `components/ui/metronome/MetronomePendulum.tsx` |
-| `MetronomeControls` | **BPM display, tap tempo, start/stop controls** | `components/ui/metronome/MetronomeControls.tsx` |
-| `MetronomeBPMDisplay` | **Digital BPM display with +/- buttons** | `components/ui/metronome/MetronomeBPMDisplay.tsx` |
-| `MetronomeTapButton` | **Large tap tempo button (80pt touch target)** | `components/ui/metronome/MetronomeTapButton.tsx` |
+| `MetronomeControls` | **BPM display with integrated tap tempo, start/stop** | `components/ui/metronome/MetronomeControls.tsx` |
+| `MetronomeBPMDisplay` | **Digital BPM display with +/- buttons and tap tempo** | `components/ui/metronome/MetronomeBPMDisplay.tsx` |
 | `SkeletonBase` | **Base shimmer animation for loading states** | `components/ui/skeleton/SkeletonBase.tsx` |
 | `SkeletonText` | **Text placeholder with configurable width/size** | `components/ui/skeleton/SkeletonText.tsx` |
 | `SkeletonBox` | **Rectangular/circular placeholder** | `components/ui/skeleton/SkeletonBox.tsx` |
@@ -2602,23 +2601,24 @@ Combined control panel with BPM display, tap tempo, and start/stop.
 
 ### MetronomeBPMDisplay
 
-Digital BPM display with increment/decrement buttons.
+Digital BPM display with integrated tap tempo functionality.
 
 **Features**:
-- Tap for ±1 BPM, long-press for ±10 BPM
+- Tap the BPM number directly to set tempo via tap tempo
+- +/- buttons for fine adjustment (tap ±1, long-press ±10)
 - Range: 20-300 BPM
 - Animated text transition on change
 - Industrial inset well aesthetic
+- Hint text: "Tap to set tempo" or "{N} taps" during session
 
-### MetronomeTapButton
-
-Large tap tempo button (80pt+ touch target for use while holding instrument).
-
-**Features**:
-- Rolling average of 2-8 taps
-- 2 second timeout resets tap sequence
-- Displays tap count feedback
-- Heavy haptic on tap
+**Props**:
+| Prop | Type | Description |
+|------|------|-------------|
+| `bpm` | `number` | Current BPM value |
+| `onBpmChange` | `(bpm: number) => void` | BPM change callback |
+| `onTap` | `() => void` | Tap tempo callback |
+| `tapCount` | `number` | Current tap count (for hint display) |
+| `disabled` | `boolean` | Disabled state |
 
 ### useMetronome Hook
 
