@@ -19,8 +19,8 @@ import { METRONOME_CONFIG } from '@/constants/MetronomeConfig';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Minus, Plus } from 'lucide-react-native';
 
-const DISPLAY_HEIGHT = 100;
-const BUTTON_SIZE = 48;
+const DISPLAY_HEIGHT = 60;
+const BUTTON_SIZE = 32;
 
 interface MetronomeBPMDisplayProps {
   /** Current BPM value */
@@ -73,7 +73,7 @@ export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
           accessibilityRole="button"
           accessibilityHint="Tap to decrease by 1, hold for 10"
         >
-          <Minus size={20} color={Colors.softWhite} strokeWidth={2.5} />
+          <Minus size={16} color={Colors.softWhite} strokeWidth={2.5} />
         </Pressable>
 
         {/* BPM Display */}
@@ -130,7 +130,7 @@ export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
           accessibilityRole="button"
           accessibilityHint="Tap to increase by 1, hold for 10"
         >
-          <Plus size={20} color={Colors.softWhite} strokeWidth={2.5} />
+          <Plus size={16} color={Colors.softWhite} strokeWidth={2.5} />
         </Pressable>
       </View>
     </View>
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 8,
   },
   button: {
     width: BUTTON_SIZE,
@@ -196,20 +196,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bpmValue: {
-    fontSize: 48,
+    fontSize: 28,
     fontFamily: 'LexendDecaBold',
     color: Colors.softWhite,
-    letterSpacing: 2,
+    letterSpacing: 1,
     textShadowColor: 'rgba(238, 108, 77, 0.5)',
     textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 10,
+    textShadowRadius: 6,
   },
   bpmUnit: {
-    fontSize: 12,
+    fontSize: 9,
     fontFamily: 'LexendDecaSemiBold',
     color: Colors.graphite,
-    letterSpacing: 3,
-    marginTop: -4,
+    letterSpacing: 2,
+    marginTop: -2,
   },
 });
 
