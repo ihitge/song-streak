@@ -109,7 +109,8 @@ export const MetronomeBPMDisplay = memo(function MetronomeBPMDisplay({
 const styles = StyleSheet.create({
   container: {
     gap: 8,
-    width: '100%',
+    width: '50%',
+    alignSelf: 'center',
   },
   label: {
     fontSize: 10,
