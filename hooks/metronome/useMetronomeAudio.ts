@@ -29,13 +29,18 @@ import type { UseMetronomeAudioReturn } from '@/types/metronome';
 // Conditionally import react-native-audio-api for native platforms
 let NativeAudioContext: any;
 let NativeAudioManager: any;
+let audioApiLoadError: string | null = null;
 
 if (Platform.OS !== 'web') {
   try {
     const audioApi = require('react-native-audio-api');
     NativeAudioContext = audioApi.AudioContext;
     NativeAudioManager = audioApi.AudioManager;
+    console.log('[MetronomeAudio] react-native-audio-api loaded successfully');
+    console.log('[MetronomeAudio] AudioContext available:', !!NativeAudioContext);
+    console.log('[MetronomeAudio] AudioManager available:', !!NativeAudioManager);
   } catch (e) {
+    audioApiLoadError = e instanceof Error ? e.message : 'Unknown error loading audio API';
     console.warn('[MetronomeAudio] Failed to load react-native-audio-api:', e);
   }
 }
@@ -113,7 +118,11 @@ export function useMetronomeAudio(): UseMetronomeAudioReturn {
         });
       } else {
         if (!NativeAudioContext) {
-          throw new Error('react-native-audio-api not available');
+          throw new Error(
+            audioApiLoadError
+              ? `react-native-audio-api failed to load: ${audioApiLoadError}`
+              : 'react-native-audio-api not available - ensure you are using a development build, not Expo Go'
+          );
         }
 
         // Configure iOS audio session for mixing with other audio
