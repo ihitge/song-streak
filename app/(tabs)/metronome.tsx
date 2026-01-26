@@ -5,7 +5,7 @@
  * Features:
  * - Tempo control (20-300 BPM)
  * - Tap tempo
- * - Visual pendulum (predictive cue)
+ * - VU meter visualization with beat indicators
  * - Haptic feedback on each beat
  *
  * Uses Web Audio API lookahead scheduling for sample-accurate timing.
@@ -16,7 +16,8 @@ import React, { useEffect } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DeviceCasing } from '@/components/ui/DeviceCasing';
-import { MetronomePendulum, MetronomeControls } from '@/components/ui/metronome';
+import { MetronomeControls } from '@/components/ui/metronome';
+import { VUMeterDisplay } from '@/components/ui/practice/VUMeterDisplay';
 import { useMetronome } from '@/hooks/metronome';
 import { Colors } from '@/constants/Colors';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
@@ -57,13 +58,15 @@ export default function MetronomeScreen() {
           {/* Main content */}
           {metronome.isAudioReady && (
             <>
-              {/* Pendulum Visualization */}
-              <View style={styles.pendulumSection}>
-                <MetronomePendulum
-                  angle={metronome.pendulumAngle}
-                  isPlaying={metronome.isPlaying}
+              {/* VU Meter Visualization */}
+              <View style={styles.meterSection}>
+                <VUMeterDisplay
+                  mode="metronome"
+                  metronomeAngle={metronome.pendulumAngle}
                   currentBeat={metronome.currentBeat}
-                  bpm={metronome.bpm}
+                  isMetronomePlaying={metronome.isPlaying}
+                  showTimeDisplay={false}
+                  embedded
                 />
               </View>
 
@@ -122,9 +125,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: 0.5,
   },
-  pendulumSection: {
+  meterSection: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 16,
   },
   controlsSection: {
     flex: 1,

@@ -12,8 +12,9 @@ import { PivotScrew } from '@/components/ui/PivotScrew';
  * VU Meter mode
  * - 'progress': Shows practice time progress (default)
  * - 'recording': Shows audio level for voice recorder
+ * - 'metronome': Shows beat position for metronome (synced to tempo)
  */
-type VUMeterMode = 'progress' | 'recording';
+type VUMeterMode = 'progress' | 'recording' | 'metronome';
 
 interface VUMeterDisplayProps {
   totalSeconds?: number;              // For progress mode
@@ -29,6 +30,10 @@ interface VUMeterDisplayProps {
   audioLevel?: number;                // 0-1 audio level for recording mode
   isRecording?: boolean;              // Show REC LED in recording mode
   isPlaying?: boolean;                // Show PLAY LED in recording mode
+  // Metronome mode props
+  metronomeAngle?: number;            // -30 to +30 degrees for metronome swing
+  currentBeat?: number;               // 0-3 for beat indicators
+  isMetronomePlaying?: boolean;       // Whether metronome is active
 }
 
 /**
@@ -50,11 +55,21 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
   audioLevel = 0,
   isRecording = false,
   isPlaying = false,
+  // Metronome mode props
+  metronomeAngle = 0,
+  currentBeat = 0,
+  isMetronomePlaying = false,
 }) => {
   const needleRotation = useRef(new Animated.Value(50)).current;
 
   // Calculate target value based on mode
   const targetValue = useMemo(() => {
+    if (mode === 'metronome') {
+      // Map metronomeAngle (-30 to +30) to 0-100 for needle rotation
+      // -30 degrees = 0, 0 degrees = 50, +30 degrees = 100
+      const normalized = (metronomeAngle + 30) / 60; // 0 to 1
+      return normalized * 100;
+    }
     if (mode === 'recording') {
       // Map audioLevel 0-1 to 0-100 for needle rotation
       // Use logarithmic scaling for natural VU meter feel
@@ -68,13 +83,24 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
     }
     // Progress mode: calculate from totalSeconds
     return calculateProgress(totalSeconds);
-  }, [mode, totalSeconds, audioLevel]);
+  }, [mode, totalSeconds, audioLevel, metronomeAngle]);
 
   // Spring animation to target value
   useEffect(() => {
-    const springConfig = mode === 'recording'
-      ? { tension: 100, friction: 12 }  // Responsive for audio level
-      : { tension: 50, friction: 10 };  // Smooth for progress
+    let springConfig;
+    if (mode === 'metronome') {
+      // Very responsive for beat-synced movement - no spring, direct timing
+      Animated.timing(needleRotation, {
+        toValue: targetValue,
+        duration: 16, // Single frame
+        useNativeDriver: false,
+      }).start();
+      return;
+    } else if (mode === 'recording') {
+      springConfig = { tension: 100, friction: 12 };  // Responsive for audio level
+    } else {
+      springConfig = { tension: 50, friction: 10 };  // Smooth for progress
+    }
 
     Animated.spring(needleRotation, {
       toValue: targetValue,
@@ -149,7 +175,23 @@ export const VUMeterDisplay: React.FC<VUMeterDisplayProps> = ({
         showGlassOverlay
       >
         {/* Scale markings with labels at top and LEDs below (matches TunerVUMeter) */}
-        {mode === 'recording' ? (
+        {mode === 'metronome' ? (
+          // Metronome mode: 4 beat indicator LEDs
+          <View style={styles.metronomeScaleMarkings}>
+            {[0, 1, 2, 3].map((beat) => (
+              <View key={beat} style={styles.metronomeBeatContainer}>
+                <Text style={[styles.markerLabel, compact && styles.markerLabelCompact]}>
+                  {beat + 1}
+                </Text>
+                <LEDIndicator
+                  size={compact ? 14 : 18}
+                  isActive={isMetronomePlaying && currentBeat === beat}
+                  color={beat === 0 ? Colors.vermilion : Colors.moss}
+                />
+              </View>
+            ))}
+          </View>
+        ) : mode === 'recording' ? (
           // Recording mode: absolute positioning to ensure -10 aligns with needle base
           <View style={styles.recordingScaleMarkings}>
             {recordingMarkers.map((marker) => (
@@ -326,6 +368,20 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     height: 40,
+  },
+  // Metronome mode: 4 beat indicators evenly spaced
+  metronomeScaleMarkings: {
+    position: 'absolute',
+    top: 12,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 24,
+  },
+  metronomeBeatContainer: {
+    alignItems: 'center',
+    gap: 4,
   },
   markerContainer: {
     alignItems: 'center',
