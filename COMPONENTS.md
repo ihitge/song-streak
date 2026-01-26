@@ -30,10 +30,6 @@
 | `VideoPlayerModal` | YouTube video player modal | `components/ui/VideoPlayerModal.tsx` |
 | `BandCard` | Band display card with expandable setlists | `components/ui/bands/BandCard.tsx` |
 | `SetlistCard` | Setlist display card | `components/ui/bands/SetlistCard.tsx` |
-| `BPMDisplay` | Tappable BPM display with tap tempo | `components/ui/metronome/BPMDisplay.tsx` |
-| `MetronomeControls` | Time signature and subdivision controls | `components/ui/metronome/MetronomeControls.tsx` |
-| `MetronomePanel` | **Composite: VU meter + BPM + session timer** | `components/ui/metronome/MetronomePanel.tsx` |
-| `TransportControls` | Play/pause/reset/log buttons for metronome | `components/ui/metronome/TransportControls.tsx` |
 | `TunerMeter` | Visual meter showing pitch deviation (-50 to +50 cents) | `components/ui/tuner/TunerMeter.tsx` |
 | `TunerNoteDisplay` | Note display with frequency, deviation, and guidance | `components/ui/tuner/TunerNoteDisplay.tsx` |
 | `TunerStringSelector` | Row of guitar/bass string buttons with LED indicators | `components/ui/tuner/TunerStringSelector.tsx` |
@@ -115,8 +111,6 @@
 | `useSetlists` | Setlist management for bands | `hooks/useSetlists.ts` |
 | `usePracticeData` | Practice session tracking and achievements | `hooks/usePracticeData.ts` |
 | `useSearch` | Debounced search with relevance scoring | `hooks/useSearch.ts` |
-| `useMetronome` | Core metronome logic with drift-corrected timing + pendulum sync | `hooks/useMetronome.ts` |
-| `useMetronomeSound` | Sound pool for metronome (click, snare, bass, hihat) | `hooks/useMetronomeSound.ts` |
 | `usePracticePlayer` | **Audio playback with speed control (pitch preserved)** | `hooks/usePracticePlayer.ts` |
 | `useTunerMachine` | **Guitar tuner state machine with pitch detection** | `hooks/tuner/useTunerMachine.ts` |
 | `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | `hooks/tuner/usePitchDetection.ts` |
@@ -431,7 +425,7 @@ interface FrequencyTunerProps<T extends string> {
 
 **Visual Behavior**:
 - **Height**: Reduced to 38px.
-- Dark window with scale markings (or light variant for metronome)
+- Dark window with scale markings (light variant available)
 - "Glass" reflection overlay with optional enhanced effects
 - Orange hairline indicator
 - **Label**: Left-aligned, warmGray by default (use `labelColor` for custom color)
@@ -440,7 +434,7 @@ interface FrequencyTunerProps<T extends string> {
 
 **Variant Support**:
 - `dark`: Dark background (#2a2a2a), light text - default for most uses
-- `light`: Light background (softWhite), charcoal text - used in metronome
+- `light`: Light background (softWhite), charcoal text - used in VU meters
 
 ---
 
@@ -993,13 +987,12 @@ useEffect(() => {
 
 ---
 
-## Metronome Components
+## VU Meter Components
 
 ### VUMeterDisplay (Multi-Mode)
 
-The `VUMeterDisplay` supports three modes:
+The `VUMeterDisplay` supports two modes:
 - **Progress mode** (default): Shows total practice time with static needle position
-- **Metronome mode**: Shows continuous pendulum swing (Wittner mechanical metronome style)
 - **Recording mode**: Shows audio level for voice recorder with dB scale
 
 **Props**:
@@ -1007,34 +1000,17 @@ The `VUMeterDisplay` supports three modes:
 interface VUMeterDisplayProps {
   totalSeconds?: number;              // For progress mode
   compact?: boolean;
-  mode?: 'progress' | 'metronome' | 'recording';  // Default: 'progress'
-  beatPosition?: number;              // 0 (left) to 1 (right) - legacy, now uses RAF animation
-  isMetronomePlaying?: boolean;       // For LED beat effects & pendulum animation
-  currentBeat?: number;               // Current beat (1-indexed)
-  beatsPerMeasure?: number;           // Beats in measure
-  sessionSeconds?: number;            // Session time display
+  mode?: 'progress' | 'recording';    // Default: 'progress'
   sessionLabel?: string;              // Custom label
   showTimeDisplay?: boolean;          // Show embedded time (default: true)
   headerContent?: React.ReactNode;    // Content at top of housing
   children?: React.ReactNode;         // Content at bottom of housing
-  // Pendulum animation props (metronome mode)
-  bpm?: number;                       // BPM for calculating swing period
-  metronomeStartTime?: number;        // Timestamp when metronome started (for phase sync)
   // Recording mode props
   audioLevel?: number;                // 0-1 audio level
   isRecording?: boolean;              // Show REC LED
   isPlaying?: boolean;                // Show PLAY LED
 }
 ```
-
-**Metronome Mode - Pendulum Animation (Jan 7, 2026)**:
-- **True pendulum swing**: Continuous 60fps animation via `requestAnimationFrame`
-- **Formula**: `position = -cos(2π × t / beatPeriod)` for smooth sine wave motion
-- **Click timing**: Left extreme only (Wittner mechanical style - one full swing per beat)
-- **Decoupled from state**: Animation runs independently of React state updates for smoothness
-- **Phase sync**: Uses `metronomeStartTime` prop to stay synchronized with audio
-- **Beat counter**: LEDs light up independently based on `currentBeat` prop
-- **Visual separator**: Subtle line between beat counter and pendulum area
 
 **Recording Mode Specifics**:
 - Labels: `-40`, `-25`, `-10`, `-2`, `+3` (dB scale)
@@ -1043,99 +1019,9 @@ interface VUMeterDisplayProps {
 - LED colors: green for 0dB+, vermilion for negative dB
 - Direction labels: "LOW" (left) and "PEAK" (right)
 
-**Visual Updates (Jan 7, 2026)**:
-- **Deeper meter face**: Height increased (112→140px full, 80→100px compact)
-- **Visual separator**: Subtle line between beat counter and pendulum area
-- **Pendulum area**: More vertical space for smooth pendulum arc
-
 **Visual Updates (Dec 15, 2025)**:
 - **LED Indicators**: Uses the new `LEDIndicator` Skia primitive (16px size) with realistic bloom.
-  - **Downbeat**: Vermilion glow.
-  - **Other Beats**: Moss green glow.
 - **Meter Face**: Uses `InsetWindow` (light variant) for a recessed glass look.
-- **Typography**: Beat numbers (1, 2, 3, 4) increased to 24px for better readability.
-
-**Note**: The `children` prop allows embedding content (like BPM display) inside the VU meter housing. `MetronomePanel` uses this to embed the BPM controls inside the meter housing.
-
-### MetronomePanel (Composite Component)
-
-**Purpose**: Composite component combining VU meter (with embedded BPM and transport controls) and session timer (tape counter) into a reusable panel.
-
-**Location**: `components/ui/metronome/MetronomePanel.tsx`
-
-**Props**:
-```typescript
-interface MetronomePanelProps {
-  // Metronome state (from useMetronome)
-  beatPosition: number;
-  isMetronomePlaying: boolean;
-  currentBeat: number;
-  beatsPerMeasure: number;
-  metronomeStartTime: number;          // For pendulum animation sync (Jan 7, 2026)
-
-  // Time signature
-  timeSignature: string;
-  onTimeSignatureChange: (ts: string) => void;
-
-  // Sound type (click, snare, bass, hihat)
-  soundType: MetronomeSoundType;
-  onSoundTypeChange: (type: MetronomeSoundType) => void;
-
-  // Subdivision
-  subdivision: Subdivision;
-  onSubdivisionChange: (sub: Subdivision) => void;
-
-  // BPM controls
-  bpm: number;
-  onBpmChange: (bpm: number) => void;
-  onTapTempo: () => number | null;
-
-  // Transport controls
-  onPlayPause: () => void;
-  onReset: () => void;
-  onComplete?: (seconds: number) => void;
-  showComplete?: boolean;
-
-  // Timer
-  sessionSeconds: number;
-
-  // Options
-  compact?: boolean;
-}
-```
-
-**Layout** (top to bottom inside housing):
-1. Header row: TIME (FrequencyTuner) | SOUND (FrequencyTuner) | SUB (FrequencyTuner)
-2. VU Meter pendulum
-3. BPM Display (tappable with tap tempo)
-4. Transport Controls (play/pause, reset, complete)
-5. Session Timer (RamsTapeCounterDisplay - tape counter style, below housing)
-
-**Usage**:
-```typescript
-import { MetronomePanel } from '@/components/ui/metronome';
-
-<MetronomePanel
-  beatPosition={metronome.beatPosition}
-  isMetronomePlaying={metronome.isPlaying}
-  currentBeat={metronome.currentBeat}
-  beatsPerMeasure={metronome.beatsPerMeasure}
-  timeSignature={metronome.timeSignature}
-  onTimeSignatureChange={metronome.setTimeSignature}
-  soundType={metronome.soundType}
-  onSoundTypeChange={metronome.setSoundType}
-  subdivision={metronome.subdivision}
-  onSubdivisionChange={metronome.setSubdivision}
-  bpm={metronome.bpm}
-  onBpmChange={metronome.setBpm}
-  onTapTempo={metronome.tapTempo}
-  onPlayPause={handlePlayPause}
-  onReset={handleReset}
-  onComplete={handleComplete}
-  showComplete={true}
-  sessionSeconds={sessionSeconds}
-/>
-```
 
 ### RamsTapeCounterDisplay
 
@@ -1157,131 +1043,6 @@ interface RamsTapeCounterDisplayProps {
 - Red separator dots with glow
 - Cylindrical reflection overlay
 - Vintage tape deck aesthetic
-
-### useMetronome Hook
-
-Core metronome logic with drift-corrected timing and sound type support.
-
-**Usage**:
-```typescript
-import { useMetronome } from '@/hooks/useMetronome';
-
-const metronome = useMetronome({
-  initialBpm: 120,
-  initialTimeSignature: '4/4',
-  initialSubdivision: 1,
-  initialSoundType: 'click', // 'click' | 'snare' | 'bass' | 'hihat'
-  onBeat: (beat, isDownbeat) => console.log(`Beat ${beat}`),
-  onStateChange: (isPlaying) => console.log(`Playing: ${isPlaying}`),
-});
-
-// Actions
-metronome.start();
-metronome.stop();
-metronome.toggle();
-metronome.setBpm(140);
-metronome.setTimeSignature('3/4');
-metronome.setSubdivision(2);
-metronome.setSoundType('snare'); // Change sound type
-const bpm = metronome.tapTempo(); // Tap tempo
-
-// State
-console.log(metronome.bpm);           // 120
-console.log(metronome.isPlaying);     // true/false
-console.log(metronome.beatPosition);  // 0 or 1 for VU meter
-console.log(metronome.currentBeat);   // 1-4
-console.log(metronome.soundType);     // 'click' | 'snare' | 'bass' | 'hihat'
-```
-
-### BPMDisplay Component
-
-Large, tappable BPM display with tap tempo and swipe adjustment.
-
-**Props**:
-```typescript
-interface BPMDisplayProps {
-  bpm: number;
-  onBpmChange: (bpm: number) => void;
-  onTapTempo: () => number | null;
-  isPlaying?: boolean;
-  compact?: boolean;
-  readonly?: boolean;  // For song-specific mode
-}
-```
-
-**Features**:
-- Tap to detect tempo (tap tempo)
-- Vertical swipe to adjust BPM
-- +/- buttons for fine adjustment
-- Visual flash on tap
-- Haptic feedback
-
-### MetronomeControls Component
-
-**Purpose**: Combined time signature and subdivision controls. BPM controls are optional (omit when using `MetronomePanel`).
-
-**Props**:
-```typescript
-interface MetronomeControlsProps {
-  // BPM controls (optional - omit when using MetronomePanel)
-  bpm?: number;
-  onBpmChange?: (bpm: number) => void;
-  onTapTempo?: () => number | null;
-
-  // Time signature (required)
-  timeSignature: string;
-  onTimeSignatureChange: (ts: string) => void;
-
-  // Subdivision (required)
-  subdivision: Subdivision;
-  onSubdivisionChange: (sub: Subdivision) => void;
-
-  // State
-  isPlaying?: boolean;
-  compact?: boolean;
-  readonly?: boolean;
-}
-```
-
-**Usage with MetronomePanel** (BPM handled separately):
-```typescript
-<MetronomeControls
-  timeSignature={metronome.timeSignature}
-  onTimeSignatureChange={metronome.setTimeSignature}
-  subdivision={metronome.subdivision}
-  onSubdivisionChange={handleSubdivisionChange}
-/>
-```
-
-**Usage standalone** (includes BPM):
-```typescript
-<MetronomeControls
-  bpm={metronome.bpm}
-  onBpmChange={metronome.setBpm}
-  onTapTempo={metronome.tapTempo}
-  timeSignature={metronome.timeSignature}
-  onTimeSignatureChange={metronome.setTimeSignature}
-  subdivision={metronome.subdivision}
-  onSubdivisionChange={handleSubdivisionChange}
-/>
-```
-
-### TransportControls Component
-
-Play/Pause, Reset, and Complete buttons for metronome.
-
-**Props**:
-```typescript
-interface TransportControlsProps {
-  isPlaying: boolean;
-  onPlayPause: () => void;
-  onReset: () => void;
-  onComplete?: (seconds: number) => void;
-  sessionSeconds: number;
-  compact?: boolean;
-  showComplete?: boolean;
-}
-```
 
 ---
 
@@ -1534,7 +1295,7 @@ colors={[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.
 ```
 
 **Affected components**:
-- MetronomePanel VU meter
+- VUMeterDisplay
 - Voice recorder (Ideas) VU meter
 
 **Why**: Visual consistency across all VU meters. The tuner uses dynamic coloring (green when in tune), so using the same base color creates a unified aesthetic.
@@ -1701,7 +1462,7 @@ colors={[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.
      - `useFABSound.ts`
      - `useRotaryKnobSound.ts`
      - `useChordChartSound.ts`
-   - Migrated `useMetronomeSound.ts` to use `createAudioPlayer` (manual control for sound pooling)
+   - Migrated audio hooks to use `createAudioPlayer` (manual control for sound pooling)
    - Migrated `usePracticePlayer.ts` to use `createAudioPlayer` with polling-based status updates
    - **expo-av removed from package.json** - full migration complete
 
@@ -1797,7 +1558,7 @@ interface TheoryChipGroupProps {
 - Default label color changed from vermilion to warmGray (matches RotaryKnob)
 - Added `labelColor` prop for custom label colors
 - Labels now left-aligned (was centered)
-- Metronome FrequencyTuners (TIME, SOUND, SUBDIVISION) use `labelColor={Colors.vermilion}`
+- FrequencyTuners use `labelColor={Colors.vermilion}` for emphasis
 
 **LibraryHeader**:
 - Removed "FIND" label from search input
@@ -1842,7 +1603,7 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 ## Dec 15, 2025 Changes
 
 ### Layout & Structure
-- **timing.tsx**: Full-width metronome layout, VU meter touches PageHeader, session timer pinned to bottom
+- **(REMOVED)** timing.tsx: Metronome feature removed
 - **TactileNavbar**: Added padding (10px top, 25px bottom) for better spacing
 - **RamsTapeCounterDisplay**: Added `fullWidth` prop with transparent background, no borders
 
@@ -1854,8 +1615,7 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 ### FrequencyTuner Enhancements
 - Added `variant` prop ('dark' | 'light') for theme support
 - Light variant: softWhite background, charcoal text/chevrons, white glass highlight
-- Labels now orange (Colors.vermilion) for metronome
-- Renamed "SUB" label to "SUBDIVISION" in MetronomePanel
+- Labels use orange (Colors.vermilion) for emphasis
 
 ### VUMeterDisplay Updates
 - Uses InsetWindow for meter face (light variant)
@@ -1867,9 +1627,9 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
   - Vermilion glow (12px bloom) for downbeat
   - Moss green glow (10px bloom) for other beats
 
-### MetronomePanel Updates
-- Increased spacing between BPM controls and transport (marginTop: 12 → 28)
-- FrequencyTuners use `variant="light"` for light background
+### Removed Features (Jan 2026)
+- Metronome feature completely removed (timing.tsx, practice.tsx, all metronome hooks and components)
+- VUMeterDisplay simplified to support only 'progress' and 'recording' modes
 
 ### Gradient Tuning
 - Light variant inner shadow: 0.25 → 0.40 (darker bottom)
@@ -1877,13 +1637,6 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 - Scale markings in light FrequencyTuner use Colors.charcoal (matches chevrons)
 
 ### Changes (Dec 16, 2025)
-
-**Metronome Timing Precision Fix**
-- Eliminated 15-45ms latency from sequential async awaits in sound playback
-- Removed setTimeout wrapper that caused 4-16ms jitter per beat
-- Sound playback now uses fire-and-forget pattern: `setPositionAsync(0).then(() => playAsync())`
-- All play functions (`playAccent`, `playTick`, `playSubdivision`, `playDrumBeat`) are now synchronous
-- Drums mode timing is now consistent across all beats including 4→1 transition
 
 **PageHeader Simplification**
 - Removed `subtitle` prop - page titles no longer displayed under logo
@@ -1904,10 +1657,6 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 - Drop shadow for depth: `shadowOffset: {1, 2}`, `shadowOpacity: 0.5`
 - Left edge highlight: `borderLeftWidth: 0.5`, `borderLeftColor: rgba(255,255,255,0.3)`
 
-**MetronomePanel Spacing**
-- Increased gap between FrequencyTuners: 6px → 11px
-- Reduced headerContainer marginBottom: 12px → 8px (compact: 8px → 6px)
-
 **GlassOverlay Component (NEW)**
 - Created reusable Skia-based glass overlay component (`components/ui/GlassOverlay.tsx`)
 - Features: top-to-bottom glare gradient, specular highlight circle, 3D bezel edges
@@ -1915,12 +1664,6 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 - Applied to: Album artwork thumbnails in song cards
 - Applied to: Individual digit wheels in RamsTapeCounterDisplay (not the overall container)
 - Opacity values tuned to 50% for subtle effect (glareOpacity: 0.175, specularOpacity: 0.25)
-
-### Previous Changes (Dec 14, 2025)
-- Added sound type selector (click, snare, bass, hihat) to MetronomePanel
-- Moved subdivision control into MetronomePanel header
-- Fixed metronome sound race condition (load all sounds upfront)
-- Added metronome drum samples: metronome-snare.wav, metronome-kick.wav, metronome-hihat.wav
 
 ---
 
