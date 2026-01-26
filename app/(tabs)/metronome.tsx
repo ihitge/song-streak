@@ -49,7 +49,7 @@ export default function MetronomeScreen() {
           {metronome.audioError && (
             <View style={styles.errorContainer}>
               <Text style={styles.errorText}>
-                Audio unavailable. Please check your device settings.
+                Audio Error: {metronome.audioError}
               </Text>
             </View>
           )}

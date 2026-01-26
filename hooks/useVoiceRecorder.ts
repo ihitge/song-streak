@@ -241,6 +241,11 @@ export function useVoiceRecorder(
   const levelTimerRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
   const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Guard refs to prevent race conditions (iOS record button fix)
+  const isStartingRef = useRef(false);
+  const isStoppingRef = useRef(false);
+  const elapsedSecondsRef = useRef(0);
+
   // Derived state
   const hasRecording = audioBlob !== null;
 
@@ -435,16 +440,21 @@ export function useVoiceRecorder(
         blob: null,
       });
 
-      // Start timer
+      // Start timer - keep ref in sync for stopRecordingNative to use
       timerRef.current = setInterval(() => {
-        setRecording((prev) => {
-          const elapsed = (Date.now() - startTime) / 1000;
-          if (elapsed >= MAX_RECORDING_SECONDS) {
-            stopRecording();
-            return { ...prev, elapsedSeconds: MAX_RECORDING_SECONDS };
-          }
-          return { ...prev, elapsedSeconds: elapsed };
-        });
+        const elapsed = (Date.now() - startTime) / 1000;
+        elapsedSecondsRef.current = elapsed; // Keep ref in sync (fixes stale closure)
+
+        // Check max duration OUTSIDE of setRecording to avoid state batching issues
+        if (elapsed >= MAX_RECORDING_SECONDS) {
+          clearInterval(timerRef.current!);
+          timerRef.current = null;
+          setRecording((prev) => ({ ...prev, elapsedSeconds: MAX_RECORDING_SECONDS }));
+          stopRecording(); // Called outside setState
+          return;
+        }
+
+        setRecording((prev) => ({ ...prev, elapsedSeconds: elapsed }));
       }, 100);
 
       console.log('[VoiceRecorder] Native recording started');
@@ -534,15 +544,21 @@ export function useVoiceRecorder(
         blob: null,
       });
 
+      // Start timer - keep ref in sync
       timerRef.current = setInterval(() => {
-        setRecording((prev) => {
-          const elapsed = (Date.now() - startTime) / 1000;
-          if (elapsed >= MAX_RECORDING_SECONDS) {
-            stopRecording();
-            return { ...prev, elapsedSeconds: MAX_RECORDING_SECONDS };
-          }
-          return { ...prev, elapsedSeconds: elapsed };
-        });
+        const elapsed = (Date.now() - startTime) / 1000;
+        elapsedSecondsRef.current = elapsed; // Keep ref in sync
+
+        // Check max duration OUTSIDE of setRecording
+        if (elapsed >= MAX_RECORDING_SECONDS) {
+          clearInterval(timerRef.current!);
+          timerRef.current = null;
+          setRecording((prev) => ({ ...prev, elapsedSeconds: MAX_RECORDING_SECONDS }));
+          stopRecording();
+          return;
+        }
+
+        setRecording((prev) => ({ ...prev, elapsedSeconds: elapsed }));
       }, 100);
 
       startLevelMonitoringWeb();
@@ -557,19 +573,44 @@ export function useVoiceRecorder(
 
   /**
    * Start recording - platform aware
+   *
+   * Includes guard to prevent double-start race conditions on iOS.
    */
   const startRecording = useCallback(async () => {
-    if (Platform.OS === 'web') {
-      await startRecordingWeb();
-    } else {
-      await startRecordingNative();
+    // Guard against double-start (rapid button presses)
+    if (isStartingRef.current) {
+      console.log('[VoiceRecorder] startRecording blocked - already starting');
+      return;
+    }
+
+    isStartingRef.current = true;
+    console.log('[VoiceRecorder] startRecording called');
+
+    try {
+      // Reset elapsed time ref
+      elapsedSecondsRef.current = 0;
+
+      if (Platform.OS === 'web') {
+        await startRecordingWeb();
+      } else {
+        await startRecordingNative();
+      }
+    } finally {
+      isStartingRef.current = false;
     }
   }, [startRecordingWeb, startRecordingNative]);
 
   /**
    * Stop recording - Native
+   *
+   * IMPORTANT: Uses elapsedSecondsRef instead of recording.elapsedSeconds
+   * to avoid stale closure issues. The callback was being recreated every 100ms
+   * due to the timer updating recording.elapsedSeconds, causing race conditions
+   * where the stop button wouldn't work reliably on iOS.
    */
   const stopRecordingNative = useCallback(() => {
+    console.log('[VoiceRecorder] stopRecordingNative called');
+
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -578,6 +619,7 @@ export function useVoiceRecorder(
     if (nativeRecorderRef.current) {
       try {
         nativeRecorderRef.current.stop();
+        console.log('[VoiceRecorder] Native recorder stopped');
       } catch (e) {
         console.warn('[VoiceRecorder] Error stopping recorder:', e);
       }
@@ -589,7 +631,8 @@ export function useVoiceRecorder(
         nativeSamplesRef.current,
         AUDIO_CONFIG.nativeSampleRate
       );
-      const duration = recording.elapsedSeconds;
+      // Use ref instead of state to avoid stale closure (THE KEY FIX)
+      const duration = elapsedSecondsRef.current;
 
       setAudioBlob(blob);
       setAudioUrl(null); // Native doesn't use URL
@@ -597,7 +640,9 @@ export function useVoiceRecorder(
       setPlayback((prev) => ({ ...prev, duration, currentTime: 0 }));
       onRecordingComplete?.(blob, duration);
 
-      console.log('[VoiceRecorder] Native recording stopped, blob size:', blob.size);
+      console.log('[VoiceRecorder] Native recording stopped, blob size:', blob.size, 'duration:', duration);
+    } else {
+      console.warn('[VoiceRecorder] No samples recorded');
     }
 
     // Deactivate audio session
@@ -606,7 +651,7 @@ export function useVoiceRecorder(
     }
 
     setState('stopped');
-  }, [recording.elapsedSeconds, onRecordingComplete]);
+  }, [onRecordingComplete]); // REMOVED recording.elapsedSeconds dependency!
 
   /**
    * Stop recording - Web
@@ -639,12 +684,32 @@ export function useVoiceRecorder(
 
   /**
    * Stop recording - platform aware
+   *
+   * Includes guard to prevent double-stop race conditions on iOS.
+   * This was a key issue: rapid button presses or stale closures could
+   * call stopRecording multiple times, causing inconsistent state.
    */
   const stopRecording = useCallback(() => {
-    if (Platform.OS === 'web') {
-      stopRecordingWeb();
-    } else {
-      stopRecordingNative();
+    // Guard against double-stop (rapid button presses)
+    if (isStoppingRef.current) {
+      console.log('[VoiceRecorder] stopRecording blocked - already stopping');
+      return;
+    }
+
+    isStoppingRef.current = true;
+    console.log('[VoiceRecorder] stopRecording called');
+
+    try {
+      if (Platform.OS === 'web') {
+        stopRecordingWeb();
+      } else {
+        stopRecordingNative();
+      }
+    } finally {
+      // Reset guard after a small delay to prevent re-entry during state updates
+      setTimeout(() => {
+        isStoppingRef.current = false;
+      }, 100);
     }
   }, [stopRecordingWeb, stopRecordingNative]);
 

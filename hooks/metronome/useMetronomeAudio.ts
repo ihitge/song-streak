@@ -107,9 +107,12 @@ export function useMetronomeAudio(): UseMetronomeAudioReturn {
   const initialize = useCallback(async () => {
     try {
       setError(null);
+      console.log('[MetronomeAudio] Starting initialization...');
+      console.log('[MetronomeAudio] Platform:', Platform.OS);
 
       // Create AudioContext (platform-aware)
       if (Platform.OS === 'web') {
+        console.log('[MetronomeAudio] Using web AudioContext');
         const AudioContextClass =
           window.AudioContext ||
           (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -117,6 +120,9 @@ export function useMetronomeAudio(): UseMetronomeAudioReturn {
           sampleRate: AUDIO_SAMPLE_RATE,
         });
       } else {
+        console.log('[MetronomeAudio] Using native AudioContext');
+        console.log('[MetronomeAudio] NativeAudioContext available:', !!NativeAudioContext);
+
         if (!NativeAudioContext) {
           throw new Error(
             audioApiLoadError
@@ -127,6 +133,7 @@ export function useMetronomeAudio(): UseMetronomeAudioReturn {
 
         // Configure iOS audio session for mixing with other audio
         if (NativeAudioManager && Platform.OS === 'ios') {
+          console.log('[MetronomeAudio] Configuring iOS audio session...');
           try {
             NativeAudioManager.setAudioSessionOptions({
               iosCategory: 'playback',
@@ -134,24 +141,30 @@ export function useMetronomeAudio(): UseMetronomeAudioReturn {
               iosOptions: ['mixWithOthers', 'defaultToSpeaker'],
             });
             await NativeAudioManager.setAudioSessionActivity(true);
+            console.log('[MetronomeAudio] iOS audio session configured');
           } catch (sessionErr) {
             console.warn('[MetronomeAudio] Audio session config error:', sessionErr);
           }
         }
 
+        console.log('[MetronomeAudio] Creating NativeAudioContext...');
         audioContextRef.current = new NativeAudioContext({
           sampleRate: AUDIO_SAMPLE_RATE,
         });
+        console.log('[MetronomeAudio] AudioContext created');
       }
 
       // Load click sound buffers
+      console.log('[MetronomeAudio] Loading audio buffers...');
       const [accentBuffer, tickBuffer] = await Promise.all([
         loadAudioBuffer(ACCENT_CLICK_ASSET),
         loadAudioBuffer(TICK_CLICK_ASSET),
       ]);
+      console.log('[MetronomeAudio] Accent buffer:', !!accentBuffer);
+      console.log('[MetronomeAudio] Tick buffer:', !!tickBuffer);
 
       if (!accentBuffer || !tickBuffer) {
-        throw new Error('Failed to load click sound buffers');
+        throw new Error(`Failed to load click sound buffers (accent: ${!!accentBuffer}, tick: ${!!tickBuffer})`);
       }
 
       accentBufferRef.current = accentBuffer;
