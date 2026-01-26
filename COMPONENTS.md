@@ -30,11 +30,6 @@
 | `VideoPlayerModal` | YouTube video player modal | `components/ui/VideoPlayerModal.tsx` |
 | `BandCard` | Band display card with expandable setlists | `components/ui/bands/BandCard.tsx` |
 | `SetlistCard` | Setlist display card | `components/ui/bands/SetlistCard.tsx` |
-| `TunerMeter` | Visual meter showing pitch deviation (-50 to +50 cents) | `components/ui/tuner/TunerMeter.tsx` |
-| `TunerNoteDisplay` | Note display with frequency, deviation, and guidance | `components/ui/tuner/TunerNoteDisplay.tsx` |
-| `TunerStringSelector` | Row of guitar/bass string buttons with LED indicators | `components/ui/tuner/TunerStringSelector.tsx` |
-| `TunerPanel` | **Composite: Instrument/Tuning selectors + VU meter + strings + controls** | `components/ui/tuner/TunerPanel.tsx` |
-| `TunerControls` | Start/Stop button and signal strength meter | `components/ui/tuner/TunerControls.tsx` |
 | `RamsTapeCounterDisplay` | Flip-chart style time display (MM:SS) | `components/ui/practice/RamsTapeCounterDisplay.tsx` |
 | `PracticePlayerModal` | **Audio playback with speed/pitch control** | `components/ui/practice/PracticePlayerModal.tsx` |
 | `PlaybackControls` | Speed slider and playback transport | `components/ui/practice/PlaybackControls.tsx` |
@@ -87,6 +82,10 @@
 | `VoiceMemoModal` | **Modal containing recorder + library** | `components/ui/modals/VoiceMemoModal.tsx` |
 | `ShareToBandModal` | **Modal for sharing memos to bands** | `components/ui/modals/ShareToBandModal.tsx` |
 | `MicrophonePermissionPrompt` | **Reusable mic permission UI (request + settings redirect)** | `components/ui/MicrophonePermissionPrompt.tsx` |
+| `MetronomePendulum` | **Animated pendulum with beat indicators** | `components/ui/metronome/MetronomePendulum.tsx` |
+| `MetronomeControls` | **BPM display, tap tempo, start/stop controls** | `components/ui/metronome/MetronomeControls.tsx` |
+| `MetronomeBPMDisplay` | **Digital BPM display with +/- buttons** | `components/ui/metronome/MetronomeBPMDisplay.tsx` |
+| `MetronomeTapButton` | **Large tap tempo button (80pt touch target)** | `components/ui/metronome/MetronomeTapButton.tsx` |
 | `SkeletonBase` | **Base shimmer animation for loading states** | `components/ui/skeleton/SkeletonBase.tsx` |
 | `SkeletonText` | **Text placeholder with configurable width/size** | `components/ui/skeleton/SkeletonText.tsx` |
 | `SkeletonBox` | **Rectangular/circular placeholder** | `components/ui/skeleton/SkeletonBox.tsx` |
@@ -112,9 +111,6 @@
 | `usePracticeData` | Practice session tracking and achievements | `hooks/usePracticeData.ts` |
 | `useSearch` | Debounced search with relevance scoring | `hooks/useSearch.ts` |
 | `usePracticePlayer` | **Audio playback with speed control (pitch preserved)** | `hooks/usePracticePlayer.ts` |
-| `useTunerMachine` | **Guitar tuner state machine with pitch detection** | `hooks/tuner/useTunerMachine.ts` |
-| `usePitchDetection` | Pitch detection using pitchy (McLeod Pitch Method) | `hooks/tuner/usePitchDetection.ts` |
-| `useAudioSession` | Web Audio API microphone streaming (uses shared permission) | `hooks/tuner/useAudioSession.ts` |
 | `useMicrophonePermission` | **Shared microphone permission context (grant once, use everywhere)** | `contexts/MicrophonePermissionContext.tsx` |
 | `useStreakData` | **Daily streak management & goal tracking** | `hooks/useStreakData.ts` |
 | `useStreakCalendar` | Calendar data with month navigation | `hooks/useStreakCalendar.ts` |
@@ -123,6 +119,9 @@
 | `useMilestones` | **Lifetime milestone tracking** | `hooks/useMilestones.ts` |
 | `useVoiceMemos` | Voice memo recording, storage, and sharing | `hooks/useVoiceMemos.ts` |
 | `useVoiceRecorder` | **Voice recorder state machine (uses shared permission)** | `hooks/useVoiceRecorder.ts` |
+| `useMetronome` | **Main metronome hook (audio, visual, haptic orchestration)** | `hooks/metronome/useMetronome.ts` |
+| `useMetronomeAudio` | **Web Audio API lookahead scheduler for sample-accurate timing** | `hooks/metronome/useMetronomeAudio.ts` |
+| `useTapTempo` | **Tap tempo algorithm with rolling average** | `hooks/metronome/useTapTempo.ts` |
 | `useSongsQuery` | **Cached song library fetch (React Query)** | `hooks/queries/useSongsQuery.ts` |
 | `useStreakQuery` | **Cached streak/stats/milestones fetch (React Query)** | `hooks/queries/useStreakQuery.ts` |
 | `useVoiceMemosQuery` | **Cached voice memos fetch (React Query)** | `hooks/queries/useVoiceMemosQuery.ts` |
@@ -150,6 +149,7 @@
 | `BEVELS` | **Pre-defined bevel styles (raised, housing, subtle)** | `constants/Styles.ts` |
 | `BORDER_RADIUS` | **Border radius scale (xs/sm/md/lg/xl/full)** | `constants/Styles.ts` |
 | `FONT_SIZES` | **Font size scale (xs/sm/base/lg/xl/2xl)** | `constants/Styles.ts` |
+| `METRONOME_CONFIG` | **Metronome timing constants (BPM range, lookahead scheduling)** | `constants/MetronomeConfig.ts` |
 | `ANIMATION_DURATIONS` | Animation timing tokens | `constants/Animations.ts` |
 | `Animations` | Shared animation keyframes (glitch effects) | `constants/Animations.ts` |
 | `UI_VOLUMES` | Sound volume levels per component | `constants/Audio.ts` |
@@ -1282,7 +1282,7 @@ import { InsetShadowOverlay, SurfaceTextureOverlay } from '@/components/skia/pri
 
 ### VUMeterDisplay Needle Color Unification
 
-**Change**: All VU meter needles now use consistent green (Colors.moss) styling to match TunerVUMeter.
+**Change**: All VU meter needles now use consistent green (Colors.moss) styling.
 
 **Before** (orange gradient):
 ```typescript
@@ -1653,7 +1653,7 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 - Tapered tip using borderRadius (3px top corners, 1px bottom)
 - Skeuomorphic depth with cylindrical gradient:
   - 5-color gradient: `[Colors.moss, Colors.moss, 'rgba(255,255,255,0.3)', Colors.moss, Colors.moss]`
-  - Matches TunerVUMeter needle style for visual consistency across all VU meters
+  - Consistent needle style for visual consistency across all VU meters
 - Drop shadow for depth: `shadowOffset: {1, 2}`, `shadowOpacity: 0.5`
 - Left edge highlight: `borderLeftWidth: 0.5`, `borderLeftColor: rgba(255,255,255,0.3)`
 
@@ -1664,233 +1664,6 @@ Applied to: FrequencyTuner, RotaryKnob, InsetWindow, RamsTapeCounterDisplay (Dig
 - Applied to: Album artwork thumbnails in song cards
 - Applied to: Individual digit wheels in RamsTapeCounterDisplay (not the overall container)
 - Opacity values tuned to 50% for subtle effect (glareOpacity: 0.175, specularOpacity: 0.25)
-
----
-
-## Guitar Tuner Components (Dec 22, 2025)
-
-### Overview
-
-Real-time guitar tuner using the **pitchy** library (MIT licensed) with McLeod Pitch Method for accurate pitch detection. Supports standard guitar tuning (E2-E4, 82Hz-330Hz).
-
-### TunerMeter
-
-**Purpose**: Visual meter showing pitch deviation from target note.
-
-**Location**: `components/ui/tuner/TunerMeter.tsx`
-
-**Props**:
-```typescript
-interface TunerMeterProps {
-  cents: number | null;        // Deviation in cents (-50 to +50)
-  direction: TuningDirection;  // 'flat' | 'sharp' | 'perfect' | null
-  isInTune: boolean;           // Whether currently in tune
-  isActive: boolean;           // Whether tuner is listening
-}
-```
-
-**Visual Behavior**:
-- Animated needle that moves based on cents deviation
-- Color-coded feedback: green (in tune), yellow (close), red (off)
-- Center zone indicator that glows when in tune
-- Tick marks at 5-cent intervals
-- "♭ FLAT" and "SHARP ♯" direction labels
-
-### TunerNoteDisplay
-
-**Purpose**: Large display showing detected note, frequency, and tuning guidance.
-
-**Location**: `components/ui/tuner/TunerNoteDisplay.tsx`
-
-**Props**:
-```typescript
-interface TunerNoteDisplayProps {
-  detectedString: GuitarString | null;
-  frequency: number | null;      // Hz
-  cents: number | null;          // Deviation from target
-  direction: TuningDirection;
-  status: TunerStatus;
-  isInTune: boolean;
-}
-```
-
-**Visual Behavior**:
-- Status indicator with LED dot (idle/detecting/in tune)
-- Large note name (64px) with octave
-- String label (e.g., "Low E (6th String)")
-- Frequency display in Hz
-- Deviation display in cents (color-coded)
-- Tuning guidance arrows (↑ tighten / ↓ loosen)
-
-### TunerStringSelector
-
-**Purpose**: Row of buttons for guitar/bass strings with auto-detection. Supports multiple tunings.
-
-**Location**: `components/ui/tuner/TunerStringSelector.tsx`
-
-**Props**:
-```typescript
-interface TunerStringSelectorProps {
-  detectedString: GuitarString | null;
-  isInTune: boolean;
-  onStringSelect?: (string: GuitarString) => void;
-  isActive: boolean;
-  strings?: GuitarString[];  // Defaults to standard guitar tuning
-}
-```
-
-**Visual Behavior**:
-- Dynamically renders 4-6 buttons based on instrument (Guitar: 6, Bass: 4)
-- Auto-highlights detected string (charcoal background)
-- LED indicator appears on detected string
-- LED turns green when in tune
-- Haptic feedback on press
-
-### TunerPanel
-
-**Purpose**: Composite component combining all tuner elements with instrument/tuning selection.
-
-**Location**: `components/ui/tuner/TunerPanel.tsx`
-
-**Features**:
-- **Instrument selector** (RotaryKnob): Guitar / Bass
-- **Tuning selector** (FrequencyTuner): Standard, Drop D, Open G, Open D, DADGAD (Guitar) or Standard (Bass)
-- VU-style swing meter with note display
-- Dynamic string selector (updates based on tuning)
-- Transport controls (Start/Stop)
-
-### TunerControls
-
-**Purpose**: Start/Stop button and signal strength meter.
-
-**Location**: `components/ui/tuner/TunerControls.tsx`
-
-**Props**:
-```typescript
-interface TunerControlsProps {
-  status: TunerStatus;
-  signalStrength: number;      // 0-1 normalized
-  hasPermission: boolean;
-  permissionStatus: string;
-  onStart: () => void;
-  onStop: () => void;
-}
-```
-
-**Visual Behavior**:
-- Large START/STOP button (vermilion when active)
-- Signal strength meter (5 bars)
-- Permission status indicator
-
-### useTunerMachine Hook
-
-**Purpose**: Central state machine managing all tuner functionality.
-
-**Location**: `hooks/tuner/useTunerMachine.ts`
-
-**Returns**:
-```typescript
-interface TunerHookReturn {
-  // State
-  status: TunerStatus;              // 'idle' | 'initializing' | 'listening' | 'detecting' | 'in_tune'
-  detectedString: GuitarString | null;
-  frequency: number | null;
-  cents: number | null;
-  direction: TuningDirection;
-  isInTune: boolean;
-  signalStrength: number;
-  hasPermission: boolean;
-  permissionStatus: string;
-
-  // Actions
-  start: () => void;
-  stop: () => void;
-}
-```
-
-**Usage**:
-```typescript
-import { useTunerMachine } from '@/hooks/tuner';
-
-function TunerScreen() {
-  const tuner = useTunerMachine();
-
-  return (
-    <>
-      <TunerNoteDisplay
-        detectedString={tuner.detectedString}
-        frequency={tuner.frequency}
-        cents={tuner.cents}
-        direction={tuner.direction}
-        status={tuner.status}
-        isInTune={tuner.isInTune}
-      />
-      <TunerMeter
-        cents={tuner.cents}
-        direction={tuner.direction}
-        isInTune={tuner.isInTune}
-        isActive={tuner.status !== 'idle'}
-      />
-      <TunerStringSelector
-        detectedString={tuner.detectedString}
-        isInTune={tuner.isInTune}
-        isActive={tuner.status !== 'idle'}
-      />
-      <TunerControls
-        status={tuner.status}
-        signalStrength={tuner.signalStrength}
-        hasPermission={tuner.hasPermission}
-        permissionStatus={tuner.permissionStatus}
-        onStart={tuner.start}
-        onStop={tuner.stop}
-      />
-    </>
-  );
-}
-```
-
-### Configuration
-
-**Location**: `constants/TunerConfig.ts`
-
-| Config | Purpose |
-|--------|---------|
-| `AUDIO_CONFIG` | Sample rate (44.1kHz), buffer sizes, FFT size |
-| `YIN_CONFIG` | Pitch detection thresholds and frequency range |
-| `VOLUME_THRESHOLD` | Noise gating thresholds for signal detection |
-| `TUNING_CONFIG` | In-tune tolerance (±5 cents), stability timing |
-
-### Instrument & Tuning Definitions
-
-**Location**: `types/tuner.ts`
-
-**Instruments**: `'Guitar' | 'Bass'`
-
-**Guitar Tunings**:
-| Tuning | Strings (6→1) |
-|--------|---------------|
-| Standard | E2, A2, D3, G3, B3, E4 |
-| Drop D | D2, A2, D3, G3, B3, E4 |
-| Open G | D2, G2, D3, G3, B3, D4 |
-| Open D | D2, A2, D3, F#3, A3, D4 |
-| DADGAD | D2, A2, D3, G3, A3, D4 |
-
-**Bass Tuning**:
-| Tuning | Strings (4→1) |
-|--------|---------------|
-| Standard | E1, A1, D2, G2 |
-
-```typescript
-// Get strings for any instrument/tuning combination
-import { getStringsForInstrumentTuning } from '@/types/tuner';
-
-const strings = getStringsForInstrumentTuning('Guitar', 'dropD');
-// Returns: [D2, A2, D3, G3, B3, E4] array
-```
-
-### Licensing
-
-The tuner uses **pitchy v4.1.0** (MIT licensed) for pitch detection, which is fully compatible with commercial/App Store distribution.
 
 ---
 
@@ -2762,4 +2535,149 @@ Both platforms provide identical visual output with the same chord fingering dat
 
 ---
 
-*Last updated: Jan 1, 2026*
+## Metronome Components (Jan 26, 2026)
+
+### Overview
+
+Professional-grade metronome with sample-accurate timing using Web Audio API lookahead scheduling. Features an analog pendulum visualization, tap tempo, and haptic feedback.
+
+**Screen**: `app/(tabs)/metronome.tsx`
+**Navigation**: TactileNavbar "Tempo" tab (4th position)
+
+### Architecture
+
+The metronome uses **lookahead scheduling** for sample-accurate timing:
+- Standard JS timers have 50-100ms jitter (unusable for musicians)
+- Web Audio API runs on a separate high-priority thread
+- Schedule beats 100ms into the future, check every 25ms
+- Audio hardware maintains queue - immune to main thread hiccups
+
+```typescript
+// hooks/metronome/useMetronomeAudio.ts
+const LOOKAHEAD_MS = 100;        // Schedule beats 100ms ahead
+const SCHEDULER_INTERVAL = 25;   // Check for new beats every 25ms
+
+const scheduler = () => {
+  const lookaheadEnd = audioContext.currentTime + (LOOKAHEAD_MS / 1000);
+  while (nextBeatTime < lookaheadEnd) {
+    scheduleClick(nextBeatTime, currentBeat === 0);
+    nextBeatTime += 60 / bpm;
+    currentBeat = (currentBeat + 1) % 4;
+  }
+};
+```
+
+### MetronomePendulum
+
+Animated pendulum with beat indicators that provides predictive visual cue.
+
+**Props**:
+| Prop | Type | Description |
+|------|------|-------------|
+| `angle` | `number` | Current angle in degrees (-30 to +30) |
+| `isPlaying` | `boolean` | Whether metronome is active |
+| `currentBeat` | `number` | Current beat index (0-3) |
+| `bpm` | `number` | Current tempo |
+
+**Features**:
+- Smooth sinusoidal swing synced to audio
+- Beat flash on downbeat (vermilion glow)
+- Beat indicator dots (4/4 time)
+- Respects `useReducedMotion()` - shows static indicator
+
+### MetronomeControls
+
+Combined control panel with BPM display, tap tempo, and start/stop.
+
+**Props**:
+| Prop | Type | Description |
+|------|------|-------------|
+| `bpm` | `number` | Current BPM value |
+| `isPlaying` | `boolean` | Playback state |
+| `isAudioReady` | `boolean` | Audio engine initialized |
+| `onBpmChange` | `(bpm: number) => void` | BPM change callback |
+| `onTap` | `() => void` | Tap tempo callback |
+| `onToggle` | `() => void` | Start/stop toggle |
+| `tapCount` | `number` | Current tap count (for display) |
+
+### MetronomeBPMDisplay
+
+Digital BPM display with increment/decrement buttons.
+
+**Features**:
+- Tap for ±1 BPM, long-press for ±10 BPM
+- Range: 20-300 BPM
+- Animated text transition on change
+- Industrial inset well aesthetic
+
+### MetronomeTapButton
+
+Large tap tempo button (80pt+ touch target for use while holding instrument).
+
+**Features**:
+- Rolling average of 2-8 taps
+- 2 second timeout resets tap sequence
+- Displays tap count feedback
+- Heavy haptic on tap
+
+### useMetronome Hook
+
+Main orchestration hook combining audio, visuals, and haptics.
+
+```typescript
+const metronome = useMetronome();
+
+// State
+metronome.state          // 'idle' | 'playing'
+metronome.bpm            // Current tempo
+metronome.isPlaying      // Playback state
+metronome.currentBeat    // 0-3 for visual sync
+metronome.pendulumAngle  // -30 to +30 degrees
+
+// Actions
+metronome.start()        // Start playback
+metronome.stop()         // Stop playback
+metronome.toggle()       // Toggle play/stop
+metronome.setBpm(120)    // Set tempo
+metronome.handleTapTempo()  // Process tap
+
+// Status
+metronome.isAudioReady   // Audio engine initialized
+metronome.audioError     // Error message if failed
+metronome.tapCount       // Current tap count
+```
+
+### Haptic Feedback
+
+| Event | Feedback Type |
+|-------|---------------|
+| Beat 1 (downbeat) | `ImpactFeedbackStyle.Heavy` |
+| Beats 2-4 | `ImpactFeedbackStyle.Light` |
+| Tap tempo | `ImpactFeedbackStyle.Medium` |
+| BPM +/- | `ImpactFeedbackStyle.Light` |
+
+### Web Compatibility (Metronome)
+
+Metronome components use platform-specific implementations:
+
+| Component | Native | Web |
+|-----------|--------|-----|
+| `MetronomePendulum` | `MetronomePendulum.tsx` (Skia) | `MetronomePendulum.web.tsx` (CSS) |
+| `MetronomeBPMDisplay` | `MetronomeBPMDisplay.tsx` (Skia) | `MetronomeBPMDisplay.web.tsx` (CSS) |
+
+**Audio**:
+- Native: `react-native-audio-api` with iOS audio session config
+- Web: Native Web Audio API
+
+**iOS Audio Session**:
+```typescript
+AudioManager.setAudioSessionOptions({
+  iosCategory: 'playback',
+  iosMode: 'default',
+  iosOptions: ['mixWithOthers', 'defaultToSpeaker'],
+});
+```
+
+---
+
+*Last updated: Jan 26, 2026*

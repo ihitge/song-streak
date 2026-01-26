@@ -81,10 +81,6 @@ console.log(token);
 | Practice complete modal | `PracticeCompleteModal` |
 | Achievement celebration | `AchievementModal` |
 | Video player | `VideoPlayerModal` |
-| **Guitar tuner meter** | `TunerMeter` |
-| **Guitar tuner note display** | `TunerNoteDisplay` |
-| **Guitar tuner string selector** | `TunerStringSelector` |
-| **Guitar tuner controls** | `TunerControls` |
 
 ### Hooks
 
@@ -98,9 +94,6 @@ console.log(token);
 | Setlist management | `useSetlists` |
 | Practice tracking | `usePracticeData` |
 | Debounced search | `useSearch` |
-| **Guitar tuner state machine** | `useTunerMachine` |
-| Pitch detection (pitchy) | `usePitchDetection` |
-| Microphone audio streaming | `useAudioSession` |
 | Voice memo management | `useVoiceMemos` |
 | **Shared microphone permission (iOS best practice)** | `useMicrophonePermission` |
 
