@@ -116,7 +116,6 @@ export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessi
     if (recorderRef.current) {
       try {
         recorderRef.current.stop();
-        recorderRef.current.clearOnAudioReady();
       } catch (e) {
         console.warn('[AudioSession] Native cleanup error:', e);
       }
@@ -210,61 +209,75 @@ export function useAudioSession(callbacks: AudioSessionCallbacks): UseAudioSessi
     try {
       console.log('[AudioSession] Starting native audio capture...');
 
-      // Request permission
-      const permissionResult = await AudioManager.requestRecordingPermissions();
-      console.log('[AudioSession] Permission result:', permissionResult);
+      // Permission is handled by MicrophonePermissionContext
+      // We trust that permission was granted before start() is called
+      // Do NOT request permission here - it would be redundant and could cause issues
 
-      if (permissionResult !== 'Granted') {
-        throw new Error('Microphone permission not granted');
+      // Configure audio session for recording with measurement mode (best for tuner)
+      try {
+        AudioManager.setAudioSessionOptions({
+          iosCategory: 'playAndRecord',
+          iosMode: 'measurement',
+          iosOptions: ['defaultToSpeaker', 'allowBluetooth'],
+        });
+        console.log('[AudioSession] Audio session options configured');
+      } catch (optErr) {
+        console.warn('[AudioSession] Failed to set audio session options:', optErr);
+        // Continue anyway - the recording might still work with default options
       }
 
-      // Configure audio session
-      AudioManager.setAudioSessionOptions({
-        iosCategory: 'playAndRecord',
-        iosMode: 'measurement',
-        iosOptions: ['defaultToSpeaker', 'allowBluetooth'],
-      });
-
-      const activated = await AudioManager.setAudioSessionActivity(true);
-      if (!activated) {
-        throw new Error('Failed to activate audio session');
+      try {
+        const activated = await AudioManager.setAudioSessionActivity(true);
+        console.log('[AudioSession] Audio session activated:', activated);
+      } catch (actErr) {
+        console.warn('[AudioSession] Failed to activate audio session:', actErr);
+        // Continue anyway - might already be active
       }
 
-      if (!recorderRef.current) {
-        recorderRef.current = new AudioRecorder();
-      }
-
-      const recorder = recorderRef.current;
       const bufferLength = AUDIO_CONFIG.pitchDetectionBufferSize;
       const sampleRate = AUDIO_CONFIG.sampleRate;
 
-      recorder.onAudioReady(
-        {
+      // Create new recorder with required options
+      // AudioRecorder constructor requires { sampleRate, bufferLengthInSamples }
+      if (!recorderRef.current) {
+        recorderRef.current = new AudioRecorder({
           sampleRate,
-          bufferLength,
-          channelCount: 1,
-        },
-        ({ buffer, numFrames }: { buffer: any; numFrames: number }) => {
-          try {
-            const channelData = buffer.getChannelData(0);
-            const audioData = new Float32Array(channelData.length);
-            for (let i = 0; i < channelData.length; i++) {
-              audioData[i] = channelData[i];
-            }
-            const volumeDb = calculateVolumeDb(audioData);
-            callbacksRef.current.onAudioData(audioData, volumeDb);
-          } catch (e) {
-            console.error('[AudioSession] Error processing native audio:', e);
-          }
-        }
-      );
-
-      const result = recorder.start();
-      console.log('[AudioSession] Native start result:', result);
-
-      if (result.status !== 'success') {
-        throw new Error(`Failed to start recording: ${result.status}`);
+          bufferLengthInSamples: bufferLength,
+        });
       }
+
+      const recorder = recorderRef.current;
+
+      // Debug counter for audio callbacks
+      let audioCallbackCount = 0;
+
+      // Set up audio callback - onAudioReady takes only a callback function
+      recorder.onAudioReady(({ buffer, numFrames }: { buffer: any; numFrames: number }) => {
+        audioCallbackCount++;
+        // Log first few callbacks to confirm audio is flowing
+        if (audioCallbackCount <= 5) {
+          console.log(`[AudioSession] onAudioReady #${audioCallbackCount}: numFrames=${numFrames}, buffer.length=${buffer?.length}`);
+        }
+        try {
+          const channelData = buffer.getChannelData(0);
+          const audioData = new Float32Array(channelData.length);
+          for (let i = 0; i < channelData.length; i++) {
+            audioData[i] = channelData[i];
+          }
+          const volumeDb = calculateVolumeDb(audioData);
+          // Log volume for first few callbacks
+          if (audioCallbackCount <= 5) {
+            console.log(`[AudioSession] onAudioReady #${audioCallbackCount}: volumeDb=${volumeDb.toFixed(1)}dB`);
+          }
+          callbacksRef.current.onAudioData(audioData, volumeDb);
+        } catch (e) {
+          console.error('[AudioSession] Error processing native audio:', e);
+        }
+      });
+
+      // start() returns void, not a result object
+      recorder.start();
+      console.log('[AudioSession] Native recorder started');
 
       setIsRecording(true);
       console.log('[AudioSession] Native audio started');

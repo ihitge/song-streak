@@ -56,6 +56,8 @@ interface TunerPanelProps {
   onStart: () => void;
   onStop: () => void;
   onStringSelect?: (string: GuitarString) => void;
+  /** Request microphone permission (required when showControls is true) */
+  requestPermission?: () => Promise<boolean>;
 
   // Options
   fullWidth?: boolean;
@@ -76,6 +78,7 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
   onStart,
   onStop,
   onStringSelect,
+  requestPermission,
   fullWidth = false,
   compact = false,
   showControls = true,
@@ -150,7 +153,7 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
       </View>
 
       {/* Transport controls */}
-      {showControls && (
+      {showControls && requestPermission && (
         <View style={styles.controlsSection}>
           <TunerControls
             status={status}
@@ -159,6 +162,7 @@ export const TunerPanel: React.FC<TunerPanelProps> = ({
             permissionStatus={permissionStatus}
             onStart={onStart}
             onStop={onStop}
+            requestPermission={requestPermission}
           />
         </View>
       )}

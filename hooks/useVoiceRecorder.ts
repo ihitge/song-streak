@@ -3,7 +3,10 @@
  *
  * State machine for the Reel-to-Reel voice recorder.
  * Handles recording, playback, and audio level monitoring.
- * Web-first implementation using MediaRecorder API.
+ *
+ * Platform support:
+ * - iOS/Android: Uses react-native-audio-api for recording, expo-audio for playback
+ * - Web: Uses MediaRecorder API for recording, HTMLAudioElement for playback
  *
  * Uses shared MicrophonePermissionContext so permission granted in one
  * feature (Tuner, Voice Recorder) immediately reflects in others.
@@ -21,14 +24,41 @@ import {
   PLAYBACK_SPEED_MULTIPLIERS,
 } from '@/types/voiceMemo';
 
+// Conditionally import native modules
+let AudioRecorder: any;
+let AudioManager: any;
+let createAudioPlayer: any;
+let AudioPlayer: any;
+
+if (Platform.OS !== 'web') {
+  try {
+    const audioApi = require('react-native-audio-api');
+    AudioRecorder = audioApi.AudioRecorder;
+    AudioManager = audioApi.AudioManager;
+  } catch (e) {
+    console.warn('[VoiceRecorder] Failed to load react-native-audio-api:', e);
+  }
+
+  try {
+    const expoAudio = require('expo-audio');
+    createAudioPlayer = expoAudio.createAudioPlayer;
+    AudioPlayer = expoAudio.AudioPlayer;
+  } catch (e) {
+    console.warn('[VoiceRecorder] Failed to load expo-audio:', e);
+  }
+}
+
 /**
  * Audio configuration for recording
  */
 const AUDIO_CONFIG = {
   sampleRate: 44100,
-  channelCount: 1,  // Mono for voice
+  channelCount: 1, // Mono for voice
   mimeType: 'audio/webm;codecs=opus',
   fallbackMimeType: 'audio/webm',
+  // Native recording config
+  nativeSampleRate: 44100,
+  nativeBufferLength: 4096,
 };
 
 export interface UseVoiceRecorderOptions {
@@ -62,7 +92,7 @@ export interface UseVoiceRecorderReturn {
   setSpeed: (speed: PlaybackSpeed) => void;
   reset: () => void;
 
-  // Audio URL for playback
+  // Audio URL for playback (web) or file URI (native)
   audioUrl: string | null;
   audioBlob: Blob | null;
 }
@@ -73,13 +103,82 @@ export interface UseVoiceRecorderReturn {
 function calculateAudioLevel(dataArray: Uint8Array): number {
   let sum = 0;
   for (let i = 0; i < dataArray.length; i++) {
-    // Convert from 0-255 to -1 to 1
     const value = (dataArray[i] - 128) / 128;
     sum += value * value;
   }
   const rms = Math.sqrt(sum / dataArray.length);
-  // Scale up for better visual feedback
   return Math.min(1, rms * 3);
+}
+
+/**
+ * Calculate RMS from Float32Array (native)
+ */
+function calculateAudioLevelFloat(samples: Float32Array): number {
+  let sum = 0;
+  for (let i = 0; i < samples.length; i++) {
+    sum += samples[i] * samples[i];
+  }
+  const rms = Math.sqrt(sum / samples.length);
+  return Math.min(1, rms * 3);
+}
+
+/**
+ * Convert Float32Array audio samples to WAV Blob
+ */
+function float32ToWavBlob(samples: Float32Array[], sampleRate: number): Blob {
+  // Concatenate all samples
+  const totalLength = samples.reduce((acc, s) => acc + s.length, 0);
+  const combined = new Float32Array(totalLength);
+  let offset = 0;
+  for (const chunk of samples) {
+    combined.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  // Convert to 16-bit PCM
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const bytesPerSample = bitsPerSample / 8;
+  const blockAlign = numChannels * bytesPerSample;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = combined.length * bytesPerSample;
+  const headerSize = 44;
+  const totalSize = headerSize + dataSize;
+
+  const buffer = new ArrayBuffer(totalSize);
+  const view = new DataView(buffer);
+
+  // WAV header
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, totalSize - 8, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); // fmt chunk size
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  // Convert samples to 16-bit PCM
+  let sampleOffset = headerSize;
+  for (let i = 0; i < combined.length; i++) {
+    const sample = Math.max(-1, Math.min(1, combined[i]));
+    const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7fff;
+    view.setInt16(sampleOffset, intSample, true);
+    sampleOffset += 2;
+  }
+
+  return new Blob([buffer], { type: 'audio/wav' });
 }
 
 /**
@@ -88,7 +187,9 @@ function calculateAudioLevel(dataArray: Uint8Array): number {
  * Uses shared MicrophonePermissionContext for permission state,
  * so granting mic access in Voice Recorder immediately enables Tuner and vice versa.
  */
-export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoiceRecorderReturn {
+export function useVoiceRecorder(
+  options: UseVoiceRecorderOptions = {}
+): UseVoiceRecorderReturn {
   const { onRecordingComplete, onError, onStateChange, onAudioLevel } = options;
 
   // State
@@ -96,7 +197,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
-  // Use shared permission context (iOS best practice: grant once, use everywhere)
+  // Use shared permission context
   const {
     hasPermission,
     permissionStatus,
@@ -121,15 +222,24 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
     isPlaying: false,
   });
 
-  // Refs
+  // Web refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+
+  // Native refs
+  const nativeRecorderRef = useRef<any>(null);
+  const nativePlayerRef = useRef<any>(null);
+  const nativeSamplesRef = useRef<Float32Array[]>([]);
+  const nativeFileUriRef = useRef<string | null>(null);
+
+  // Shared refs
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const levelTimerRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Derived state
   const hasRecording = audioBlob !== null;
@@ -140,16 +250,16 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
   }, [state, onStateChange]);
 
   /**
-   * Request microphone permission (delegates to shared context)
+   * Request microphone permission
    */
   const requestPermission = useCallback(async (): Promise<boolean> => {
     return contextRequestPermission();
   }, [contextRequestPermission]);
 
   /**
-   * Start audio level monitoring
+   * Start audio level monitoring (web)
    */
-  const startLevelMonitoring = useCallback(() => {
+  const startLevelMonitoringWeb = useCallback(() => {
     if (!analyserRef.current) return;
 
     const analyser = analyserRef.current;
@@ -161,7 +271,6 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       analyser.getByteTimeDomainData(dataArray);
       const level = calculateAudioLevel(dataArray);
 
-      // For mono, use same level for L/R
       setRecording((prev) => ({
         ...prev,
         audioLevel: level,
@@ -170,7 +279,6 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       }));
 
       onAudioLevel?.(level, level);
-
       levelTimerRef.current = requestAnimationFrame(updateLevel);
     };
 
@@ -188,17 +296,172 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
   }, []);
 
   /**
-   * Start recording
+   * Cleanup native recorder
    */
-  const startRecording = useCallback(async () => {
-    if (Platform.OS !== 'web') {
-      onError?.(new Error('Native recording not implemented'));
+  const cleanupNativeRecorder = useCallback(() => {
+    if (nativeRecorderRef.current) {
+      try {
+        nativeRecorderRef.current.stop();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      nativeRecorderRef.current = null;
+    }
+    if (AudioManager) {
+      AudioManager.setAudioSessionActivity(false).catch(() => {});
+    }
+  }, []);
+
+  /**
+   * Cleanup native player
+   */
+  const cleanupNativePlayer = useCallback(() => {
+    if (nativePlayerRef.current) {
+      try {
+        nativePlayerRef.current.remove();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      nativePlayerRef.current = null;
+    }
+    if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+  }, []);
+
+  /**
+   * Start recording - Native iOS/Android
+   */
+  const startRecordingNative = useCallback(async () => {
+    if (!AudioRecorder || !AudioManager) {
+      onError?.(new Error('Native audio API not available'));
       setState('error');
       return;
     }
 
     try {
-      // Request fresh stream
+      console.log('[VoiceRecorder] Starting native recording...');
+
+      // Permission is handled by MicrophonePermissionContext
+      // We trust that permission was granted before startRecording() is called
+      // Do NOT request permission here - it's already handled by the shared context
+
+      // Configure audio session for recording
+      try {
+        AudioManager.setAudioSessionOptions({
+          iosCategory: 'playAndRecord',
+          iosMode: 'default',
+          iosOptions: ['defaultToSpeaker', 'allowBluetooth'],
+        });
+        console.log('[VoiceRecorder] Audio session options configured');
+      } catch (optErr) {
+        console.warn('[VoiceRecorder] Failed to set audio session options:', optErr);
+        // Continue anyway - recording might still work
+      }
+
+      try {
+        const activated = await AudioManager.setAudioSessionActivity(true);
+        console.log('[VoiceRecorder] Audio session activated:', activated);
+      } catch (actErr) {
+        console.warn('[VoiceRecorder] Failed to activate audio session:', actErr);
+        // Continue anyway - might already be active
+      }
+
+      // Create recorder with required options
+      // AudioRecorder constructor requires { sampleRate, bufferLengthInSamples }
+      if (!nativeRecorderRef.current) {
+        nativeRecorderRef.current = new AudioRecorder({
+          sampleRate: AUDIO_CONFIG.nativeSampleRate,
+          bufferLengthInSamples: AUDIO_CONFIG.nativeBufferLength,
+        });
+      }
+
+      const recorder = nativeRecorderRef.current;
+      nativeSamplesRef.current = [];
+
+      // Debug counter for audio callbacks
+      let audioCallbackCount = 0;
+
+      // Set up audio callback - onAudioReady takes only a callback function
+      recorder.onAudioReady(({ buffer, numFrames }: { buffer: any; numFrames: number }) => {
+        audioCallbackCount++;
+        // Log first few callbacks to confirm audio is flowing
+        if (audioCallbackCount <= 5) {
+          console.log(`[VoiceRecorder] onAudioReady #${audioCallbackCount}: numFrames=${numFrames}`);
+        }
+        try {
+          const channelData = buffer.getChannelData(0);
+          const samples = new Float32Array(channelData.length);
+          for (let i = 0; i < channelData.length; i++) {
+            samples[i] = channelData[i];
+          }
+
+          // Store samples for later
+          nativeSamplesRef.current.push(samples);
+
+          // Calculate level
+          const level = calculateAudioLevelFloat(samples);
+          // Log level for first few callbacks
+          if (audioCallbackCount <= 5) {
+            console.log(`[VoiceRecorder] onAudioReady #${audioCallbackCount}: level=${level.toFixed(3)}`);
+          }
+          setRecording((prev) => ({
+            ...prev,
+            audioLevel: level,
+            audioLevelLeft: level,
+            audioLevelRight: level,
+          }));
+          onAudioLevel?.(level, level);
+        } catch (e) {
+          console.error('[VoiceRecorder] Error processing audio:', e);
+        }
+      });
+
+      // Start recording - start() returns void
+      recorder.start();
+      console.log('[VoiceRecorder] Native recorder started');
+
+      setState('recording');
+
+      // Reset recording state
+      const startTime = Date.now();
+      setRecording({
+        startTime,
+        elapsedSeconds: 0,
+        audioLevel: 0,
+        audioLevelLeft: 0,
+        audioLevelRight: 0,
+        blob: null,
+      });
+
+      // Start timer
+      timerRef.current = setInterval(() => {
+        setRecording((prev) => {
+          const elapsed = (Date.now() - startTime) / 1000;
+          if (elapsed >= MAX_RECORDING_SECONDS) {
+            stopRecording();
+            return { ...prev, elapsedSeconds: MAX_RECORDING_SECONDS };
+          }
+          return { ...prev, elapsedSeconds: elapsed };
+        });
+      }, 100);
+
+      console.log('[VoiceRecorder] Native recording started');
+    } catch (err) {
+      console.error('[VoiceRecorder] Native start failed:', err);
+      const error = err instanceof Error ? err : new Error(String(err));
+      onError?.(error);
+      setState('error');
+      cleanupNativeRecorder();
+    }
+  }, [onError, onAudioLevel, cleanupNativeRecorder]);
+
+  /**
+   * Start recording - Web
+   */
+  const startRecordingWeb = useCallback(async () => {
+    try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: false,
@@ -209,11 +472,12 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
         video: false,
       });
 
-      // Permission is managed by shared context - just store the stream
       streamRef.current = stream;
 
-      // Create audio context for level monitoring
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
       const audioContext = new AudioContextClass();
       audioContextRef.current = audioContext;
 
@@ -224,13 +488,11 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
 
-      // Determine mime type
       let mimeType = AUDIO_CONFIG.mimeType;
       if (!MediaRecorder.isTypeSupported(mimeType)) {
         mimeType = AUDIO_CONFIG.fallbackMimeType;
       }
 
-      // Create media recorder
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
@@ -247,32 +509,21 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
 
         setAudioBlob(blob);
         setAudioUrl(url);
-        setRecording((prev) => ({
-          ...prev,
-          blob,
-        }));
+        setRecording((prev) => ({ ...prev, blob }));
 
         const duration = recording.elapsedSeconds;
-        setPlayback((prev) => ({
-          ...prev,
-          duration,
-          currentTime: 0,
-        }));
-
+        setPlayback((prev) => ({ ...prev, duration, currentTime: 0 }));
         onRecordingComplete?.(blob, duration);
       };
 
-      mediaRecorder.onerror = (event) => {
-        console.error('[VoiceRecorder] Recording error:', event);
+      mediaRecorder.onerror = () => {
         onError?.(new Error('Recording failed'));
         setState('error');
       };
 
-      // Start recording
-      mediaRecorder.start(100); // Collect data every 100ms
+      mediaRecorder.start(100);
       setState('recording');
 
-      // Reset recording state
       const startTime = Date.now();
       setRecording({
         startTime,
@@ -283,80 +534,200 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
         blob: null,
       });
 
-      // Start timer for elapsed time
       timerRef.current = setInterval(() => {
         setRecording((prev) => {
           const elapsed = (Date.now() - startTime) / 1000;
-
-          // Auto-stop at max duration
           if (elapsed >= MAX_RECORDING_SECONDS) {
             stopRecording();
             return { ...prev, elapsedSeconds: MAX_RECORDING_SECONDS };
           }
-
           return { ...prev, elapsedSeconds: elapsed };
         });
       }, 100);
 
-      // Start level monitoring
-      startLevelMonitoring();
-
-      if (__DEV__) {
-        console.log('[VoiceRecorder] Recording started');
-      }
+      startLevelMonitoringWeb();
+      console.log('[VoiceRecorder] Web recording started');
     } catch (err) {
-      console.error('[VoiceRecorder] Failed to start:', err);
+      console.error('[VoiceRecorder] Web start failed:', err);
       const error = err instanceof Error ? err : new Error(String(err));
       onError?.(error);
-      // Permission errors are handled by shared context
       setState('error');
     }
-  }, [onRecordingComplete, onError, startLevelMonitoring, recording.elapsedSeconds]);
+  }, [onRecordingComplete, onError, startLevelMonitoringWeb, recording.elapsedSeconds]);
 
   /**
-   * Stop recording
+   * Start recording - platform aware
    */
-  const stopRecording = useCallback(() => {
-    // Stop timer
+  const startRecording = useCallback(async () => {
+    if (Platform.OS === 'web') {
+      await startRecordingWeb();
+    } else {
+      await startRecordingNative();
+    }
+  }, [startRecordingWeb, startRecordingNative]);
+
+  /**
+   * Stop recording - Native
+   */
+  const stopRecordingNative = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
-    // Stop level monitoring
+    if (nativeRecorderRef.current) {
+      try {
+        nativeRecorderRef.current.stop();
+      } catch (e) {
+        console.warn('[VoiceRecorder] Error stopping recorder:', e);
+      }
+    }
+
+    // Convert samples to WAV blob
+    if (nativeSamplesRef.current.length > 0) {
+      const blob = float32ToWavBlob(
+        nativeSamplesRef.current,
+        AUDIO_CONFIG.nativeSampleRate
+      );
+      const duration = recording.elapsedSeconds;
+
+      setAudioBlob(blob);
+      setAudioUrl(null); // Native doesn't use URL
+      setRecording((prev) => ({ ...prev, blob }));
+      setPlayback((prev) => ({ ...prev, duration, currentTime: 0 }));
+      onRecordingComplete?.(blob, duration);
+
+      console.log('[VoiceRecorder] Native recording stopped, blob size:', blob.size);
+    }
+
+    // Deactivate audio session
+    if (AudioManager) {
+      AudioManager.setAudioSessionActivity(false).catch(() => {});
+    }
+
+    setState('stopped');
+  }, [recording.elapsedSeconds, onRecordingComplete]);
+
+  /**
+   * Stop recording - Web
+   */
+  const stopRecordingWeb = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
     stopLevelMonitoring();
 
-    // Stop media recorder
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
     }
 
-    // Stop stream
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
 
-    // Close audio context
     if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
 
     setState('stopped');
-
-    if (__DEV__) {
-      console.log('[VoiceRecorder] Recording stopped');
-    }
+    console.log('[VoiceRecorder] Web recording stopped');
   }, [stopLevelMonitoring]);
 
   /**
-   * Play recording
+   * Stop recording - platform aware
    */
-  const play = useCallback(() => {
-    if (!audioUrl || Platform.OS !== 'web') return;
+  const stopRecording = useCallback(() => {
+    if (Platform.OS === 'web') {
+      stopRecordingWeb();
+    } else {
+      stopRecordingNative();
+    }
+  }, [stopRecordingWeb, stopRecordingNative]);
 
-    // Create audio element if needed
+  /**
+   * Play recording - Native
+   */
+  const playNative = useCallback(async () => {
+    if (!audioBlob) return;
+
+    try {
+      // For native, we need to save the blob to a file first
+      // Using expo-file-system
+      const FileSystem = require('expo-file-system');
+      const { createAudioPlayer } = require('expo-audio');
+
+      // Convert blob to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+
+      reader.onloadend = async () => {
+        try {
+          const base64 = reader.result as string;
+          const base64Data = base64.split(',')[1];
+
+          // Save to temp file
+          const fileUri = `${FileSystem.cacheDirectory}voice_memo_${Date.now()}.wav`;
+          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+
+          nativeFileUriRef.current = fileUri;
+
+          // Create player
+          const player = createAudioPlayer({ uri: fileUri });
+          nativePlayerRef.current = player;
+
+          player.play();
+          setState('playing');
+          setPlayback((prev) => ({ ...prev, isPlaying: true }));
+
+          // Monitor playback position
+          playbackTimerRef.current = setInterval(() => {
+            if (nativePlayerRef.current) {
+              const currentTime = nativePlayerRef.current.currentTime || 0;
+              const duration = nativePlayerRef.current.duration || playback.duration;
+
+              setPlayback((prev) => ({
+                ...prev,
+                currentTime,
+                duration,
+              }));
+
+              // Check if playback ended
+              if (currentTime >= duration && duration > 0) {
+                cleanupNativePlayer();
+                setState('stopped');
+                setPlayback((prev) => ({
+                  ...prev,
+                  isPlaying: false,
+                  currentTime: 0,
+                }));
+              }
+            }
+          }, 100);
+
+          console.log('[VoiceRecorder] Native playback started');
+        } catch (e) {
+          console.error('[VoiceRecorder] Native playback error:', e);
+          onError?.(new Error('Playback failed'));
+        }
+      };
+    } catch (err) {
+      console.error('[VoiceRecorder] Native play failed:', err);
+      onError?.(new Error('Playback not available'));
+    }
+  }, [audioBlob, playback.duration, onError, cleanupNativePlayer]);
+
+  /**
+   * Play recording - Web
+   */
+  const playWeb = useCallback(() => {
+    if (!audioUrl) return;
+
     if (!audioElementRef.current) {
       audioElementRef.current = new Audio(audioUrl);
     } else {
@@ -366,84 +737,89 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
     const audio = audioElementRef.current;
     audio.playbackRate = PLAYBACK_SPEED_MULTIPLIERS[playback.speed];
 
-    // Set up event handlers
     audio.ontimeupdate = () => {
-      setPlayback((prev) => ({
-        ...prev,
-        currentTime: audio.currentTime,
-      }));
+      setPlayback((prev) => ({ ...prev, currentTime: audio.currentTime }));
     };
 
     audio.onended = () => {
-      setPlayback((prev) => ({
-        ...prev,
-        isPlaying: false,
-        currentTime: 0,
-      }));
+      setPlayback((prev) => ({ ...prev, isPlaying: false, currentTime: 0 }));
       setState('stopped');
     };
 
     audio.onloadedmetadata = () => {
-      setPlayback((prev) => ({
-        ...prev,
-        duration: audio.duration,
-      }));
+      setPlayback((prev) => ({ ...prev, duration: audio.duration }));
     };
 
     audio.play();
     setState('playing');
-    setPlayback((prev) => ({
-      ...prev,
-      isPlaying: true,
-    }));
-
-    if (__DEV__) {
-      console.log('[VoiceRecorder] Playback started');
-    }
+    setPlayback((prev) => ({ ...prev, isPlaying: true }));
+    console.log('[VoiceRecorder] Web playback started');
   }, [audioUrl, playback.speed]);
+
+  /**
+   * Play - platform aware
+   */
+  const play = useCallback(() => {
+    if (Platform.OS === 'web') {
+      playWeb();
+    } else {
+      playNative();
+    }
+  }, [playWeb, playNative]);
 
   /**
    * Pause playback
    */
   const pause = useCallback(() => {
-    if (audioElementRef.current) {
-      audioElementRef.current.pause();
+    if (Platform.OS === 'web') {
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+      }
+    } else {
+      if (nativePlayerRef.current) {
+        nativePlayerRef.current.pause();
+      }
     }
     setState('stopped');
-    setPlayback((prev) => ({
-      ...prev,
-      isPlaying: false,
-    }));
+    setPlayback((prev) => ({ ...prev, isPlaying: false }));
   }, []);
 
   /**
    * Stop playback and reset position
    */
   const stop = useCallback(() => {
-    if (audioElementRef.current) {
-      audioElementRef.current.pause();
-      audioElementRef.current.currentTime = 0;
+    if (Platform.OS === 'web') {
+      if (audioElementRef.current) {
+        audioElementRef.current.pause();
+        audioElementRef.current.currentTime = 0;
+      }
+    } else {
+      cleanupNativePlayer();
     }
     setState(hasRecording ? 'stopped' : 'idle');
-    setPlayback((prev) => ({
-      ...prev,
-      isPlaying: false,
-      currentTime: 0,
-    }));
-  }, [hasRecording]);
+    setPlayback((prev) => ({ ...prev, isPlaying: false, currentTime: 0 }));
+  }, [hasRecording, cleanupNativePlayer]);
 
   /**
    * Seek to position
    */
-  const seek = useCallback((seconds: number) => {
-    if (audioElementRef.current) {
-      audioElementRef.current.currentTime = Math.max(0, Math.min(seconds, playback.duration));
-      setPlayback((prev) => ({
-        ...prev,
-        currentTime: audioElementRef.current!.currentTime,
-      }));
-    }
-  }, [playback.duration]);
+  const seek = useCallback(
+    (seconds: number) => {
+      const targetTime = Math.max(0, Math.min(seconds, playback.duration));
+
+      if (Platform.OS === 'web') {
+        if (audioElementRef.current) {
+          audioElementRef.current.currentTime = targetTime;
+        }
+      } else {
+        if (nativePlayerRef.current) {
+          nativePlayerRef.current.seekTo(targetTime);
+        }
+      }
+      setPlayback((prev) => ({ ...prev, currentTime: targetTime }));
+    },
+    [playback.duration]
+  );
 
   /**
    * Rewind 5 seconds
@@ -463,13 +839,19 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
    * Set playback speed
    */
   const setSpeed = useCallback((speed: PlaybackSpeed) => {
-    setPlayback((prev) => ({
-      ...prev,
-      speed,
-    }));
+    setPlayback((prev) => ({ ...prev, speed }));
 
-    if (audioElementRef.current) {
-      audioElementRef.current.playbackRate = PLAYBACK_SPEED_MULTIPLIERS[speed];
+    if (Platform.OS === 'web') {
+      if (audioElementRef.current) {
+        audioElementRef.current.playbackRate = PLAYBACK_SPEED_MULTIPLIERS[speed];
+      }
+    } else {
+      if (nativePlayerRef.current) {
+        nativePlayerRef.current.setPlaybackRate(
+          PLAYBACK_SPEED_MULTIPLIERS[speed],
+          'high'
+        );
+      }
     }
   }, []);
 
@@ -477,15 +859,25 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
    * Reset recorder to initial state
    */
   const reset = useCallback(() => {
-    // Stop any playback
     stop();
 
-    // Revoke object URL
     if (audioUrl) {
       URL.revokeObjectURL(audioUrl);
     }
 
-    // Reset state
+    // Cleanup native file
+    if (nativeFileUriRef.current) {
+      try {
+        const FileSystem = require('expo-file-system');
+        FileSystem.deleteAsync(nativeFileUriRef.current, { idempotent: true });
+      } catch (e) {
+        // Ignore
+      }
+      nativeFileUriRef.current = null;
+    }
+
+    nativeSamplesRef.current = [];
+
     setAudioUrl(null);
     setAudioBlob(null);
     setRecording({
@@ -503,10 +895,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       isPlaying: false,
     });
     setState('idle');
-
-    if (__DEV__) {
-      console.log('[VoiceRecorder] Reset');
-    }
+    console.log('[VoiceRecorder] Reset');
   }, [audioUrl, stop]);
 
   // Cleanup on unmount
@@ -516,6 +905,9 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
         clearInterval(timerRef.current);
       }
       stopLevelMonitoring();
+      cleanupNativePlayer();
+      cleanupNativeRecorder();
+
       if (audioUrl) {
         URL.revokeObjectURL(audioUrl);
       }
@@ -525,22 +917,25 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close();
       }
+      if (nativeFileUriRef.current) {
+        try {
+          const FileSystem = require('expo-file-system');
+          FileSystem.deleteAsync(nativeFileUriRef.current, { idempotent: true });
+        } catch (e) {
+          // Ignore
+        }
+      }
     };
-  }, [audioUrl, stopLevelMonitoring]);
+  }, [audioUrl, stopLevelMonitoring, cleanupNativePlayer, cleanupNativeRecorder]);
 
   return {
-    // State
     state,
     recording,
     playback,
     hasRecording,
-
-    // Permissions
     hasPermission,
     permissionStatus,
     requestPermission,
-
-    // Actions
     startRecording,
     stopRecording,
     play,
@@ -551,8 +946,6 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}): UseVoic
     fastForward,
     setSpeed,
     reset,
-
-    // Audio
     audioUrl,
     audioBlob,
   };

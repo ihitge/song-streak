@@ -7,14 +7,27 @@
  *
  * iOS Best Practice: Once granted, microphone permission persists for the app session.
  * This context ensures the UI reflects that consistently.
+ *
+ * IMPORTANT: On native iOS, we use react-native-audio-api's AudioManager for
+ * permission requests. Using expo-audio would conflict with react-native-audio-api's
+ * audio session management and cause crashes.
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Platform } from 'react-native';
-import {
-  requestRecordingPermissionsAsync,
-  getRecordingPermissionsAsync,
-} from 'expo-audio';
+
+// Conditionally import native audio API for permissions (only on native platforms)
+// We use react-native-audio-api instead of expo-audio to avoid audio session conflicts
+let AudioManager: any;
+
+if (Platform.OS !== 'web') {
+  try {
+    const audioApi = require('react-native-audio-api');
+    AudioManager = audioApi.AudioManager;
+  } catch (e) {
+    console.warn('[MicrophonePermission] Failed to load react-native-audio-api:', e);
+  }
+}
 
 type PermissionStatus = 'undetermined' | 'granted' | 'denied';
 
@@ -40,24 +53,30 @@ export function MicrophonePermissionProvider({ children }: MicrophonePermissionP
 
   /**
    * Check current permission status without prompting
-   * Uses expo-audio for native, Permissions API for web
+   * Uses react-native-audio-api for native (to avoid conflicts), Permissions API for web
    */
   const checkPermission = useCallback(async (): Promise<PermissionStatus> => {
-    // Native iOS/Android - use expo-audio
+    // Native iOS/Android - use react-native-audio-api's AudioManager
+    // We avoid expo-audio here because it conflicts with react-native-audio-api's audio session
     if (Platform.OS !== 'web') {
-      try {
-        const { status, granted, canAskAgain } = await getRecordingPermissionsAsync();
-        console.log('[MicrophonePermission] Native check:', { status, granted, canAskAgain });
+      if (!AudioManager) {
+        console.warn('[MicrophonePermission] AudioManager not available');
+        return 'undetermined';
+      }
 
-        if (granted) {
+      try {
+        // AudioManager.checkRecordingPermissions returns the current status without prompting
+        const permResult = await AudioManager.checkRecordingPermissions();
+        console.log('[MicrophonePermission] Native check:', permResult);
+
+        if (permResult === 'Granted') {
           setPermissionStatus('granted');
           return 'granted';
-        } else if (!canAskAgain) {
-          // User denied and selected "Don't ask again"
+        } else if (permResult === 'Denied') {
           setPermissionStatus('denied');
           return 'denied';
         } else {
-          // Permission not yet requested
+          // 'Undetermined' - permission not yet requested
           setPermissionStatus('undetermined');
           return 'undetermined';
         }
@@ -96,14 +115,22 @@ export function MicrophonePermissionProvider({ children }: MicrophonePermissionP
    * This will prompt the user if they haven't decided yet
    */
   const requestPermission = useCallback(async (): Promise<boolean> => {
-    // Native iOS/Android - use expo-audio
+    // Native iOS/Android - use react-native-audio-api's AudioManager
+    // We MUST use the same audio library for both permission and recording
+    // Using expo-audio here would conflict with react-native-audio-api's audio session
     if (Platform.OS !== 'web') {
-      try {
-        console.log('[MicrophonePermission] Requesting native permission...');
-        const { status, granted, canAskAgain } = await requestRecordingPermissionsAsync();
-        console.log('[MicrophonePermission] Native request result:', { status, granted, canAskAgain });
+      if (!AudioManager) {
+        console.error('[MicrophonePermission] AudioManager not available');
+        setPermissionStatus('denied');
+        return false;
+      }
 
-        if (granted) {
+      try {
+        console.log('[MicrophonePermission] Requesting native permission via AudioManager...');
+        const permResult = await AudioManager.requestRecordingPermissions();
+        console.log('[MicrophonePermission] Native request result:', permResult);
+
+        if (permResult === 'Granted') {
           setPermissionStatus('granted');
           console.log('[MicrophonePermission] Native permission granted');
           return true;

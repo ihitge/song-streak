@@ -5,7 +5,7 @@
  * Can be triggered from anywhere in the app.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,17 +13,18 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  Animated,
+  Platform,
 } from 'react-native';
 import { X, Mic, List } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { Colors } from '@/constants/Colors';
-import { Typography } from '@/constants/Styles';
 import { useVoiceMemos } from '@/hooks/useVoiceMemos';
 import { ReelToReelRecorder } from '@/components/ui/recorder';
 import { VoiceMemosList } from '@/components/ui/recorder/VoiceMemosList';
 import { VoiceMemoWithMeta } from '@/types/voiceMemo';
 import { GangSwitch } from '@/components/ui/filters/GangSwitch';
+import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';
+import { useStyledAlert } from '@/hooks/useStyledAlert';
 
 interface VoiceMemoModalProps {
   /** Whether the modal is visible */
@@ -49,6 +50,13 @@ export const VoiceMemoModal: React.FC<VoiceMemoModalProps> = ({
   const [viewMode, setViewMode] = useState<ViewMode>('record');
   const [playingMemoId, setPlayingMemoId] = useState<string | null>(null);
 
+  // Audio refs
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const nativePlayerRef = useRef<AudioPlayer | null>(null);
+  const nativePlaybackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const { showError } = useStyledAlert();
+
   const {
     memos,
     isLoading,
@@ -57,7 +65,40 @@ export const VoiceMemoModal: React.FC<VoiceMemoModalProps> = ({
     uploadMemo,
     deleteMemo,
     shareToBand,
+    getSignedUrl,
   } = useVoiceMemos({ bandId, includeShared: true });
+
+  // Cleanup native player
+  const cleanupNativePlayer = useCallback(() => {
+    if (nativePlaybackTimerRef.current) {
+      clearInterval(nativePlaybackTimerRef.current);
+      nativePlaybackTimerRef.current = null;
+    }
+    if (nativePlayerRef.current) {
+      try {
+        nativePlayerRef.current.remove();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      nativePlayerRef.current = null;
+    }
+  }, []);
+
+  // Cleanup on unmount or close
+  useEffect(() => {
+    if (!visible) {
+      // Cleanup when modal closes
+      if (Platform.OS === 'web') {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+      } else {
+        cleanupNativePlayer();
+      }
+      setPlayingMemoId(null);
+    }
+  }, [visible, cleanupNativePlayer]);
 
   // Handle recording complete
   const handleRecordingComplete = useCallback(async (blob: Blob, duration: number) => {
@@ -83,22 +124,106 @@ export const VoiceMemoModal: React.FC<VoiceMemoModalProps> = ({
     if (success) {
       // If we were playing this memo, stop
       if (playingMemoId === memo.id) {
+        if (Platform.OS === 'web') {
+          if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.src = '';
+          }
+        } else {
+          cleanupNativePlayer();
+        }
         setPlayingMemoId(null);
       }
     }
-  }, [deleteMemo, playingMemoId]);
+  }, [deleteMemo, playingMemoId, cleanupNativePlayer]);
 
   // Handle play/pause
-  const handlePlay = useCallback((memo: VoiceMemoWithMeta) => {
+  const handlePlay = useCallback(async (memo: VoiceMemoWithMeta) => {
+    // If same memo, toggle pause/play
     if (playingMemoId === memo.id) {
-      // Toggle off
-      setPlayingMemoId(null);
-    } else {
-      // Play this memo
-      setPlayingMemoId(memo.id);
-      // TODO: Actually play the audio using signed URL
+      if (Platform.OS === 'web') {
+        if (audioRef.current) {
+          if (audioRef.current.paused) {
+            audioRef.current.play();
+          } else {
+            audioRef.current.pause();
+          }
+        }
+      } else {
+        if (nativePlayerRef.current) {
+          if (nativePlayerRef.current.playing) {
+            nativePlayerRef.current.pause();
+          } else {
+            nativePlayerRef.current.play();
+          }
+        }
+      }
+      return;
     }
-  }, [playingMemoId]);
+
+    // Stop current playback
+    if (Platform.OS === 'web') {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+    } else {
+      cleanupNativePlayer();
+    }
+
+    // Get signed URL
+    const url = await getSignedUrl(memo.id);
+    if (!url) {
+      showError('Playback Error', 'Could not load audio file.');
+      return;
+    }
+
+    // Play audio
+    if (Platform.OS === 'web') {
+      audioRef.current = new Audio(url);
+      audioRef.current.onended = () => {
+        setPlayingMemoId(null);
+      };
+      audioRef.current.onerror = () => {
+        showError('Playback Error', 'Could not play audio file.');
+        setPlayingMemoId(null);
+      };
+      audioRef.current.play();
+      setPlayingMemoId(memo.id);
+    } else {
+      // Native playback using expo-audio
+      try {
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: false,
+          interruptionMode: 'duckOthers',
+        });
+
+        const player = createAudioPlayer({ uri: url });
+        nativePlayerRef.current = player;
+        player.play();
+        setPlayingMemoId(memo.id);
+
+        // Monitor playback for completion
+        nativePlaybackTimerRef.current = setInterval(() => {
+          if (nativePlayerRef.current) {
+            const currentTime = nativePlayerRef.current.currentTime || 0;
+            const duration = nativePlayerRef.current.duration || 0;
+            const isPlaying = nativePlayerRef.current.playing;
+
+            if (!isPlaying && currentTime >= duration - 0.1 && duration > 0) {
+              cleanupNativePlayer();
+              setPlayingMemoId(null);
+            }
+          }
+        }, 250);
+      } catch (err) {
+        console.error('[VoiceMemoModal] Native playback error:', err);
+        showError('Playback Error', 'Could not play audio file.');
+        cleanupNativePlayer();
+      }
+    }
+  }, [playingMemoId, getSignedUrl, showError, cleanupNativePlayer]);
 
   // Handle close
   const handleClose = useCallback(async () => {

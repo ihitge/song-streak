@@ -25,6 +25,9 @@ import { useBands } from '@/hooks/useBands';
 import { useStyledAlert } from '@/hooks/useStyledAlert';
 import { VoiceMemoWithMeta } from '@/types/voiceMemo';
 
+// Import expo-audio for native playback
+import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';
+
 type ViewMode = 'record' | 'library';
 
 const VIEW_OPTIONS = [
@@ -39,7 +42,12 @@ export default function IdeasScreen() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [shareModalVisible, setShareModalVisible] = useState(false);
   const [selectedMemoForShare, setSelectedMemoForShare] = useState<VoiceMemoWithMeta | null>(null);
+
+  // Web audio ref
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Native audio player ref
+  const nativePlayerRef = useRef<AudioPlayer | null>(null);
+  const nativePlaybackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { showError, showSuccess, showConfirm } = useStyledAlert();
   const { bands } = useBands();
@@ -91,24 +99,57 @@ export default function IdeasScreen() {
     }
   }, [uploadMemo, shareToBand, invalidateMemos, showSuccess]);
 
+  /**
+   * Cleanup native player
+   */
+  const cleanupNativePlayer = useCallback(() => {
+    if (nativePlaybackTimerRef.current) {
+      clearInterval(nativePlaybackTimerRef.current);
+      nativePlaybackTimerRef.current = null;
+    }
+    if (nativePlayerRef.current) {
+      try {
+        nativePlayerRef.current.remove();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      nativePlayerRef.current = null;
+    }
+  }, []);
+
   // Handle memo playback
   const handlePlay = useCallback(async (memo: VoiceMemoWithMeta) => {
     // If same memo, toggle pause/play
     if (playingMemoId === memo.id) {
-      if (audioRef.current) {
-        if (audioRef.current.paused) {
-          audioRef.current.play();
-        } else {
-          audioRef.current.pause();
+      if (Platform.OS === 'web') {
+        if (audioRef.current) {
+          if (audioRef.current.paused) {
+            audioRef.current.play();
+          } else {
+            audioRef.current.pause();
+          }
+        }
+      } else {
+        // Native toggle
+        if (nativePlayerRef.current) {
+          if (nativePlayerRef.current.playing) {
+            nativePlayerRef.current.pause();
+          } else {
+            nativePlayerRef.current.play();
+          }
         }
       }
       return;
     }
 
     // Stop current playback
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = '';
+    if (Platform.OS === 'web') {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+    } else {
+      cleanupNativePlayer();
     }
 
     // Get signed URL
@@ -131,11 +172,49 @@ export default function IdeasScreen() {
       audioRef.current.play();
       setPlayingMemoId(memo.id);
     } else {
-      // For native, we'd use expo-audio - simplified for now
-      console.log('[Ideas] Native playback not yet implemented');
-      showError('Coming Soon', 'Native audio playback is being implemented.');
+      // Native playback using expo-audio
+      try {
+        console.log('[Ideas] Starting native playback for URL:', url);
+
+        // Configure audio mode for playback
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: false,
+          interruptionMode: 'duckOthers',
+        });
+
+        // Create player with the signed URL
+        const player = createAudioPlayer({ uri: url });
+        nativePlayerRef.current = player;
+
+        // Start playback
+        player.play();
+        setPlayingMemoId(memo.id);
+
+        // Monitor playback for completion
+        nativePlaybackTimerRef.current = setInterval(() => {
+          if (nativePlayerRef.current) {
+            const currentTime = nativePlayerRef.current.currentTime || 0;
+            const duration = nativePlayerRef.current.duration || 0;
+            const isPlaying = nativePlayerRef.current.playing;
+
+            // Check if playback ended
+            if (!isPlaying && currentTime >= duration - 0.1 && duration > 0) {
+              console.log('[Ideas] Native playback ended');
+              cleanupNativePlayer();
+              setPlayingMemoId(null);
+            }
+          }
+        }, 250);
+
+        console.log('[Ideas] Native playback started');
+      } catch (err) {
+        console.error('[Ideas] Native playback error:', err);
+        showError('Playback Error', 'Could not play audio file.');
+        cleanupNativePlayer();
+      }
     }
-  }, [playingMemoId, getSignedUrl, showError]);
+  }, [playingMemoId, getSignedUrl, showError, cleanupNativePlayer]);
 
   // Handle memo share (show band picker modal)
   const handleShare = useCallback((memo: VoiceMemoWithMeta) => {
@@ -175,9 +254,13 @@ export default function IdeasScreen() {
           showSuccess('Deleted', 'Recording has been deleted.');
           // Stop playback if this memo was playing
           if (playingMemoId === memo.id) {
-            if (audioRef.current) {
-              audioRef.current.pause();
-              audioRef.current.src = '';
+            if (Platform.OS === 'web') {
+              if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.src = '';
+              }
+            } else {
+              cleanupNativePlayer();
             }
             setPlayingMemoId(null);
           }
@@ -187,14 +270,28 @@ export default function IdeasScreen() {
       'Cancel',
       'error'
     );
-  }, [deleteMemo, invalidateMemos, playingMemoId, showConfirm, showSuccess]);
+  }, [deleteMemo, invalidateMemos, playingMemoId, showConfirm, showSuccess, cleanupNativePlayer]);
 
   // Cleanup audio on unmount
   useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
+      if (Platform.OS === 'web') {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+      } else {
+        // Cleanup native player
+        if (nativePlaybackTimerRef.current) {
+          clearInterval(nativePlaybackTimerRef.current);
+        }
+        if (nativePlayerRef.current) {
+          try {
+            nativePlayerRef.current.remove();
+          } catch (e) {
+            // Ignore
+          }
+        }
       }
     };
   }, []);

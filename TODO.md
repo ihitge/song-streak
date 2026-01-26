@@ -1,5 +1,40 @@
 # Development Notes & Future Features
 
+## Known Issues (January 26, 2026)
+
+### iOS Native Audio Not Working - Needs Investigation
+
+**Status**: UNRESOLVED - Requires further debugging
+
+**Symptoms**:
+1. Tuner: No audio signal detected after granting microphone permission
+2. Idea Bank: Record button may not respond or audio not captured
+3. Permission is granted successfully (no crash), but audio callbacks not firing
+
+**Root Cause**: Unknown. The `react-native-audio-api` AudioRecorder is configured correctly per the library's API, but `onAudioReady` callback may not be receiving data on iOS.
+
+**What Was Fixed** (crash no longer occurs):
+- Fixed `AudioRecorder` constructor to pass required `{ sampleRate, bufferLengthInSamples }` options
+- Fixed `onAudioReady` to pass only callback (not `(options, callback)`)
+- Fixed `recorder.start()` - returns void, removed result checking
+- Removed non-existent `clearOnAudioReady()` method calls
+- Fixed `checkRecordingPermissions` API call (was incorrectly named `getRecordingPermissions`)
+
+**Files Involved**:
+- `hooks/tuner/useAudioSession.ts` - Tuner audio capture
+- `hooks/useVoiceRecorder.ts` - Voice memo recording
+- `contexts/MicrophonePermissionContext.tsx` - Shared permission state
+
+**Debug Logging Added**: Both hooks now log first 5 audio callbacks to console to verify if `onAudioReady` is being called.
+
+**Next Steps for Investigation**:
+1. Check iOS device console logs for `[AudioSession] onAudioReady` or `[VoiceRecorder] onAudioReady` messages
+2. Verify `react-native-audio-api` version compatibility with current React Native/Expo version
+3. Test with a minimal reproduction to isolate the issue
+4. Consider alternative audio libraries if react-native-audio-api proves incompatible
+
+---
+
 ## Recent Changes (January 10, 2026)
 
 ### Sound Recorder - Save, Playback & Band Sharing

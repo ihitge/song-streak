@@ -31,6 +31,8 @@ interface TunerControlsProps {
   onStart: () => void;
   /** Stop tuning callback */
   onStop: () => void;
+  /** Request microphone permission */
+  requestPermission: () => Promise<boolean>;
   /** Compact mode */
   compact?: boolean;
 }
@@ -42,6 +44,7 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
   permissionStatus,
   onStart,
   onStop,
+  requestPermission,
   compact = false,
 }) => {
   const isActive = status !== 'idle';
@@ -90,8 +93,11 @@ export const TunerControls: React.FC<TunerControlsProps> = ({
         <MicrophonePermissionPrompt
           permissionStatus={permissionStatus}
           onRequestPermission={async () => {
-            onStart(); // onStart handles permission request
-            return true;
+            const granted = await requestPermission();
+            if (granted) {
+              onStart();
+            }
+            return granted;
           }}
           featureName="the tuner"
           compact={compact}
