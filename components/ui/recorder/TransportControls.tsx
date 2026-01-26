@@ -2,7 +2,7 @@
  * TransportControls Component
  *
  * 3-button transport for the reel-to-reel recorder.
- * Primary button matches FAB style (64×64px, solid color, white ring).
+ * Primary button uses PrimaryButton with standard pill shape (matching metronome).
  * Buttons: RESET | RECORD/STOP/PLAY (primary) | FAST-FORWARD
  */
 
@@ -50,8 +50,9 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
       return {
         id: 'stop' as TransportButton,
         icon: Square,
-        label: 'Stop Recording',
-        backgroundColor: Colors.vermilion,
+        label: 'STOP',
+        accessibilityLabel: 'Stop Recording',
+        variant: 'secondary' as const,
         iconFill: true,
       };
     }
@@ -59,8 +60,9 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
       return {
         id: 'stop' as TransportButton,
         icon: Pause,
-        label: 'Pause',
-        backgroundColor: Colors.graphite,
+        label: 'PAUSE',
+        accessibilityLabel: 'Pause',
+        variant: 'secondary' as const,
         iconFill: false,
       };
     }
@@ -68,22 +70,23 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
       return {
         id: 'play' as TransportButton,
         icon: Play,
-        label: 'Play',
-        backgroundColor: Colors.moss,
+        label: 'PLAY',
+        accessibilityLabel: 'Play',
+        variant: 'success' as const,
         iconFill: false,
       };
     }
     return {
       id: 'record' as TransportButton,
       icon: Circle,
-      label: 'Record',
-      backgroundColor: Colors.vermilion,
+      label: 'RECORD',
+      accessibilityLabel: 'Record',
+      variant: 'primary' as const,
       iconFill: true,
     };
   };
 
   const primaryConfig = getPrimaryConfig();
-  const isRecording = state === 'recording';
 
   // Handle button presses
   const handleLeftPress = useCallback(async () => {
@@ -110,8 +113,7 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   const leftDisabled = disabled || (!hasRecording && state !== 'recording');
   const rightDisabled = disabled || !hasRecording || state === 'recording';
 
-  // Icon sizes
-  const primaryIconSize = compact ? 24 : 28;
+  // Icon size for secondary buttons
   const secondaryIconSize = compact ? 16 : 20;
 
   return (
@@ -134,27 +136,22 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Primary button - Record/Stop/Play */}
+      {/* Primary button - Record/Stop/Play - matches metronome style */}
       <PrimaryButton
         onPress={handlePrimaryPress}
         icon={
           <primaryConfig.icon
-            size={primaryIconSize}
+            size={24}
             color="#FFFFFF"
             fill={primaryConfig.iconFill ? '#FFFFFF' : 'transparent'}
-            style={primaryConfig.id === 'play' ? { marginLeft: compact ? 2 : 3 } : undefined}
+            strokeWidth={primaryConfig.iconFill ? 0 : 2}
           />
         }
-        variant={
-          primaryConfig.backgroundColor === Colors.vermilion
-            ? 'primary'
-            : primaryConfig.backgroundColor === Colors.moss
-              ? 'success'
-              : 'secondary'
-        }
-        size="circle"
+        label={primaryConfig.label}
+        variant={primaryConfig.variant}
+        size="standard"
         disabled={disabled}
-        accessibilityLabel={primaryConfig.label}
+        accessibilityLabel={primaryConfig.accessibilityLabel}
       />
 
       {/* Right button - Fast Forward */}

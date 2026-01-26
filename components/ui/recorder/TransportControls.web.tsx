@@ -2,7 +2,7 @@
  * TransportControls Web Component
  *
  * 3-button transport for the reel-to-reel recorder (web version).
- * Primary button matches FAB style (64×64px, solid color, white ring).
+ * Primary button uses PrimaryButton with standard pill shape (matching metronome).
  * Buttons: RESET | RECORD/STOP/PLAY (primary) | FAST-FORWARD
  */
 
@@ -11,6 +11,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Rewind, Circle, Square, Play, FastForward, RotateCcw, Pause } from 'lucide-react-native';
 import { Colors } from '@/constants/Colors';
+import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { TransportButton, RecorderState } from '@/types/voiceMemo';
 
 interface TransportControlsProps {
@@ -48,8 +49,9 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
       return {
         id: 'stop' as TransportButton,
         icon: Square,
-        label: 'Stop Recording',
-        backgroundColor: Colors.vermilion,
+        label: 'STOP',
+        accessibilityLabel: 'Stop Recording',
+        variant: 'secondary' as const,
         iconFill: true,
       };
     }
@@ -57,8 +59,9 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
       return {
         id: 'stop' as TransportButton,
         icon: Pause,
-        label: 'Pause',
-        backgroundColor: Colors.graphite,
+        label: 'PAUSE',
+        accessibilityLabel: 'Pause',
+        variant: 'secondary' as const,
         iconFill: false,
       };
     }
@@ -66,22 +69,23 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
       return {
         id: 'play' as TransportButton,
         icon: Play,
-        label: 'Play',
-        backgroundColor: Colors.moss,
+        label: 'PLAY',
+        accessibilityLabel: 'Play',
+        variant: 'success' as const,
         iconFill: false,
       };
     }
     return {
       id: 'record' as TransportButton,
       icon: Circle,
-      label: 'Record',
-      backgroundColor: Colors.vermilion,
+      label: 'RECORD',
+      accessibilityLabel: 'Record',
+      variant: 'primary' as const,
       iconFill: true,
     };
   };
 
   const primaryConfig = getPrimaryConfig();
-  const isRecording = state === 'recording';
 
   // Handle button presses
   const handleLeftPress = useCallback(async () => {
@@ -92,10 +96,8 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
     onPress(state === 'playing' ? 'rewind' : 'stop');
   }, [disabled, hasRecording, state, onPress]);
 
-  const handlePrimaryPress = useCallback(async () => {
+  const handlePrimaryPress = useCallback(() => {
     if (disabled) return;
-
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress(primaryConfig.id);
   }, [disabled, primaryConfig.id, onPress]);
 
@@ -110,8 +112,7 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
   const leftDisabled = disabled || (!hasRecording && state !== 'recording');
   const rightDisabled = disabled || !hasRecording || state === 'recording';
 
-  // Icon sizes
-  const primaryIconSize = compact ? 24 : 28;
+  // Icon size for secondary buttons
   const secondaryIconSize = compact ? 16 : 20;
 
   return (
@@ -134,27 +135,23 @@ export const TransportControls: React.FC<TransportControlsProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Primary button - Record/Stop/Play (FAB style) */}
-      <TouchableOpacity
-        style={[
-          styles.primaryButton,
-          compact && styles.primaryButtonCompact,
-          { backgroundColor: primaryConfig.backgroundColor },
-          disabled && styles.buttonDisabled,
-        ]}
+      {/* Primary button - Record/Stop/Play - matches metronome style */}
+      <PrimaryButton
         onPress={handlePrimaryPress}
-        activeOpacity={0.9}
+        icon={
+          <primaryConfig.icon
+            size={24}
+            color="#FFFFFF"
+            fill={primaryConfig.iconFill ? '#FFFFFF' : 'transparent'}
+            strokeWidth={primaryConfig.iconFill ? 0 : 2}
+          />
+        }
+        label={primaryConfig.label}
+        variant={primaryConfig.variant}
+        size="standard"
         disabled={disabled}
-        accessibilityLabel={primaryConfig.label}
-        accessibilityRole="button"
-      >
-        <primaryConfig.icon
-          size={primaryIconSize}
-          color={Colors.softWhite}
-          fill={primaryConfig.iconFill ? Colors.softWhite : 'transparent'}
-          style={primaryConfig.id === 'play' ? { marginLeft: compact ? 2 : 3 } : undefined}
-        />
-      </TouchableOpacity>
+        accessibilityLabel={primaryConfig.accessibilityLabel}
+      />
 
       {/* Right button - Fast Forward */}
       <TouchableOpacity
@@ -182,28 +179,6 @@ const styles = StyleSheet.create({
   },
   containerCompact: {
     gap: 16,
-  },
-  // Primary button - FAB style (64×64, solid color, white ring)
-  primaryButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // White ring effect (matches FAB)
-    borderWidth: 2,
-    borderColor: '#fff',
-    // Shadow (matches FAB)
-    shadowColor: Colors.charcoal,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 8,
-  },
-  primaryButtonCompact: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
   },
   // Secondary buttons (beveled style)
   secondaryButton: {
